@@ -96,10 +96,10 @@ public class ThemeColors {
         defaultColors[key_text_RedRegular] = 0xffcc2929;
         defaultColors[key_text_RedBold] = 0xffcc4747;
         defaultColors[key_fill_RedNormal] = 0xffeb5e5e;
-        defaultColors[key_windowBackgroundWhiteGrayText] = 0xff808384;
-        defaultColors[key_windowBackgroundWhiteGrayText2] = 0xff82868a;
+        defaultColors[key_windowBackgroundWhiteGrayText] = 0xff757778; // MultiGram: contrast fix, was 0xff808384
+        defaultColors[key_windowBackgroundWhiteGrayText2] = 0xff73777b; // MultiGram: contrast fix, was 0xff82868a
         defaultColors[key_windowBackgroundWhiteGrayText3] = 0xff999999;
-        defaultColors[key_windowBackgroundWhiteGrayText4] = 0xff808080;
+        defaultColors[key_windowBackgroundWhiteGrayText4] = 0xff6f6e6e; // MultiGram: contrast fix, was 0xff808080
         defaultColors[key_windowBackgroundWhiteGrayText5] = 0xffa3a3a3;
         defaultColors[key_windowBackgroundWhiteGrayText6] = 0xff757575;
         defaultColors[key_windowBackgroundWhiteGrayText7] = 0xffc6c6c6;
@@ -192,7 +192,7 @@ public class ThemeColors {
         defaultColors[key_actionBarActionModeDefaultTop] = 0x10000000;
         defaultColors[key_actionBarActionModeDefaultIcon] = DEFAULT_BLACK_TEXT; // key_windowBackgroundWhiteBlackText
         defaultColors[key_actionBarDefaultTitle] = DEFAULT_BLACK_TEXT;
-        defaultColors[key_actionBarDefaultSubtitle] = 0xff79817e;       // key_windowBackgroundWhiteGrayText
+        defaultColors[key_actionBarDefaultSubtitle] = 0xff717876;       // key_windowBackgroundWhiteGrayText; MultiGram: contrast fix, was 0xff79817e
         defaultColors[key_actionBarDefaultSelector] = 0x121a1d21;
         defaultColors[key_actionBarWhiteSelector] = 0x121a1d21;
         defaultColors[key_actionBarDefaultSearch] = DEFAULT_BLACK_TEXT;
@@ -236,7 +236,7 @@ public class ThemeColors {
         defaultColors[key_chats_secretName] = 0xff00a60e;
         defaultColors[key_chats_secretIcon] = 0xff19b126;
         defaultColors[key_chats_pinnedIcon] = 0xff919294;
-        defaultColors[key_chats_message] = 0xff75787A;
+        defaultColors[key_chats_message] = 0xff747779; // MultiGram: contrast fix, was 0xff75787A
         defaultColors[key_chats_messageArchived] = 0xff919191;
         defaultColors[key_chats_message_threeLines] = 0xff8e9091;
         defaultColors[key_chats_draft] = 0xffdd4b39;
@@ -246,7 +246,7 @@ public class ThemeColors {
         defaultColors[key_chats_nameMessageArchived_threeLines] = 0xff5e5e5e;
         defaultColors[key_chats_attachMessage] = TELEGRAM_COLOR_TEXT;
         defaultColors[key_chats_actionMessage] = TELEGRAM_COLOR_TEXT;
-        defaultColors[key_chats_date] = 0xff848688;
+        defaultColors[key_chats_date] = 0xff757778; // MultiGram: contrast fix, was 0xff848688
         defaultColors[key_chats_date_bold] = 0xff919395;
         defaultColors[key_chats_pinnedOverlay] = 0x08000000;
         defaultColors[key_chats_tabletSelectedOverlay] = 0x0f000000;
@@ -330,7 +330,7 @@ public class ThemeColors {
         defaultColors[key_chat_inSentClockSelected] = 0xff93bdca;
         defaultColors[key_chat_mediaSentCheck] = 0xffffffff;
         defaultColors[key_chat_mediaSentClock] = 0xffffffff;
-        defaultColors[key_chat_inViews] = 0xffa1aab3;
+        defaultColors[key_chat_inViews] = 0xff6f7780; // MultiGram: contrast fix, was 0xffa1aab3
         defaultColors[key_chat_inViewsSelected] = 0xff93bdca;
         defaultColors[key_chat_outViews] = 0xff6eb257;
         defaultColors[key_chat_outViewsSelected] = 0xff6eb257;
@@ -395,7 +395,7 @@ public class ThemeColors {
         defaultColors[key_chat_inAdminSelectedText] = 0xff89b4c1;
         defaultColors[key_chat_outAdminText] = 0xff70b15c;
         defaultColors[key_chat_outAdminSelectedText] = 0xff70b15c;
-        defaultColors[key_chat_inTimeText] = 0xffa1aab3;
+        defaultColors[key_chat_inTimeText] = 0xff6f7780; // MultiGram: contrast fix, was 0xffa1aab3
         defaultColors[key_chat_inTimeSelectedText] = 0xff89b4c1;
         defaultColors[key_chat_outTimeText] = 0xff70b15c;
         defaultColors[key_chat_outTimeSelectedText] = 0xff70b15c;
@@ -429,7 +429,7 @@ public class ThemeColors {
         defaultColors[key_chat_outFileProgressSelected] = 0xffc5eca7;
         defaultColors[key_chat_inFileNameText] = TELEGRAM_COLOR_TEXT;
         defaultColors[key_chat_outFileNameText] = 0xff55ab4f;
-        defaultColors[key_chat_inFileInfoText] = 0xffa1aab3;
+        defaultColors[key_chat_inFileInfoText] = 0xff6f7780; // MultiGram: contrast fix, was 0xffa1aab3
         defaultColors[key_chat_outFileInfoText] = 0xff65b05b;
         defaultColors[key_chat_inFileInfoSelectedText] = 0xff89b4c1;
         defaultColors[key_chat_outFileInfoSelectedText] = 0xff65b05b;
@@ -485,7 +485,7 @@ public class ThemeColors {
         defaultColors[key_chat_replyPanelLine] = 0xffe8e8e8;
         defaultColors[key_chat_messagePanelBackground] = 0xffffffff;
         defaultColors[key_chat_messagePanelText] = 0xff000000;
-        defaultColors[key_chat_messagePanelHint] = 0xff858a84;
+        defaultColors[key_chat_messagePanelHint] = 0xff737873; // MultiGram: contrast fix, was 0xff858a84
         defaultColors[key_chat_messagePanelCursor] = 0xff54a1db;
         defaultColors[key_chat_messagePanelShadow] = 0xff000000;
         defaultColors[key_chat_messagePanelIcons] = 0xff8e959b;
@@ -517,7 +517,7 @@ public class ThemeColors {
         defaultColors[key_chat_topPanelClose] = 0xff818786;
         defaultColors[key_chat_topPanelLine] = 0xff3fa8ef;
         defaultColors[key_chat_topPanelTitle] = TELEGRAM_COLOR_TEXT;
-        defaultColors[key_chat_topPanelMessage] = 0xff767e7c;
+        defaultColors[key_chat_topPanelMessage] = 0xff717877; // MultiGram: contrast fix, was 0xff767e7c
         defaultColors[key_chat_addContact] = TELEGRAM_COLOR_TEXT;
         defaultColors[key_chat_inLoader] = TELEGRAM_COLOR;
         defaultColors[key_chat_inLoaderSelected] = 0xff65abe0;
