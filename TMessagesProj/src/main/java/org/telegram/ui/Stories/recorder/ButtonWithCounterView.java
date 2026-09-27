@@ -41,7 +41,7 @@ public class ButtonWithCounterView extends FrameLayout implements Loadable {
 
     private Theme.ResourcesProvider resourcesProvider;
 
-    private int radiusDp = 8;
+    private int radiusDp = org.telegram.messenger.multigram.StyleKnobs.ctaRadiusDp(8); // MultiGram: this install's button corners (explicit setRoundRadius/setRound still win)
 
     private final Paint paint;
     public final AnimatedTextView.AnimatedTextDrawable text;
@@ -112,7 +112,7 @@ public class ButtonWithCounterView extends FrameLayout implements Loadable {
         addView(rippleView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
 
         if (filled) {
-            setBackground(Theme.createRoundRectDrawable(dp(8), backgroundColor = Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider)));
+            setBackground(Theme.createRoundRectDrawable(dp(radiusDp), backgroundColor = Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider))); // MultiGram: radiusDp (stock: dp(8), the same default)
         }
 
         paint = new Paint(Paint.ANTI_ALIAS_FLAG);

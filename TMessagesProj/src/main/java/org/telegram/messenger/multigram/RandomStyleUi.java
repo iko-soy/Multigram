@@ -1,19 +1,29 @@
 package org.telegram.messenger.multigram;
 
 import android.os.SystemClock;
+import android.view.View;
+import android.view.ViewGroup;
 
 import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.FileLog;
+import org.telegram.messenger.MessageObject;
 import org.telegram.messenger.R;
+import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.Utilities;
 import org.telegram.ui.ActionBar.BaseFragment;
 import org.telegram.ui.ActionBar.EmojiThemes;
 import org.telegram.ui.ActionBar.Theme;
+import org.telegram.ui.Cells.ChatListCell;
+import org.telegram.ui.Cells.ChatMessageCell;
 import org.telegram.ui.Cells.TextCell;
+import org.telegram.ui.Cells.ThemePreviewMessagesCell;
 import org.telegram.ui.Components.BulletinFactory;
 import org.telegram.ui.Components.ChatThemeBottomSheet;
+import org.telegram.ui.Components.RadioButton;
 import org.telegram.ui.DialogsActivity;
+import org.telegram.ui.ThemeActivity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -69,12 +79,87 @@ public final class RandomStyleUi {
             }
             return;
         }
+        refreshStyleKnobRows(fragment);
         if (fragment != null && RandomStyle.canUndoShuffle()) {
             BulletinFactory.of(fragment).createUndoBulletin(str(R.string.MultiGramStyleShuffled), () -> {
                 if (!RandomStyle.undoShuffle()) {
                     BulletinFactory.of(fragment).createErrorBulletin(str(R.string.MultiGramUndoFailed)).show();
+                } else {
+                    refreshStyleKnobRows(fragment);
                 }
             }, null).show();
+        }
+    }
+
+    /**
+     * Shuffle and Undo may change the bubble radius and the chat list layout ({@link StyleKnobs}); Chat Settings
+     * rebinds the rows that show them ({@link #bindStyleKnobRow}).
+     */
+    private static void refreshStyleKnobRows(BaseFragment fragment) {
+        try {
+            if (fragment instanceof ThemeActivity) {
+                ((ThemeActivity) fragment).refreshStyleKnobRows();
+            }
+        } catch (Throwable e) {
+            FileLog.e(e);
+        }
+    }
+
+    /**
+     * ThemeActivity.ListAdapter.onBindViewHolder hook for the text size preview, the message corners slider and the
+     * chat list picker. Their cells read the bubble radius and chat list layout only when created (the picker's
+     * radio buttons) or measured (the slider's position, the preview's bubbles), and binding them does nothing in
+     * stock, so after Shuffle or Undo ({@link ThemeActivity#refreshStyleKnobRows}) a visible row, or one kept
+     * off screen, would still show the old values. This brings the cell in line with SharedConfig the way the
+     * stock slider does: the preview messages are laid out again, the cell is measured again, and the picker's
+     * radio buttons are re-checked. A cell never laid out was just created from the current values and is left
+     * alone, and so is every cell while the install has no style knobs. Never throws.
+     */
+    public static void bindStyleKnobRow(View itemView) {
+        try {
+            if (itemView == null || !StyleKnobs.isActive() || itemView.getWidth() == 0) {
+                return;
+            }
+            if (itemView instanceof ChatListCell) {
+                // Its two options in order (two lines, three lines), each with one radio button; a button animates
+                // only while attached, and does nothing when it already shows the value.
+                List<RadioButton> buttons = new ArrayList<>();
+                collect(itemView, RadioButton.class, buttons);
+                if (buttons.size() == 2) {
+                    buttons.get(0).setChecked(!SharedConfig.useThreeLinesLayout, true);
+                    buttons.get(1).setChecked(SharedConfig.useThreeLinesLayout, true);
+                }
+            } else {
+                List<ThemePreviewMessagesCell> previews = new ArrayList<>();
+                collect(itemView, ThemePreviewMessagesCell.class, previews);
+                for (ThemePreviewMessagesCell preview : previews) {
+                    ChatMessageCell[] cells = preview.getCells();
+                    for (int i = 0; cells != null && i < cells.length; i++) {
+                        MessageObject message = cells[i] == null ? null : cells[i].getMessageObject();
+                        if (message != null) {
+                            message.resetLayout();
+                            cells[i].requestLayout();
+                        }
+                    }
+                }
+                itemView.requestLayout(); // the corners slider takes its position from SharedConfig in onMeasure
+            }
+            itemView.invalidate();
+        } catch (Throwable e) {
+            FileLog.e(e);
+        }
+    }
+
+    /** Adds view and its descendants that are instances of type to out, depth first. */
+    private static <T> void collect(View view, Class<T> type, List<T> out) {
+        if (type.isInstance(view)) {
+            out.add(type.cast(view));
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++) {
+                collect(group.getChildAt(i), type, out);
+            }
         }
     }
 
