@@ -8297,6 +8297,7 @@ public class AlertsCreator {
         if (fragment == null || fragment.getParentActivity() == null) {
             return;
         }
+        if (org.telegram.messenger.multigram.RandomStyleUi.interceptThemeCreate(fragment, switchToAccent)) return; // MultiGram: a cloud theme cannot start from the generated style
         Context context = fragment.getParentActivity();
         final EditTextBoldCursor editText = new EditTextBoldCursor(context);
         editText.setBackground(null);
