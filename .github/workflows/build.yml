@@ -67,6 +67,15 @@ jobs:
         with:
           tool-cache: false
           android: false
+      - name: Add swap space
+        # Runners for private repositories have about 8 GB of memory; the native build and the
+        # Gradle and Kotlin daemons together can use more, and the runner dies without a log.
+        run: |
+          sudo fallocate -l 8G /multigram-swap
+          sudo chmod 600 /multigram-swap
+          sudo mkswap /multigram-swap
+          sudo swapon /multigram-swap
+          free -h
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -84,6 +93,10 @@ jobs:
         run: |
           vars=gradle.properties
           echo "org.gradle.workers.max=1" >> $vars
+          # Forkgram asks for an 8 GB heap, sized for the bigger runners of public repositories.
+          echo "org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8" >> $vars
+          echo "kotlin.daemon.jvmargs=-Xmx2g" >> $vars
+          echo "org.gradle.parallel=false" >> $vars
           [ -n "$APP_ID" ] && echo "APP_ID=$APP_ID" >> $vars
           [ -n "$APP_HASH" ] && echo "APP_HASH=$APP_HASH" >> $vars
           echo "RELEASE_KEYSTORE_FILE=$PWD/TMessagesProj/config/release.keystore" >> $vars
