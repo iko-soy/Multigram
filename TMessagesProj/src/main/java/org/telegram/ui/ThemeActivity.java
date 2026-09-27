@@ -461,6 +461,8 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         updateRows(true);
     }
 
+    public void refreshStyleKnobRows() { if (listAdapter != null) { for (int row : new int[] {textSizeRow, bubbleRadiusRow, chatListRow}) { if (row >= 0) listAdapter.notifyItemChanged(row); } } } // MultiGram: Shuffle and Undo change the bubble radius and chat list layout these rows show (StyleKnobs); the rebind updates their cells (onBindViewHolder)
+
     private boolean setBubbleRadius(int size, boolean layout) {
         if (size != SharedConfig.bubbleRadius) {
             SharedConfig.bubbleRadius = size;
@@ -1014,7 +1016,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                         if (setFontSize(AndroidUtilities.isTablet() ? 18 : 16)) {
                             changed = true;
                         }
-                        if (setBubbleRadius(17, true)) {
+                        if (setBubbleRadius(org.telegram.messenger.multigram.StyleKnobs.resetBubbleRadius(17), true)) { // MultiGram: this install's radius, not always 17
                             changed = true;
                         }
                         if (changed) {
@@ -2476,6 +2478,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         @Override
         public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
             switch (holder.getItemViewType()) {
+                case TYPE_TEXT_SIZE: case TYPE_BUBBLE_RADIUS: case TYPE_CHAT_LIST: org.telegram.messenger.multigram.RandomStyleUi.bindStyleKnobRow(holder.itemView); break; // MultiGram: these cells read the bubble radius and chat list layout only when created or measured; Shuffle and Undo change them (StyleKnobs)
                 case TYPE_TEXT_SETTING: {
                     TextSettingsCell cell = (TextSettingsCell) holder.itemView;
                     if (position == nightThemeRow) {
