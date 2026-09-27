@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  MultiGram strings. They stay plain Android resources (Telegram's build only turns strings.xml files into its
+  localization assets), so read them with Context.getString, not LocaleController.getString.
+-->
+<resources>
+    <string name="MultiGramShuffleStyle">Shuffle my style</string>
+    <string name="MultiGramShuffleFailed">Couldn\'t shuffle your style. Please try again.</string>
+    <string name="MultiGramStyleShuffled">New style applied.</string>
+    <string name="MultiGramUndoFailed">Couldn\'t bring back your previous style.</string>
+    <string name="MultiGramStyleStaysOnDevice">Your generated style stays on this device, so it can\'t be shared or turned into a cloud theme. Pick another color theme first.</string>
+</resources>

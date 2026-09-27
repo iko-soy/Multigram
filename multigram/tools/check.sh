@@ -11,6 +11,12 @@ if [ -f multigram/tools/palette_fix_check.py ]; then
   python3 multigram/tools/palette_fix_check.py
 fi
 
+if [ -f multigram/tools/random_style_check.py ]; then
+  # Per-install random style: hooks and their placement, no server calls, strings, backup policy.
+  echo "== random style: hooks, privacy guards, strings and backup policy"
+  python3 multigram/tools/random_style_check.py
+fi
+
 echo "== style table: format and readability on the current theme sources"
 python3 multigram/tools/check_style_table.py
 
