@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MultiGram rebrand: patched by multigram/rebrand/generate_rebrand.py; its clean option undoes this -->
 
 <account-authenticator xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accountType="co.velvetaspen.mobile"
+    android:accountType="${applicationId}"
     android:icon="@drawable/ic_launcher_dr"
     android:smallIcon="@drawable/ic_launcher_dr"
     android:label="@string/AppName"

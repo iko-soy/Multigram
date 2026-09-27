@@ -1,4 +1,3 @@
-// MultiGram rebrand: patched by multigram/rebrand/generate_rebrand.py; undo with --clean
 /*
  * This is the source code of Telegram for Android v. 1.3.x.
  * It is licensed under GNU GPL v. 2 or later.
@@ -393,7 +392,7 @@ public class ContactsController extends BaseController {
         Utilities.globalQueue.postRunnable(() -> {
             AccountManager am = AccountManager.get(ApplicationLoader.applicationContext);
             try {
-                Account[] accounts = am.getAccountsByType("co.velvetaspen.mobile");
+                Account[] accounts = am.getAccountsByType("org.telegram.messenger");
                 for (int a = 0; a < accounts.length; a++) {
                     Account acc = accounts[a];
                     boolean found = false;
@@ -425,7 +424,7 @@ public class ContactsController extends BaseController {
                 readContacts();
                 if (systemAccount == null) {
                     try {
-                        systemAccount = new Account("" + getUserConfig().getClientUserId(), "co.velvetaspen.mobile");
+                        systemAccount = new Account("" + getUserConfig().getClientUserId(), "org.telegram.messenger");
                         am.addAccountExplicitly(systemAccount, "", null);
                     } catch (Exception ignore) {
 
@@ -439,7 +438,7 @@ public class ContactsController extends BaseController {
         try {
             systemAccount = null;
             AccountManager am = AccountManager.get(ApplicationLoader.applicationContext);
-            Account[] accounts = am.getAccountsByType("co.velvetaspen.mobile");
+            Account[] accounts = am.getAccountsByType("org.telegram.messenger");
             for (int a = 0; a < accounts.length; a++) {
                 Account acc = accounts[a];
                 boolean found = false;
@@ -515,7 +514,7 @@ public class ContactsController extends BaseController {
                 AndroidUtilities.runOnUIThread(() -> {
                     AccountManager am = AccountManager.get(ApplicationLoader.applicationContext);
                     try {
-                        Account[] accounts = am.getAccountsByType("co.velvetaspen.mobile");
+                        Account[] accounts = am.getAccountsByType("org.telegram.messenger");
                         systemAccount = null;
                         for (int a = 0; a < accounts.length; a++) {
                             Account acc = accounts[a];
@@ -534,7 +533,7 @@ public class ContactsController extends BaseController {
                     }
                     if (HiddenAccountHelper.isVisibleActivatedAccount(currentAccount)) {
                         try {
-                            systemAccount = new Account("" + getUserConfig().getClientUserId(), "co.velvetaspen.mobile");
+                            systemAccount = new Account("" + getUserConfig().getClientUserId(), "org.telegram.messenger");
                             am.addAccountExplicitly(systemAccount, "", null);
                         } catch (Exception ignore) {
 

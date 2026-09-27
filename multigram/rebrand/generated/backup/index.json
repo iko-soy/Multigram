@@ -1,0 +1,14 @@
+{
+  "TMessagesProj/src/main/java/org/telegram/messenger/ContactsController.java": {
+    "orig": "4af0de3316b2653ab2ca8391824a6ed31533970484964549bdb2a55524891a98",
+    "patched": "aa34512374d4a3807890ec54356422b0e5da4cee6027072d5f4594438feee714"
+  },
+  "TMessagesProj/src/main/res/xml/auth.xml": {
+    "orig": "e880e76384c3cb15c8a912920eacba27d0b84382ce7d7fd5d8b99211d02df3a3",
+    "patched": "0c9b9d020a400b8792a69917755eb69ae38309eb0899402c5473aa5b5beaf22c"
+  },
+  "TMessagesProj/src/main/res/xml/sync_contacts.xml": {
+    "orig": "23e41b35112baff7abff4a0e4bb71cc03d45fa32666577c84d94f39b650b66a0",
+    "patched": "7133bf6936206c0cd65d4632b3e2d1e953b3c1b3bd1d21bc1482f43a5996812d"
+  }
+}
