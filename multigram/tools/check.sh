@@ -23,6 +23,12 @@ if [ -f multigram/tools/style_knobs_check.py ]; then
   python3 multigram/tools/style_knobs_check.py
 fi
 
+if [ -f multigram/rebrand/selftest.py ]; then
+  # Rebrand toolkit: generate two identities on a scratch copy, check the output, then --clean back to the commit.
+  echo "== rebrand toolkit: self-test"
+  python3 multigram/rebrand/selftest.py
+fi
+
 echo "== style table: format and readability on the current theme sources"
 python3 multigram/tools/check_style_table.py
 
