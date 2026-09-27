@@ -560,6 +560,7 @@ public class ThemePreviewActivity extends BaseFragment implements DownloadContro
 
         if (screenType == SCREEN_TYPE_ACCENT_COLOR) {
             accent = applyingTheme.getAccent(!edit);
+            org.telegram.messenger.multigram.RandomStyle.onAccentCopied(applyingTheme, accent, !edit); // MultiGram: a copy of the generated style stays on this device too
             if (accent != null) {
                 useDefaultThemeForButtons = false;
                 backupAccentColor = accent.accentColor;
