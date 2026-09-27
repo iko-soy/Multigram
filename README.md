@@ -23,10 +23,12 @@ Set these in **Settings > Secrets and variables > Actions**:
 
 - `MULTIGRAM_APP_ID` and `MULTIGRAM_APP_HASH`: your own API id and hash from
   https://my.telegram.org (API development tools). Without them the APK cannot log in.
-- Signing: the APK job signs with `TMessagesProj/config/release.keystore` from the tree, whose
-  passwords are public, so anyone could sign an "update" for it. That is fine for testing. For
-  an APK you give to people, sign with your own key and keep it out of the repository (see
-  "Signing and updates" in `multigram/rebrand/README.md`); the workflow has no keystore secret yet.
+- Signing (optional): `MULTIGRAM_KEYSTORE_BASE64` (your release keystore, `base64 -w0 release.keystore`),
+  `MULTIGRAM_KEYSTORE_PASSWORD`, `MULTIGRAM_KEY_ALIAS` and `MULTIGRAM_KEY_PASSWORD` (if it differs
+  from the store password). Without them the APK is signed with Forkgram's public test key
+  (`TMessagesProj/config/test.keystore`), which is fine for testing but lets anyone sign an
+  "update" for it. Keep the same key for every build you give out, or phones can't update. The
+  rebrand toolkit can make a key for you (see "Signing and updates" in `multigram/rebrand/README.md`).
 
 ## How the sync works
 

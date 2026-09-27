@@ -90,6 +90,10 @@ jobs:
         env:
           APP_ID: ${{ secrets.MULTIGRAM_APP_ID }}
           APP_HASH: ${{ secrets.MULTIGRAM_APP_HASH }}
+          KEYSTORE_BASE64: ${{ secrets.MULTIGRAM_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.MULTIGRAM_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.MULTIGRAM_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.MULTIGRAM_KEY_PASSWORD }}
         run: |
           vars=gradle.properties
           echo "org.gradle.workers.max=1" >> $vars
@@ -99,11 +103,25 @@ jobs:
           echo "org.gradle.parallel=false" >> $vars
           [ -n "$APP_ID" ] && echo "APP_ID=$APP_ID" >> $vars
           [ -n "$APP_HASH" ] && echo "APP_HASH=$APP_HASH" >> $vars
-          echo "RELEASE_KEYSTORE_FILE=$PWD/TMessagesProj/config/release.keystore" >> $vars
+          signing=()
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            # Your own release key, from the MULTIGRAM_KEYSTORE_* secrets; it never touches the repository.
+            echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+            signing=(
+              "-PRELEASE_KEYSTORE_FILE=$RUNNER_TEMP/release.keystore"
+              "-PRELEASE_STORE_PASSWORD=$KEYSTORE_PASSWORD"
+              "-PRELEASE_KEY_ALIAS=$KEY_ALIAS"
+              "-PRELEASE_KEY_PASSWORD=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}"
+            )
+          else
+            # Without RELEASE_KEYSTORE_FILE the build signs with the public test key in
+            # TMessagesProj/config/test.keystore: fine for testing, not for an APK you give out.
+            echo "::warning::No MULTIGRAM_KEYSTORE_BASE64 secret: the APK is signed with the public test key."
+          fi
           sudo apt update
           sudo apt -y install ninja-build meson nasm gperf pkg-config unzip
           rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
-          ./gradlew :TMessagesProj_App:assembleAfatRelease
+          ./gradlew "${signing[@]}" :TMessagesProj_App:assembleAfatRelease
       - uses: actions/upload-artifact@v4
         with:
           name: multigram-apk
