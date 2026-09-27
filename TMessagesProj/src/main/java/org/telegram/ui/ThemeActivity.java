@@ -221,6 +221,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
     private int editThemeRow;
     @Keep
     private int createNewThemeRow;
+    private int shuffleStyleRow = -1; // MultiGram: "Shuffle my style"
     private int lastShadowRow;
     @Keep
     private int stickersRow;
@@ -605,6 +606,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         themePreviewRow = -1;
         editThemeRow = -1;
         createNewThemeRow = -1;
+        shuffleStyleRow = -1; // MultiGram: "Shuffle my style"
 
         appIconHeaderRow = -1;
         appIconSelectorRow = -1;
@@ -661,6 +663,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             themeHeaderRow = rowCount++;
 
             themeListRow2 = rowCount++;
+            shuffleStyleRow = rowCount++; // MultiGram: under the colour themes
             themeInfoRow = rowCount++;
 
             bubbleRadiusHeaderRow = rowCount++;
@@ -911,6 +914,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
             if (getParentActivity() == null || isPaused) {
                 return;
             }
+            if (org.telegram.messenger.multigram.RandomStyleUi.interceptShare(this, (Theme.ThemeAccent) args[1])) return; // MultiGram: the generated style stays on this device
             sharingTheme = (Theme.ThemeInfo) args[0];
             sharingAccent = (Theme.ThemeAccent) args[1];
             sharingProgressDialog = new AlertDialog(getParentActivity(), AlertDialog.ALERT_TYPE_SPINNER);
@@ -1041,6 +1045,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                                 Theme.reloadWallpaper(true);
                             }
                         }
+                        org.telegram.messenger.multigram.RandomStyle.resetToGeneratedStyle(); // MultiGram: also reset the colours, to this install's generated style (the branch above needs the theme list, which Chat Settings lacks)
                     });
                     builder1.setNegativeButton(getString("Cancel", R.string.Cancel), null);
                     AlertDialog alertDialog = builder1.create();
@@ -1103,6 +1108,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
         frameLayout.addView(listView, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
         actionBar.setAdaptiveBackground(listView);
         listView.setOnItemClickListener((view, position, x, y) -> {
+            if (position == shuffleStyleRow) { org.telegram.messenger.multigram.RandomStyleUi.shuffle(ThemeActivity.this); return; } // MultiGram: "Shuffle my style"
             if (position == enableAnimationsRow) {
                 SharedPreferences preferences = MessagesController.getGlobalMainSettings();
                 boolean animations = preferences.getBoolean("view_animations", true);
@@ -2668,6 +2674,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
                 case TYPE_TEXT_PREFERENCE: {
                     TextCell cell = (TextCell) holder.itemView;
                     cell.heightDp = 48;
+                    if (position == shuffleStyleRow) { org.telegram.messenger.multigram.RandomStyleUi.bindShuffleRow(cell); break; } // MultiGram: "Shuffle my style"
                     if (position == backgroundRow) {
                         cell.setSubtitle(null);
                         cell.setColors(Theme.key_windowBackgroundWhiteBlueText4, Theme.key_windowBackgroundWhiteBlueText4);
@@ -2729,6 +2736,7 @@ public class ThemeActivity extends BaseFragment implements NotificationCenter.No
 
         @Override
         public int getItemViewType(int position) {
+            if (position == shuffleStyleRow) return TYPE_TEXT_PREFERENCE; // MultiGram: "Shuffle my style"
             if (position == scheduleFromRow || position == distanceRow ||
                     position == scheduleToRow || position == scheduleUpdateLocationRow ||
                     position == contactsReimportRow || position == contactsSortRow ||

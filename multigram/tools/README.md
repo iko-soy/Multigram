@@ -233,6 +233,8 @@ represented (288-387 entries per range and theme); bubbles 1/2/3/4 colours about
 1. `palette_fix_check.py`, when the tree has it (the MultiGram branch): `PaletteFix.java`, its hooks and
    the theme sources apply exactly `multigram/palette-fix/overlay_A.json`. The table is validated
    against that file, so this is what ties the validation to the Java code the app runs.
+   `random_style_check.py`, when the tree has it: the per-install random style's hooks and their
+   placement, its privacy guards, strings and backup policy (`multigram/random-style/README.md`).
 2. `check_style_table.py`: the format rules above, every record; theme keys must be bundled base themes
    of this tree with the right night flag. Self-tests: the parser must recognise every form of the
    out-text guard (stock, `|| id > 100`, and the palette fix's exact line) with the rest of Theme.java
