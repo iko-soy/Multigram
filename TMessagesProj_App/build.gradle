@@ -330,3 +330,6 @@ android {
         checkReleaseBuilds false
     }
 }
+
+// MultiGram: build-time rebrand, a no-op unless multigram/rebrand/rebrand.properties exists.
+apply from: "${rootDir}/multigram/rebrand/rebrand.gradle"

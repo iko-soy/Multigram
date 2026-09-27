@@ -1,0 +1,217 @@
+// MultiGram build-time rebrand (see multigram/rebrand/README.md).
+//
+// Applied at the end of TMessagesProj_App/build.gradle, after its android {} block, so every
+// value set here replaces the one the module set before. Without
+// multigram/rebrand/rebrand.properties (written by generate_rebrand.py) this script only
+// checks that no rebrand patch is left in the source tree, and the module keeps its own
+// identity.
+
+def rebrandDir = new File(rootDir, "multigram/rebrand")
+def rebrandFile = new File(rebrandDir, "rebrand.properties")
+def rebrandProps = new Properties()
+if (rebrandFile.isFile()) {
+    rebrandFile.withInputStream { rebrandProps.load(it) }
+}
+def rebrandActive = rebrandProps.getProperty("REBRAND_ACTIVE") == "true"
+
+// generate_rebrand.py patches the account type into these three files and marks each of
+// them with this text (PATCH_MARKER there).
+def patchMarker = "MultiGram rebrand: patched by multigram/rebrand/generate_rebrand.py"
+def libMain = new File(rootDir, "TMessagesProj/src/main")
+def contactsFile = new File(libMain, "java/org/telegram/messenger/ContactsController.java")
+def accountFiles = [contactsFile, new File(libMain, "res/xml/auth.xml"), new File(libMain, "res/xml/sync_contacts.xml")]
+
+if (!rebrandActive) {
+    // A stock build must not ship a rebrand's account type, e.g. after rebrand.properties
+    // was deleted by hand instead of running --clean. The stock tree never has the marker.
+    def patched = accountFiles.findAll { it.isFile() && it.getText("UTF-8").contains(patchMarker) }
+    if (patched) {
+        def names = patched.collect { rootDir.toPath().relativize(it.toPath()).toString() }
+        throw new GradleException("[rebrand] no active rebrand (multigram/rebrand/rebrand.properties), " +
+                "but these files still carry a rebrand's account type: ${names.join(", ")}. " +
+                "Run python3 multigram/rebrand/generate_rebrand.py --clean " +
+                "(or git checkout -- ${names.join(" ")}) to build the stock identity.")
+    }
+} else {
+    def prop = { String key -> (rebrandProps.getProperty(key) ?: "").trim() }
+    def fromRoot = { String path -> def f = new File(path); f.isAbsolute() ? f : new File(rootDir, path) }
+    def androidExt = project.extensions.getByName("android")
+    def genRes = new File(rebrandDir, "generated/res")
+    def rerun = "python3 multigram/rebrand/generate_rebrand.py ${prop("REBRAND_RERUN") ?: "--seed " + prop("REBRAND_SEED")}"
+    def notes = []
+
+    // applicationId. The build types still add their applicationIdSuffix (.beta, .web).
+    // A flavor with an applicationId of its own (forkTest, org.forkclient.messenger.test)
+    // replaces the default one, so it gets the new id plus its old suffix (<id>.test), also
+    // with F_DROID=1, where the default id is org.forkgram.messenger.
+    def appId = prop("REBRAND_APPLICATION_ID")
+    if (appId) {
+        def stockId = androidExt.defaultConfig.applicationId
+        def stockIds = [stockId, "org.forkclient.messenger", "org.forkgram.messenger"].findAll { it }.unique()
+        androidExt.defaultConfig.applicationId = appId
+        androidExt.productFlavors.configureEach { flavor ->
+            def flavorId = flavor.applicationId
+            def base = flavorId ? stockIds.find { flavorId.startsWith(it + ".") } : null
+            if (base) {
+                flavor.applicationId = appId + flavorId.substring(base.length())
+            } else if (flavorId) {
+                flavor.applicationId = appId + "." + flavor.name.toLowerCase().replaceAll(/[^a-z0-9_]/, "")
+            }
+        }
+        notes << "applicationId ${stockId} -> ${appId}"
+    }
+
+    // Optional version override. versionCodeOverride in the module multiplies this by 10
+    // and adds the ABI digit, as it does for the stock code. This is the APK's version, which
+    // Telegram's servers see; the in-app version string (TMessagesProj's BuildConfig) stays.
+    def versionName = prop("REBRAND_VERSION_NAME")
+    if (versionName) {
+        androidExt.defaultConfig.versionName = versionName
+        notes << "versionName ${versionName}"
+    }
+    def versionCode = prop("REBRAND_VERSION_CODE")
+    if (versionCode) {
+        androidExt.defaultConfig.versionCode = versionCode.toInteger()
+        notes << "versionCode ${versionCode}"
+    }
+
+    // Resource overlay: app name, launcher, splash and notification icons, and the flag that
+    // org.telegram.messenger.multigram.Rebrand reads. Build-type resources win over the main
+    // and flavor source sets and over the TMessagesProj library, so the generated files
+    // replace the stock ones without duplicate errors.
+    if (genRes.isDirectory()) {
+        androidExt.buildTypes.configureEach { bt ->
+            androidExt.sourceSets.maybeCreate(bt.name).res.srcDir(genRes)
+        }
+        // In-app texts come from assets that TelegramStringsTask (buildSrc) builds out of the
+        // strings.xml files, where a later file wins, so the generated names must be the last
+        // input. The build-app plugin registers one such task per variant in onVariants, which
+        // runs in AGP's own afterEvaluate (registered before this script). named().configure
+        // runs after the plugin's own configuration of the task; configureEach would run
+        // before it and let the stock names win.
+        def defaultNames = new File(genRes, "values/rebrand_strings.xml")
+        def localizedNames = project.fileTree(genRes) { include "values-*/rebrand_strings.xml" }
+        project.afterEvaluate {
+            def stringTasks = project.tasks.names.findAll { it ==~ /generate\w+TelegramStrings/ }
+            stringTasks.each { taskName ->
+                project.tasks.named(taskName).configure { task ->
+                    if (task.getClass().name.startsWith("org.telegram.tasks.TelegramStringsTask")) {
+                        task.stringsXml.from(defaultNames)
+                        task.localizationFiles.from(localizedNames)
+                    }
+                }
+            }
+            if (stringTasks) {
+                logger.lifecycle("[rebrand] ${project.path}: app name added to ${stringTasks.size()} TelegramStrings task(s)")
+            } else {
+                logger.warn("[rebrand] ${project.path}: no generate*TelegramStrings task found, " +
+                        "the bundled in-app strings keep the stock app name")
+            }
+        }
+        notes << "app name '${prop("REBRAND_APP_NAME")}' and icons from ${genRes}"
+    }
+
+    // Signing: every signing config uses the rebrand key. A missing keystore stops the build:
+    // the module's fallback is TMessagesProj/config/test.keystore, a public key, and an APK
+    // of this identity signed with it could be "updated" by anyone who has the source.
+    def keystore = prop("REBRAND_KEYSTORE")
+    if (keystore) {
+        def keystoreFile = fromRoot(keystore)
+        if (keystoreFile.isFile()) {
+            def alias = prop("REBRAND_KEY_ALIAS")
+            def storePassword = prop("REBRAND_STORE_PASSWORD")
+            def keyPassword = prop("REBRAND_KEY_PASSWORD")
+            androidExt.signingConfigs.configureEach { sc ->
+                sc.storeFile = keystoreFile
+                sc.storePassword = storePassword
+                sc.keyAlias = alias
+                sc.keyPassword = keyPassword
+            }
+            notes << "signing key ${keystoreFile}"
+        } else if (prop("REBRAND_ALLOW_STOCK_SIGNING") == "true") {
+            logger.warn("[rebrand] ${project.path}: keystore ${keystoreFile} not found; REBRAND_ALLOW_STOCK_SIGNING=true, " +
+                    "so the module's own signing config stays. Never distribute this APK.")
+        } else {
+            throw new GradleException("[rebrand] signing keystore ${keystoreFile} (REBRAND_KEYSTORE in " +
+                    "multigram/rebrand/rebrand.properties) not found. Put the keystore back, or run " +
+                    "${rerun} (without --keystore that makes a new key, so installed builds cannot be " +
+                    "updated). For a compile-only check, set REBRAND_ALLOW_STOCK_SIGNING=true.")
+        }
+    } else {
+        def publicKeys = androidExt.signingConfigs.findAll { sc ->
+            sc.storeFile != null && sc.storeFile.isFile() && sc.storeFile.canonicalPath.startsWith(rootDir.canonicalPath + File.separator)
+        }.collect { it.storeFile.name }.unique()
+        if (publicKeys) {
+            logger.warn("[rebrand] ${project.path}: no rebrand key (--no-keystore); signing with ${publicKeys.join(", ")} " +
+                    "from the source tree, which anyone can use. Never distribute this APK; " +
+                    "set RELEASE_KEYSTORE_FILE to your own key.")
+        }
+    }
+
+    // The account type is patched into three source files by generate_rebrand.py. They must
+    // agree with each other, or contact sync breaks: refuse to build a half-patched tree.
+    def accountType = prop("REBRAND_ACCOUNT_TYPE")
+    if (accountType) {
+        def expected = [
+            (accountFiles[0]): "\"${accountType}\"",
+            (accountFiles[1]): "android:accountType=\"${accountType}\"",
+            (accountFiles[2]): "android:accountType=\"${accountType}\""
+        ]
+        def stale = expected.findAll { f, text -> !f.isFile() || !f.getText("UTF-8").contains(text.toString()) }
+        if (!stale && contactsFile.getText("UTF-8").contains("\"org.telegram.messenger\"")) {
+            stale = [(contactsFile): "no stock literal"]
+        }
+        if (stale) {
+            def names = stale.keySet()*.name.join(", ")
+            throw new GradleException("[rebrand] account type ${accountType} is not in place in ${names}. " +
+                    "Run ${rerun} to patch it again (without --keystore that also makes a new signing " +
+                    "key), or python3 multigram/rebrand/generate_rebrand.py --clean.")
+        }
+        notes << "account type ${accountType}"
+
+        // The account's "Account settings" entry (xml/auth_menu.xml in TMessagesProj) opens
+        // LaunchActivity in android:targetPackage, which the library sets to
+        // org.telegram.messenger, i.e. another app. Each variant installs under its own id
+        // (.beta, .web, .test), so a generated copy per variant names that id.
+        def authMenu = new File(libMain, "res/xml/auth_menu.xml")
+        if (authMenu.isFile()) {
+            def components = project.extensions.getByName("androidComponents")
+            components.onVariants(components.selector().all(), { variant ->
+                def cap = variant.name.substring(0, 1).toUpperCase() + variant.name.substring(1)
+                def menuTask = project.tasks.register("generate${cap}RebrandAuthMenu", RebrandAuthMenuTask) { t ->
+                    t.template.set(authMenu)
+                    t.targetPackage.set(variant.applicationId)
+                    t.outputDirectory.set(project.layout.buildDirectory.dir("generated/multigramRebrand/${variant.name}/res"))
+                }
+                variant.sources.res.addGeneratedSourceDirectory(menuTask, { t -> t.outputDirectory })
+            } as Action)
+            notes << "xml/auth_menu.xml per variant, targetPackage = the variant's applicationId"
+        }
+    }
+
+    notes.each { logger.lifecycle("[rebrand] ${project.path}: ${it}") }
+}
+
+// Writes the library's xml/auth_menu.xml with android:targetPackage set to one variant's
+// applicationId, into a generated resource directory of that variant (an app resource, so
+// it replaces the library's file).
+abstract class RebrandAuthMenuTask extends DefaultTask {
+    @InputFile
+    @PathSensitive(PathSensitivity.NONE)
+    abstract RegularFileProperty getTemplate()
+
+    @Input
+    abstract Property<String> getTargetPackage()
+
+    @OutputDirectory
+    abstract DirectoryProperty getOutputDirectory()
+
+    @TaskAction
+    void generate() {
+        def text = template.get().asFile.getText("UTF-8")
+        def replacement = java.util.regex.Matcher.quoteReplacement("android:targetPackage=\"${targetPackage.get()}\"")
+        def xmlDir = new File(outputDirectory.get().asFile, "xml")
+        xmlDir.mkdirs()
+        new File(xmlDir, "auth_menu.xml").setText(text.replaceAll(/android:targetPackage="[^"]*"/, replacement), "UTF-8")
+    }
+}
