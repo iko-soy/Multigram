@@ -1494,6 +1494,7 @@ public class PeerColorActivity extends BaseFragment implements NotificationCente
         Theme.ThemeAccent accent = themeInfo.getAccent(false);
         if (accent != null) {
             accent.fillAccentColors(themeColors, currentColors);
+            org.telegram.messenger.multigram.PaletteFix.applyToColorMap(themeInfo, accent, currentColors); // MultiGram: on-accent contrast rule
         }
 
         if (namePage != null && namePage.messagesCellPreview != null) {

@@ -2580,6 +2580,7 @@ public class ChannelColorActivity extends BaseFragment implements NotificationCe
             Theme.ThemeAccent accent = themeInfo.getAccent(false);
             if (accent != null) {
                 accent.fillAccentColors(themeColors, currentColors);
+                org.telegram.messenger.multigram.PaletteFix.applyToColorMap(themeInfo, accent, currentColors); // MultiGram: on-accent contrast rule
             }
         }
         dividerPaint.setColor(Theme.getColor(Theme.key_divider, resourceProvider));
