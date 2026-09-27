@@ -15509,7 +15509,7 @@ public class ChatActivityEnterView extends FrameLayout implements
                 }
                 canvas.clipPath(path);
                 if (loadingShown > 0) {
-                    loadingPaint.setColor(0xFFFFFFFF);
+                    loadingPaint.setColor(multigramGlyphColor != 0 ? multigramGlyphColor : 0xFFFFFFFF); // MultiGram: was 0xFFFFFFFF
                     loadingPaint.setAlpha((int) (0xFF * loadingShown));
                     final float R = dp(8.66f);
                     AndroidUtilities.rectTmp.set(right - w / 2.0f - R, cy - R, right - w / 2.0f + R, cy + R);
@@ -15672,15 +15672,20 @@ public class ChatActivityEnterView extends FrameLayout implements
         }
 
         private int drawableColor;
+        private int multigramGlyphColor; // MultiGram: glyph colour on the fill for generated styles, 0 = stock
 
         public void updateColors() {
-            int color = isNewDesignSendButton ? Color.WHITE : Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider);
-            if (color != drawableColor) {
+            int glyph = org.telegram.messenger.multigram.PaletteFix.getGlyphColorOnFill(isNewDesignSendButton ? Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider) : shouldDrawBackground() ? getFillColor() : 0); // MultiGram: readable glyph on generated accent fills
+            int color = isNewDesignSendButton ? (glyph != 0 ? glyph : Color.WHITE) : Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider); // MultiGram: was Color.WHITE for the new design
+            if (color != drawableColor || glyph != multigramGlyphColor) { // MultiGram: was color != drawableColor
                 drawableColor = color;
+                multigramGlyphColor = glyph; // MultiGram
                 drawable.setColorFilter(new PorterDuffColorFilter(color, PorterDuff.Mode.SRC_IN));
                 int c = Theme.getColor(Theme.key_glass_defaultIcon, resourcesProvider);
                 inactiveDrawable.setColorFilter(new PorterDuffColorFilter(Color.argb(0xb4, Color.red(c), Color.green(c), Color.blue(c)), PorterDuff.Mode.SRC_IN));
-                drawableInverse.setColorFilter(new PorterDuffColorFilter(Theme.getColor(Theme.key_chat_messagePanelVoicePressed, resourcesProvider), PorterDuff.Mode.SRC_IN));
+                drawableInverse.setColorFilter(new PorterDuffColorFilter(glyph != 0 ? glyph : Theme.getColor(Theme.key_chat_messagePanelVoicePressed, resourcesProvider), PorterDuff.Mode.SRC_IN)); // MultiGram: was the voicePressed colour only
+                count.setTextColor(glyph != 0 && !isNewDesignSendButton ? glyph : 0xFFFFFFFF); // MultiGram: counter digits on the fill (old design)
+                priceText.setTextColor(glyph != 0 ? glyph : 0xFFFFFFFF); // MultiGram: star price on the fill
             }
             if (isNewDesignSendButton) {
                 backgroundPaint.setColor(Theme.getColor(Theme.key_chat_messagePanelSend, resourcesProvider));
