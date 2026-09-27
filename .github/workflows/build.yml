@@ -1,0 +1,10 @@
+name: Build MultiGram
+
+on:
+  workflow_dispatch:
+
+jobs:
+  placeholder:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "The build job is added in the next commit."
