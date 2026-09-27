@@ -34,6 +34,8 @@ import java.util.zip.CRC32;
  *   <li>{@link #shuffle}: "Shuffle my style" in Chat Settings: new seed, new style, applied at once, with
  *       {@link #undoShuffle} for a few seconds afterwards. {@link #resetToGeneratedStyle}: "Reset to defaults" also
  *       returns to the install's generated style (stock Chat Settings only resets text size and bubble radius).</li>
+ *   <li>{@link StyleKnobs} (shapes and chat list layout from the same seed) is updated right before Shuffle, Undo and
+ *       Reset show the style, because the theme switch reloads the wallpaper synchronously; listeners run after.</li>
  * </ul>
  *
  * The generated accents are local only: {@link #isGenerated} marks them, and the upload and share paths refuse them.
@@ -360,6 +362,7 @@ public final class RandomStyle {
                 previous.shuffledSeed = seed;
             }
             undo = previous;
+            StyleKnobs.onStyleApplying(seed); // before the theme switch, which reloads the wallpaper at once
             show(pair);
             notifyListeners(seed, REASON_SHUFFLE);
             return true;
@@ -401,6 +404,7 @@ public final class RandomStyle {
             putStyle(editor, DAY, u.day, u.dayIndex);
             putStyle(editor, NIGHT, u.night, u.nightIndex);
             putPair(editor, pair).commit();
+            StyleKnobs.onStyleApplying(u.seed);
             show(pair);
             notifyListeners(u.seed, REASON_UNDO);
             return true;
@@ -430,6 +434,7 @@ public final class RandomStyle {
                 return false;
             }
             putPair(p.edit(), pair).commit();
+            StyleKnobs.onStyleApplying(p.getLong(KEY_SEED, 0));
             show(pair);
             notifyListeners(p.getLong(KEY_SEED, 0), REASON_RESET);
             return true;
