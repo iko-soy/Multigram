@@ -428,10 +428,10 @@ public class UniversalRecyclerView extends RecyclerListView {
     }
 
     public void setSections() {
-        setSections(dp(12), dp(16), false);
+        setSections(dp(12), org.telegram.messenger.multigram.StyleKnobs.sectionRadius(dp(16)), false); // MultiGram: this install's card corners, as in RecyclerListView
     }
     public void setSections(boolean topPadding) {
-        setSections(dp(12), dp(16), topPadding);
+        setSections(dp(12), org.telegram.messenger.multigram.StyleKnobs.sectionRadius(dp(16)), topPadding); // MultiGram: this install's card corners, as in RecyclerListView
     }
     public void setSections(int padding, float roundRadius, boolean topPadding) {
         super.setSections(

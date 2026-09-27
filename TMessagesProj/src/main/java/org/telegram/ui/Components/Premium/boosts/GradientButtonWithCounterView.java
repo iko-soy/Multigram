@@ -26,6 +26,7 @@ public class GradientButtonWithCounterView extends ButtonWithCounterView {
         flickerDrawable.animationSpeedScale = 1.2f;
         flickerDrawable.drawFrame = false;
         flickerDrawable.repeatProgress = 4f;
+        setRoundRadius(8); // MultiGram: stock 8dp corners, which the gradient and shimmer below are drawn with (StyleKnobs.ctaRadiusDp would change only the background and ripple)
     }
 
     @Override
