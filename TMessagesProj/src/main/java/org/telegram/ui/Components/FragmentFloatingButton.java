@@ -70,7 +70,7 @@ public class FragmentFloatingButton extends FrameLayout implements FactorAnimato
 
         ScaleStateListAnimator.apply(this);
         if (!isSubButton) {
-            setOutlineProvider(ViewOutlineProviderImpl.BOUNDS_OVAL);
+            setOutlineProvider(android.view.ViewOutlineProvider.BACKGROUND); // MultiGram: the shadow follows the background, a circle or this install's rounded square (stock: BOUNDS_OVAL)
             setTranslationZ(dpf2(0.5f));
         }
 
@@ -157,13 +157,14 @@ public class FragmentFloatingButton extends FrameLayout implements FactorAnimato
             iBlur3Background.updateColors();
             invalidate();
 
-            int rad = dp(18);
+            int rad = org.telegram.messenger.multigram.StyleKnobs.floatingSubButtonRadius(dp(18)); // MultiGram: same shape as the main button
+            iBlur3Background.setRadius(rad); // MultiGram: the constructor's dp(18), updated after a Shuffle
             int pressedColor = Theme.getColor(Theme.key_listSelector, resourcesProvider);
             setBackground(Theme.createInsetRoundRectDrawable(pressedColor, rad, dp(6)));
         } else {
             imageView.setColorFilter(Theme.getColor(Theme.key_chats_actionIcon, resourcesProvider), PorterDuff.Mode.SRC_IN);
             progressView.setProgressColor(Theme.getColor(Theme.key_chats_actionIcon, resourcesProvider));
-            setBackground(Theme.createSimpleSelectorCircleDrawable(dp(48),
+            setBackground(org.telegram.messenger.multigram.StyleKnobs.floatingButtonBackground(dp(48), // MultiGram: a circle or this install's rounded square (stock: Theme.createSimpleSelectorCircleDrawable)
                 Theme.getColor(Theme.key_featuredStickers_addButton, resourcesProvider),
                 Theme.getColor(Theme.key_featuredStickers_addButtonPressed, resourcesProvider)
             ));
