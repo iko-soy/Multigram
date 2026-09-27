@@ -202,7 +202,7 @@ public class DarkThemeResourceProvider implements Theme.ResourcesProvider {
         if (!debugUnknownKeys.contains(key)) {
             debugUnknownKeys.add(key);
         }
-        return Theme.getColor(key);
+        return org.telegram.messenger.multigram.PaletteFix.getOverrideFallbackColor(sparseIntArray, key); // MultiGram: was Theme.getColor(key); marks on fills overridden here stay readable
     }
 
     Drawable msgOutMedia;

@@ -676,7 +676,7 @@ public class Theme {
                     }
                 }
             }
-            if (!isMyMessagesGradientColorsNear) {
+            if (!isMyMessagesGradientColorsNear || org.telegram.messenger.multigram.PaletteFix.isRuntimeAccent(this)) { // MultiGram: runtime accents (generated/custom) always get readable black/white out-bubble texts
                 if (myMessagesGradientAccentColor1 != 0) {
                     int textColor;
                     int subTextColor;
@@ -1041,6 +1041,7 @@ public class Theme {
             SparseIntArray currentColorsNoAccent = getThemeFileValues(null, parentTheme.assetName, null);
             SparseIntArray currentColors = currentColorsNoAccent.clone();
             fillAccentColors(currentColorsNoAccent, currentColors);
+            org.telegram.messenger.multigram.PaletteFix.applyToColorMap(parentTheme, this, currentColors); // MultiGram: on-accent contrast rule
 
             String wallpaperLink = null;
 
@@ -3884,6 +3885,7 @@ public class Theme {
         themeAccentExclusionKeys.add(key_stories_circle_dialog2);
         themeAccentExclusionKeys.add(key_stories_circle_closeFriends1);
         themeAccentExclusionKeys.add(key_stories_circle_closeFriends2);
+        org.telegram.messenger.multigram.PaletteFix.addAccentExclusions(themeAccentExclusionKeys); // MultiGram: neutral greys stay readable under any accent
 
 
         themes = new ArrayList<>();
@@ -6105,6 +6107,7 @@ public class Theme {
         }
         applyCalculatedTableColors(currentColorsNoAccent, currentColors, currentTheme.isDark());
         applyCalculatedArticleCodeColors(currentColorsNoAccent, currentColors, currentTheme.isDark());
+        org.telegram.messenger.multigram.PaletteFix.applyToCurrentColors(currentTheme, accent, currentColors); // MultiGram: on-accent contrast rule
         if (!messages) {
             boolean async = !(LaunchActivity.getLastFragment() instanceof ChatActivity);
             reloadWallpaper(async);
@@ -7248,7 +7251,7 @@ public class Theme {
             size = 0;
             FileLog.e(e);
         }
-        if (!file.exists() || size != 0 && file.length() != size) {
+        if (!file.exists() || size != 0 && file.length() != size || org.telegram.messenger.multigram.PaletteFix.isStaleAssetCopy(file)) { // MultiGram: also re-copy after an app update (same-size .attheme edits)
             try (InputStream in = ApplicationLoader.applicationContext.getAssets().open(assetName)) {
                 AndroidUtilities.copyFile(in, file);
             } catch (Exception e) {
