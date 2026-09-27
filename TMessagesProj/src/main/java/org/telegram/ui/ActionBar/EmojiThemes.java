@@ -472,6 +472,7 @@ public class EmojiThemes {
             if (isGiftTheme() && accent.parentTheme != null && accent.parentTheme.isLight()) {
                 accent.resetAccentColorsForMyMessagesGiftThemeLight(currentColors);
             }
+            org.telegram.messenger.multigram.PaletteFix.applyToColorMap(themeInfo, accent, currentColors); // MultiGram: on-accent contrast rule
         } else {
             currentColors = currentColorsNoAccent;
         }
