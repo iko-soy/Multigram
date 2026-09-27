@@ -2,9 +2,93 @@ name: Build MultiGram
 
 on:
   workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch, tag or commit to build
+        default: multigram
+        required: true
+      apk:
+        description: Also build a full release APK (slow, compiles the native code)
+        type: boolean
+        default: false
+  workflow_call:
+    inputs:
+      ref:
+        type: string
+        required: true
+      apk:
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
 
 jobs:
-  placeholder:
+  compile:
+    name: Compile Java and Kotlin
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     steps:
-      - run: echo "The build job is added in the next commit."
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+      - name: Fetch the submodules the Java build needs
+        run: git submodule update --init --depth 1 TMessagesProj/lib/jlatexmath TMessagesProj_Modules/media
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Compile
+        run: |
+          echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g" >> gradle.properties
+          ./gradlew --no-daemon --stacktrace \
+            :TMessagesProj:compileReleaseJavaWithJavac \
+            :TMessagesProj_App:compileAfatReleaseJavaWithJavac
+      - name: Run MultiGram tool checks
+        if: hashFiles('multigram/tools/check.sh') != ''
+        run: bash multigram/tools/check.sh
+
+  apk:
+    name: Release APK
+    if: ${{ inputs.apk }}
+    needs: compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          submodules: true
+      - uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+        with:
+          tool-cache: false
+          android: false
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: nttld/setup-ndk@v1.4.2
+        with:
+          ndk-version: r27c
+          link-to-sdk: true
+      - name: Install NDK for the JNI build
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018"
+      - name: Build
+        env:
+          APP_ID: ${{ secrets.MULTIGRAM_APP_ID }}
+          APP_HASH: ${{ secrets.MULTIGRAM_APP_HASH }}
+        run: |
+          vars=gradle.properties
+          echo "org.gradle.workers.max=1" >> $vars
+          [ -n "$APP_ID" ] && echo "APP_ID=$APP_ID" >> $vars
+          [ -n "$APP_HASH" ] && echo "APP_HASH=$APP_HASH" >> $vars
+          echo "RELEASE_KEYSTORE_FILE=$PWD/TMessagesProj/config/release.keystore" >> $vars
+          sudo apt update
+          sudo apt -y install ninja-build meson nasm gperf pkg-config unzip
+          rustup target add aarch64-linux-android armv7-linux-androideabi i686-linux-android x86_64-linux-android
+          ./gradlew :TMessagesProj_App:assembleAfatRelease
+      - uses: actions/upload-artifact@v4
+        with:
+          name: multigram-apk
+          path: TMessagesProj_App/build/outputs/apk/afat/release/*.apk
