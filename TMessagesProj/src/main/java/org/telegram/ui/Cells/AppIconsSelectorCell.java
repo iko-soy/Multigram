@@ -151,6 +151,7 @@ public class AppIconsSelectorCell extends RecyclerListView implements Notificati
     private void updateIconsVisibility() {
         availableIcons.clear();
         availableIcons.addAll(Arrays.asList(LauncherIconController.LauncherIcon.values()));
+        org.telegram.messenger.multigram.Rebrand.filterLauncherIcons(availableIcons); // MultiGram: a rebranded build offers only its own icon
         if (MessagesController.getInstance(currentAccount).premiumFeaturesBlocked()) {
             for (int i = 0; i < availableIcons.size(); i++) {
                 if (availableIcons.get(i).premium) {

@@ -3509,7 +3509,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 SpannableStringBuilder ssb = new SpannableStringBuilder(getString(R.string.AppName));
                 ssb.setSpan(new ImageSpan(logoDrawable), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 actionBar.setTitle(ssb, statusDrawable);
-                actionBar.setTitle(MessagesController.getGlobalMainSettings().getString("forkCustomTitle", "Fork Client"));
+                // MultiGram: a rebranded build's default title is its own app name.
+                actionBar.setTitle(MessagesController.getGlobalMainSettings().getString("forkCustomTitle", org.telegram.messenger.multigram.Rebrand.defaultTitle("Fork Client")));
                 actionBar.setTitleLongClickListener(v -> {
                     boolean mainTabsHidden = !UserConfig.getInstance(currentAccount).getMainTabsHiddenFork();
                     UserConfig.getInstance(currentAccount).setMainTabsHiddenFork(mainTabsHidden);
