@@ -159,7 +159,9 @@ accents with upload on.
   reopening the screen.
 - **Auto-night.** Stage B and Shuffle never change `selectedAutoNightType`. On a fresh install it stays at the
   stock default: follow the system on API 29 and above, off below.
-- **Avatar shape** and other Forkgram settings are separate preferences and are untouched.
+- **Bubble radius and chat list layout** are Forkgram settings this feature does not touch. The per-install
+  shape knobs in `StyleKnobs` pick them from the same seed (see `multigram/style-knobs/README.md`). The avatar
+  shape is left alone by both.
 - User accents made from scratch, and stock presets, keep uploading and sharing as in stock.
 
 ## Hooks in upstream files
@@ -203,13 +205,14 @@ derive its value with `deriveSeed(getSeed(), "<knob name>")`, and store the resu
 Existing installs have no seed until they shuffle, so a knob should keep its stock value for them. On
 `REASON_SHUFFLE` and `REASON_UNDO` a knob re-derives from the seed it is given (Undo restores the previous one). On
 `REASON_RESET` the seed is unchanged. The listener runs after Chat Settings' own reset of font size and bubble
-radius (17): a knob that owns the bubble radius re-applies its value there.
+radius; the bubble radius that reset picks comes from `StyleKnobs.resetBubbleRadius`.
+
+A knob whose value must be in place before the theme switch (the wallpaper is reloaded synchronously inside it)
+cannot use a listener. `StyleKnobs.onStyleApplying(seed)` is called directly by Shuffle, Undo and Reset just
+before they show the new pair; see `multigram/style-knobs/README.md`.
 
 Not implemented here, left to the knobs work (research: `random-style/style-knobs.json`):
 
-- **wallpaper-phase** (starting phase 0-7 of the generated 3-4 colour gradient). Today every start draws it at
-  phase 0, as stock does. It needs `Theme.previousPhase` (private, memory only) seeded at start and after a
-  Shuffle, which is one more Theme hook; derive it with `deriveSeed(getSeed(), "wallpaper-phase") & 7`.
 - **style-consumers-outside-theme** (notification accent). `getStyle(false).accent` is readable from the push
   path without loading Theme (StyleTable never touches it); remap it to the knob's OKLCH band there.
 
