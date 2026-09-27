@@ -9275,6 +9275,7 @@ public class Theme {
         } else {
             previousPhase = 0;
         }
+        previousPhase = org.telegram.messenger.multigram.StyleKnobs.wallpaperPhase(previousPhase, wallpaper instanceof MotionBackgroundDrawable); // MultiGram: the gradient starts at this install's phase, not always at 0
         wallpaper = null;
         themedWallpaper = null;
         loadWallpaper(async);
