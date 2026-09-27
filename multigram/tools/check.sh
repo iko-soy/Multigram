@@ -17,6 +17,12 @@ if [ -f multigram/tools/random_style_check.py ]; then
   python3 multigram/tools/random_style_check.py
 fi
 
+if [ -f multigram/tools/style_knobs_check.py ]; then
+  # Per-install shapes and chat list layout: hooks and their placement, owned settings only, safe ranges.
+  echo "== style knobs: hooks, owned settings and safe ranges"
+  python3 multigram/tools/style_knobs_check.py
+fi
+
 echo "== style table: format and readability on the current theme sources"
 python3 multigram/tools/check_style_table.py
 

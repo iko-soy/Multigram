@@ -368,6 +368,7 @@ public class ApplicationLoader extends Application {
             applicationContext = getApplicationContext();
         }
         org.telegram.messenger.multigram.RandomStyle.onApplicationCreate(applicationContext); // MultiGram: per-install style seed, before anything touches Theme
+        org.telegram.messenger.multigram.StyleKnobs.onApplicationCreate(applicationContext); // MultiGram: per-install shapes and chat list layout, before SharedConfig and Theme read them
 
         NativeLoader.initNativeLibs(ApplicationLoader.applicationContext);
 
