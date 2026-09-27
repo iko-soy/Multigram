@@ -4280,6 +4280,7 @@ public class Theme {
                 oldEditor.commit();
                 oldEditorNew.commit();
             }
+            applyingTheme = org.telegram.messenger.multigram.RandomStyle.onThemeInit(applyingTheme); // MultiGram: a fresh install gets its generated style before the first frame
 
             selectedAutoNightType = preferences.getInt("selectedAutoNightType", Build.VERSION.SDK_INT >= 29 ? AUTO_NIGHT_TYPE_SYSTEM : AUTO_NIGHT_TYPE_NONE);
             autoNightScheduleByLocation = preferences.getBoolean("autoNightScheduleByLocation", false);
@@ -6447,6 +6448,8 @@ public class Theme {
     public static ThemeInfo getCurrentTheme() {
         return currentDayTheme != null ? currentDayTheme : defaultTheme;
     }
+
+    public static void setCurrentDayTheme(ThemeInfo theme) { currentDayTheme = theme; } // MultiGram: "Shuffle my style" sets the day theme while the night theme is showing
 
     public static ThemeInfo getCurrentNightTheme() {
         return currentNightTheme;
