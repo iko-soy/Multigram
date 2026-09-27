@@ -9116,6 +9116,7 @@ public class MessagesController extends BaseController implements NotificationCe
     }
 
     public void saveThemeToServer(Theme.ThemeInfo themeInfo, Theme.ThemeAccent accent) {
+        if (org.telegram.messenger.multigram.RandomStyle.isUploadBlocked(themeInfo, accent)) return; // MultiGram: a generated style never leaves the device
         if (themeInfo == null) {
             return;
         }

@@ -367,6 +367,7 @@ public class ApplicationLoader extends Application {
         if (applicationContext == null) {
             applicationContext = getApplicationContext();
         }
+        org.telegram.messenger.multigram.RandomStyle.onApplicationCreate(applicationContext); // MultiGram: per-install style seed, before anything touches Theme
 
         NativeLoader.initNativeLibs(ApplicationLoader.applicationContext);
 
