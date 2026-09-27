@@ -350,6 +350,7 @@ public class DefaultThemesPreviewCell extends LinearLayout {
     }
 
     public void updateDayNightMode() {
+        org.telegram.messenger.multigram.RandomStyleUi.refreshCustomTile(adapter.items, parentFragment.getCurrentAccount()); // MultiGram: Shuffle, Undo and Reset replace the accents the custom tile points to
         if (currentType == ThemeActivity.THEME_TYPE_BASIC || currentType == TYPE_CUSTOM_LIST) {
             themeIndex = !Theme.isCurrentThemeDay() ? 2 : 0;
         } else {
