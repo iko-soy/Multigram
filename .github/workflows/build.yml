@@ -1,4 +1,5 @@
 name: Build MultiGram
+run-name: Build ${{ inputs.ref }}${{ inputs.apk && ' (APK)' || '' }}
 
 on:
   workflow_dispatch:
