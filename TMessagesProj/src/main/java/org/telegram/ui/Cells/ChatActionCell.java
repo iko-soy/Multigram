@@ -3338,8 +3338,8 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
             backgroundRight = 0;
             lineWidths.clear();
             final int count = textLayout == null ? 0 : textLayout.getLineCount();
-            final int corner = dp(11);
-            final int cornerIn = dp(8);
+            final int corner = org.telegram.messenger.multigram.StyleKnobs.servicePillRadius(dp(11)); // MultiGram: pill corners follow this install's bubble radius
+            final int cornerIn = org.telegram.messenger.multigram.StyleKnobs.servicePillRadius(dp(8)); // MultiGram: scaled with the corner
 
             int prevLineWidth = 0;
             for (int a = 0; a < count; a++) {
@@ -3367,8 +3367,8 @@ public class ChatActionCell extends BaseCell implements DownloadController.FileD
             int x = getMeasuredWidth() / 2;
             int previousLineBottom = 0;
 
-            final int cornerOffset = dp(3);
-            final int cornerInSmall = dp(6);
+            final int cornerOffset = org.telegram.messenger.multigram.StyleKnobs.servicePillCornerOffset(dp(3), corner, dp(11)); // MultiGram: keeps the stock side padding (corner - cornerOffset) when the corner is smaller
+            final int cornerInSmall = org.telegram.messenger.multigram.StyleKnobs.servicePillRadius(dp(6)); // MultiGram: scaled with the corner
             final int cornerRest = corner - cornerOffset;
 
             lineHeights.clear();
