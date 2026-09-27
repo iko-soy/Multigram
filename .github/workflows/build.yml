@@ -42,7 +42,9 @@ jobs:
       - name: Compile
         run: |
           echo "org.gradle.jvmargs=-Xmx6g -XX:MaxMetaspaceSize=1g" >> gradle.properties
-          ./gradlew --no-daemon --stacktrace \
+          # buildNativeDeps compiles ffmpeg, libvpx, dav1d and friends; the Java and Kotlin
+          # compile does not need them, so skip it here (the apk job builds them).
+          ./gradlew --no-daemon --stacktrace -x :TMessagesProj:buildNativeDeps \
             :TMessagesProj:compileReleaseJavaWithJavac \
             :TMessagesProj_App:compileAfatReleaseJavaWithJavac
       - name: Run MultiGram tool checks
