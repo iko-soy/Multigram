@@ -1,0 +1,4 @@
+# Python bytecode and the simulator's parse cache (sim/cache/, keyed by a hash of the theme sources)
+__pycache__/
+*.pyc
+sim/cache/

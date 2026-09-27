@@ -1,0 +1,185 @@
+{
+ "attheme": {
+  "arctic.attheme": {
+   "key_actionBarDefaultSubtitle": 4285626239,
+   "key_chat_inFileInfoText": 4285495168,
+   "key_chat_topPanelMessage": 4285691770,
+   "key_windowBackgroundWhiteGrayText": 4285495170
+  },
+  "bluebubbles.attheme": {
+   "key_actionBarDefaultSubtitle": 4285495169,
+   "key_windowBackgroundWhiteGrayText": 4285822841,
+   "key_windowBackgroundWhiteGrayText2": 4285822841,
+   "key_windowBackgroundWhiteGrayText4": 4285296240
+  },
+  "darkblue.attheme": {
+   "key_actionBarDefaultSubtitle": 2262561535,
+   "key_chat_inFileInfoText": 4286944932,
+   "key_chat_inTimeText": 4286944933,
+   "key_chat_inViews": 4286944932,
+   "key_chat_messagePanelHint": 2312892415,
+   "key_chat_topPanelMessage": 2245850367,
+   "key_chats_attachMessage": 4287466893,
+   "key_chats_date": 4286680730,
+   "key_chats_message": 4286615196,
+   "key_windowBackgroundWhiteGrayText": 4286615196,
+   "key_windowBackgroundWhiteGrayText2": 2079456767,
+   "key_windowBackgroundWhiteGrayText4": 4085091225
+  },
+  "day.attheme": {
+   "key_actionBarDefaultSubtitle": 4285626486,
+   "key_chat_inFileInfoText": 4285295984,
+   "key_chat_inTimeText": 4285295985,
+   "key_chat_inViews": 4285230705,
+   "key_chat_topPanelMessage": 4285626487,
+   "key_windowBackgroundWhiteGrayText": 4285888376
+  },
+  "night.attheme": {
+   "key_actionBarDefaultSubtitle": 2146628338,
+   "key_chat_inFileInfoText": 4287072136,
+   "key_chat_inTimeText": 4286941322,
+   "key_chat_inViews": 4286810252,
+   "key_chat_messagePanelHint": 1979711487,
+   "key_chat_topPanelMessage": 1962934271,
+   "key_chats_date": 4286677120,
+   "key_windowBackgroundWhiteGrayText": 1962934271,
+   "key_windowBackgroundWhiteGrayText2": 1962802687,
+   "key_windowBackgroundWhiteGrayText4": 4285887604
+  }
+ },
+ "defaults": {
+  "key_actionBarDefaultSubtitle": 4285626486,
+  "key_chat_attachCheckBoxCheck": 4278519045,
+  "key_chat_goDownButtonCounter": 4278519045,
+  "key_chat_inContactIcon": 4278519045,
+  "key_chat_inFileInfoText": 4285495168,
+  "key_chat_inMediaIcon": 4278519045,
+  "key_chat_inTimeText": 4285495168,
+  "key_chat_inViews": 4285495168,
+  "key_chat_messagePanelHint": 4285757555,
+  "key_chat_topPanelMessage": 4285626487,
+  "key_chats_actionIcon": 4278519045,
+  "key_chats_date": 4285888376,
+  "key_chats_message": 4285822841,
+  "key_chats_unreadCounterText": 4278519045,
+  "key_checkboxSquareCheck": 4278519045,
+  "key_dialogCheckboxSquareCheck": 4278519045,
+  "key_dialogFloatingIcon": 4278519045,
+  "key_dialogRoundCheckBoxCheck": 4278519045,
+  "key_featuredStickers_buttonText": 4278519045,
+  "key_picker_badgeText": 4278519045,
+  "key_windowBackgroundWhiteGrayText": 4285888376,
+  "key_windowBackgroundWhiteGrayText2": 4285757307,
+  "key_windowBackgroundWhiteGrayText4": 4285492846
+ },
+ "exclusions": [
+  "key_windowBackgroundWhite",
+  "key_windowBackgroundGray",
+  "key_actionBarDefault",
+  "key_dialogBackground",
+  "key_chat_messagePanelBackground",
+  "key_chat_topPanelBackground",
+  "key_chat_inBubble",
+  "key_actionBarDefaultSubmenuBackground",
+  "key_windowBackgroundWhiteGrayText",
+  "key_windowBackgroundWhiteGrayText2",
+  "key_chats_message",
+  "key_chats_date",
+  "key_actionBarDefaultSubtitle",
+  "key_chat_inTimeText",
+  "key_chat_inFileInfoText",
+  "key_chat_messagePanelHint",
+  "key_windowBackgroundWhiteGrayText4",
+  "key_chat_topPanelMessage",
+  "key_chat_inViews",
+  "key_chat_messagePanelIcons"
+ ],
+ "hook": {
+  "muted": {
+   "key": "key_chats_unreadCounterMuted",
+   "pins": [
+    "key_avatar_backgroundArchived",
+    "key_chats_archivePinBackground",
+    "key_chats_archivePullDownBackground",
+    "key_checkboxDisabled"
+   ],
+   "table": {
+    "Arctic Blue": [
+     4285757307,
+     4290692039
+    ],
+    "Blue": [
+     4285757307,
+     4290692039
+    ],
+    "Dark Blue": [
+     4282274403,
+     4284709259
+    ],
+    "Day": [
+     4285757307,
+     4290692039
+    ],
+    "Night": [
+     4282729797,
+     4286019190
+    ]
+   },
+   "text": "key_chats_unreadCounterText"
+  },
+  "near_black": 4278519045,
+  "out_block_custom": true,
+  "pairs": [
+   [
+    "key_chats_actionIcon",
+    "key_chats_actionBackground"
+   ],
+   [
+    "key_chats_unreadCounterText",
+    "key_chats_unreadCounter"
+   ],
+   [
+    "key_featuredStickers_buttonText",
+    "key_featuredStickers_addButton"
+   ],
+   [
+    "key_checkboxSquareCheck",
+    "key_checkboxSquareBackground"
+   ],
+   [
+    "key_dialogRoundCheckBoxCheck",
+    "key_dialogRoundCheckBox"
+   ],
+   [
+    "key_chat_goDownButtonCounter",
+    "key_chat_goDownButtonCounterBackground"
+   ],
+   [
+    "key_dialogCheckboxSquareCheck",
+    "key_dialogCheckboxSquareBackground"
+   ],
+   [
+    "key_chat_attachCheckBoxCheck",
+    "key_chat_attachCheckBoxBackground"
+   ],
+   [
+    "key_chat_inMediaIcon",
+    "key_chat_inLoader"
+   ],
+   [
+    "key_chat_inContactIcon",
+    "key_chat_inContactBackground"
+   ],
+   [
+    "key_picker_badgeText",
+    "key_picker_badge"
+   ],
+   [
+    "key_dialogFloatingIcon",
+    "key_dialogFloatingButton"
+   ]
+  ]
+ },
+ "tag": "canvas-B",
+ "variant": "B"
+}
