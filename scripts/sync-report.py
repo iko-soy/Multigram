@@ -152,8 +152,9 @@ If the log shows a runner or network hiccup, use **Re-run failed jobs** on the r
 ```sh
 git fetch origin
 git switch -C multigram-next origin/multigram-next
-# fix the build, then fold the fix into the MultiGram commit it belongs to:
-git commit -a --fixup=<that commit>
+# fix the build, then fold each fix into the MultiGram commit it belongs to,
+# one fixup per commit, naming that commit's files (PATCH.md 6.3 on the docs branch):
+git commit --fixup=<that commit> -- <its files>
 GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash {snap}
 git push --force origin multigram-next
 ```

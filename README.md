@@ -11,6 +11,10 @@ MultiGram is Forkgram (https://github.com/forkgram/TelegramAndroid) plus a small
 The sync also uses `multigram-next` (the next `multigram`, while it is being checked) and tags
 the `multigram` it replaces as `multigram-before-<version>`.
 
+[PATCH.md](https://github.com/iko-soy/Multigram/blob/docs/PATCH.md) on the `docs` branch says what
+to do after a Telegram update when the sync needs a hand, and lists every MultiGram change with
+the exact code, so the stack can be re-applied by hand.
+
 ## Build
 
 **Actions > Build MultiGram > Run workflow**, ref `multigram`. It compiles the Java and Kotlin
@@ -87,8 +91,8 @@ belongs to:
 ```sh
 git fetch origin
 git switch -C multigram-next origin/multigram-next
-# edit, then:
-git commit -a --fixup=<the MultiGram commit it belongs to>
+# edit, then, once per MultiGram commit your fix touches (name only that commit's files):
+git commit --fixup=<the MultiGram commit it belongs to> -- <its files>
 GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash origin/forkgram
 git push --force origin multigram-next
 ```
