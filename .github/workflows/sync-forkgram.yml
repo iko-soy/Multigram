@@ -1,0 +1,177 @@
+name: Sync with Forkgram
+run-name: Sync with Forkgram${{ inputs.use_next && ' (use multigram-next)' || '' }}${{ inputs.allow_drop && ' (allow drop)' || '' }}${{ inputs.force && ' (force)' || '' }}
+
+# Every 6 hours: snapshot a new Forkgram release onto "forkgram", replay the MultiGram
+# stack onto it as "multigram-next", compile that, and only if it compiles move "multigram"
+# to it. Conflicts and failures go to an issue labelled forkgram-sync; multigram stays as
+# it was. A multigram-next changed by hand is never replaced. See README.md and
+# scripts/sync-forkgram.sh.
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Rebuild multigram-next even without a new Forkgram release (tests the pipeline, or retries after a failed compile)
+        type: boolean
+        default: false
+      use_next:
+        description: Skip the rebase; compile and promote the multigram-next branch you fixed by hand
+        type: boolean
+        default: false
+      allow_drop:
+        description: Only with use_next. Accept a multigram-next that leaves out some of multigram's commits (Forkgram has them now, or you dropped them on purpose)
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: forkgram-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    name: Snapshot Forkgram and replay the stack
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: write # push forkgram, multigram-next and refs/multigram-sync/next
+      issues: read # see whether the report job has anything to do
+    outputs:
+      status: ${{ steps.sync.outputs.status }}
+      message: ${{ steps.sync.outputs.message }}
+      error: ${{ steps.sync.outputs.error }}
+      new_snapshot: ${{ steps.sync.outputs.new_snapshot }}
+      forkgram_commit: ${{ steps.sync.outputs.forkgram_commit }}
+      forkgram_version: ${{ steps.sync.outputs.forkgram_version }}
+      snapshot: ${{ steps.sync.outputs.snapshot }}
+      previous_snapshot: ${{ steps.sync.outputs.previous_snapshot }}
+      multigram: ${{ steps.sync.outputs.multigram }}
+      multigram_base: ${{ steps.sync.outputs.multigram_base }}
+      candidate: ${{ steps.sync.outputs.candidate }}
+      tag_version: ${{ steps.sync.outputs.tag_version }}
+      conflict_commit: ${{ steps.sync.outputs.conflict_commit }}
+      conflict_subject: ${{ steps.sync.outputs.conflict_subject }}
+      conflict_position: ${{ steps.sync.outputs.conflict_position }}
+      conflict_files: ${{ steps.sync.outputs.conflict_files }}
+      conflict_details: ${{ steps.sync.outputs.conflict_details }}
+      dropped: ${{ steps.sync.outputs.dropped }}
+      existing_next: ${{ steps.sync.outputs.existing_next }}
+      forkgram_tip: ${{ steps.sync.outputs.forkgram_tip }}
+      report: ${{ steps.need.outputs.report }}
+    steps:
+      # Blobless: the history and trees of forkgram and multigram come cheap, and file
+      # contents are fetched only when the rebase needs them.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+      - name: Sync
+        id: sync
+        env:
+          FORCE: ${{ inputs.force }}
+          USE_NEXT: ${{ inputs.use_next }}
+          ALLOW_DROP: ${{ inputs.allow_drop }}
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          args=(--remote origin --push)
+          if [ "$FORCE" = true ]; then args+=(--force); fi
+          if [ "$USE_NEXT" = true ]; then args+=(--use-next); fi
+          if [ "$ALLOW_DROP" = true ]; then args+=(--allow-drop); fi
+          bash scripts/sync-forkgram.sh "${args[@]}"
+      # Most scheduled runs find nothing new. Skip the report job then, since every job
+      # costs at least a billed minute: it only has work when an issue is open to close
+      # (up-to-date), or none is open yet (behind).
+      - name: Check whether the report job has anything to do
+        id: need
+        if: steps.sync.outputs.status == 'up-to-date' || steps.sync.outputs.status == 'behind'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          STATUS: ${{ steps.sync.outputs.status }}
+        run: |
+          open=$(gh issue list --label forkgram-sync --state open --json number --jq length) || open=unknown
+          echo "Open forkgram-sync issues: $open"
+          case "$STATUS:$open" in
+            up-to-date:0 | behind:[1-9]*) echo report=no >>"$GITHUB_OUTPUT" ;;
+            *) echo report=yes >>"$GITHUB_OUTPUT" ;;
+          esac
+
+  compile:
+    name: Compile multigram-next
+    needs: sync
+    if: needs.sync.outputs.candidate != ''
+    permissions:
+      contents: read
+    uses: ./.github/workflows/build.yml
+    with:
+      ref: ${{ needs.sync.outputs.candidate }}
+
+  promote:
+    name: Move multigram to multigram-next
+    needs: [sync, compile]
+    if: needs.compile.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write # move multigram, tag its old tip, delete multigram-next
+    outputs:
+      status: ${{ steps.promote.outputs.status }}
+      tag: ${{ steps.promote.outputs.tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+          filter: blob:none
+      - name: Promote
+        id: promote
+        env:
+          CANDIDATE: ${{ needs.sync.outputs.candidate }}
+          PREVIOUS: ${{ needs.sync.outputs.multigram }}
+          VERSION: ${{ needs.sync.outputs.tag_version }}
+        run: |
+          bash scripts/sync-forkgram.sh promote --remote origin --shallow \
+            --candidate "$CANDIDATE" --previous "$PREVIOUS" --version "$VERSION"
+
+  report:
+    name: Report on the forkgram-sync issue
+    needs: [sync, compile, promote]
+    if: ${{ !cancelled() && needs.sync.outputs.report != 'no' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read # the report script
+      issues: write # open, comment on and close the forkgram-sync issue
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+      - name: Open, update or close the issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SYNC_RESULT: ${{ needs.sync.result }}
+          COMPILE_RESULT: ${{ needs.compile.result }}
+          PROMOTE_RESULT: ${{ needs.promote.result }}
+          PROMOTE_TAG: ${{ needs.promote.outputs.tag }}
+          SYNC_STATUS: ${{ needs.sync.outputs.status }}
+          SYNC_MESSAGE: ${{ needs.sync.outputs.message }}
+          SYNC_ERROR: ${{ needs.sync.outputs.error }}
+          SYNC_FORKGRAM_COMMIT: ${{ needs.sync.outputs.forkgram_commit }}
+          SYNC_FORKGRAM_VERSION: ${{ needs.sync.outputs.forkgram_version }}
+          SYNC_SNAPSHOT: ${{ needs.sync.outputs.snapshot }}
+          SYNC_PREVIOUS_SNAPSHOT: ${{ needs.sync.outputs.previous_snapshot }}
+          SYNC_MULTIGRAM_BASE: ${{ needs.sync.outputs.multigram_base }}
+          SYNC_CANDIDATE: ${{ needs.sync.outputs.candidate }}
+          SYNC_CONFLICT_COMMIT: ${{ needs.sync.outputs.conflict_commit }}
+          SYNC_CONFLICT_SUBJECT: ${{ needs.sync.outputs.conflict_subject }}
+          SYNC_CONFLICT_POSITION: ${{ needs.sync.outputs.conflict_position }}
+          SYNC_CONFLICT_FILES: ${{ needs.sync.outputs.conflict_files }}
+          SYNC_CONFLICT_DETAILS: ${{ needs.sync.outputs.conflict_details }}
+          SYNC_DROPPED: ${{ needs.sync.outputs.dropped }}
+          SYNC_EXISTING_NEXT: ${{ needs.sync.outputs.existing_next }}
+          SYNC_FORKGRAM_TIP: ${{ needs.sync.outputs.forkgram_tip }}
+        run: python3 scripts/sync-report.py
