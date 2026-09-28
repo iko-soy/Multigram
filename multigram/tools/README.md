@@ -237,6 +237,9 @@ represented (288-387 entries per range and theme); bubbles 1/2/3/4 colours about
    placement, its privacy guards, strings and backup policy (`multigram/random-style/README.md`).
    `style_knobs_check.py`, when the tree has it: the style knobs' hooks and their placement, the settings
    they may write and their safe ranges (`multigram/style-knobs/README.md`).
+   `hide_search_bar_check.py`, when the tree has it: the "Hide chat list search" option's hooks (bar
+   and header icon) and their placement, the ways into search it leaves stock, every use of the bar
+   height in DialogsActivity reviewed, its one setting and row (`multigram/hide-search-bar/README.md`).
 2. `check_style_table.py`: the format rules above, every record; theme keys must be bundled base themes
    of this tree with the right night flag. Self-tests: the parser must recognise every form of the
    out-text guard (stock, `|| id > 100`, and the palette fix's exact line) with the rest of Theme.java

@@ -9,4 +9,6 @@
     <string name="MultiGramStyleShuffled">New style applied.</string>
     <string name="MultiGramUndoFailed">Couldn\'t bring back your previous style.</string>
     <string name="MultiGramStyleStaysOnDevice">Your generated style stays on this device, so it can\'t be shared or turned into a cloud theme. Pick another color theme first.</string>
+    <string name="MultiGramHideSearchBar">Hide chat list search</string>
+    <string name="MultiGramHideSearchBarInfo">Remove the search bar and the search icon from the chat list.</string>
 </resources>
