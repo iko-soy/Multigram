@@ -878,7 +878,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 h += storiesHeight * (1f - searchAnimationProgress) * (1f - rightSlidingProgress) * (1f - progressToActionMode);
             }
             h += storiesOverscroll;
-            h += dp(SEARCH_FIELD_HEIGHT) * (1f - progressToActionMode) * (1f - searchAnimationProgress) * (1f - rightSlidingProgress);
+            h += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) * (1f - progressToActionMode) * (1f - searchAnimationProgress) * (1f - rightSlidingProgress); // MultiGram: no header band behind a hidden bar
 
             return (int) h;
         }
@@ -1056,8 +1056,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
             tabsYOffset = 0;
             storiesYOffset = 0;
             tabsYOffset -= Math.min(
-                dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(SEARCH_FIELD_HEIGHT) + scrollYOffset,
-                progressToActionMode * (dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(SEARCH_FIELD_HEIGHT))
+                dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) + scrollYOffset, // MultiGram: action mode lifts the tabs by the visible header only
+                progressToActionMode * (dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT))) // MultiGram: same, for the full lift
             );
             storiesYOffset = tabsYOffset;
             if ((rightSlidingDialogContainer != null && rightSlidingDialogContainer.hasFragment())) {
@@ -1083,14 +1083,14 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 if (hasStories) {
                     addH += dp(DialogStoriesCell.HEIGHT_IN_DP);
                 }
-                addH += dp(SEARCH_FIELD_HEIGHT);
+                addH += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: the topics column moves the list up only by the header it covers
                 addH *= rightSlidingDialogContainer.openedProgress;
 
                 viewPages[0].setTranslationY(rightFragmentOffset - addH);
             } else {
                 if (fragmentSearchField != null) {
                     fragmentSearchField.setTranslationY(lerp(
-                        scrollYOffset + tabsYOffset + storiesOverscroll - dp(4),
+                        scrollYOffset + tabsYOffset + storiesOverscroll - dp(4) - dp(SEARCH_FIELD_HEIGHT - org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)), // MultiGram: a hidden bar fades in where a scrolled-away stock bar does
                         -dp(SEARCH_FIELD_HEIGHT + (hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0)),
                         searchAnimationProgress
                     ));
@@ -1182,7 +1182,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         if (hasStories) {
                             h += dp(DialogStoriesCell.HEIGHT_IN_DP);
                         }
-                        h += dp(SEARCH_FIELD_HEIGHT);
+                        h += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: page measured taller by that same amount
                     }
                     h += actionModeAdditionalHeight;
                     if (actionBarColorAnimator == null) {
@@ -2077,7 +2077,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 t += dp(DialogStoriesCell.HEIGHT_IN_DP);
             }
             if (!actionModeFullyShowed) {
-                t += dp(SEARCH_FIELD_HEIGHT);
+                t += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: the first chat starts right under the header
             }
             additionalPadding = 0;
 
@@ -2365,7 +2365,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                         offset += dp(DialogStoriesCell.HEIGHT_IN_DP);
                     }
                     if (backward) {
-                        offset += dp(SEARCH_FIELD_HEIGHT);
+                        offset += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: closing the topics column gives back only the header it took
                         // offset += canShowFilterTabsView ? dp(50) : 0;
                     }
                     if (p >= 0) {
@@ -4223,13 +4223,13 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                                 }
                                 int canScrollDy = -(view.getTop() - pTop) + viewsH;
                                 if (!rightSlidingDialogContainer.hasFragment() && !(actionBar != null && actionBar.isActionModeShowed())) {
-                                    canScrollDy -= dp(SEARCH_FIELD_HEIGHT);
+                                    canScrollDy -= dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: a fling stops at the first chat, not past a hidden bar
                                 }
                                 if (hasStories && (viewPage.scroller.isRunning() || dialogStoriesCell.isExpanded()) && !rightSlidingDialogContainer.hasFragment() && !fixScrollYAfterArchiveOpened) {
                                     canScrollDy += dp(DialogStoriesCell.HEIGHT_IN_DP);
                                 }
                                 if ((viewPage.scroller.isRunning() || dialogStoriesCell.isExpanded()) && !rightSlidingDialogContainer.hasFragment() && !fixScrollYAfterArchiveOpened && !(actionBar != null && actionBar.isActionModeShowed())) {
-                                    canScrollDy += dp(SEARCH_FIELD_HEIGHT);
+                                    canScrollDy += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: pairs with the line above
                                 }
                                 int positiveDy = Math.abs(dy);
                                 if (canScrollDy < positiveDy) {
@@ -5741,6 +5741,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private int getMaxScrollYOffset() {
+        if (org.telegram.messenger.multigram.HideSearchBar.hides(this)) return getMaxScrollYOffsetWithoutSearch(); // MultiGram: the header collapses by the stories only
         if (hasStories) {
             return dp(DialogStoriesCell.HEIGHT_IN_DP) + dp(SEARCH_FIELD_HEIGHT);
         } else {
@@ -6582,6 +6583,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     searchTabsHeight * searchAnimationProgress + tabsYOffset;
         }
         totalOffset += storiesOverscroll;
+        if (org.telegram.messenger.multigram.HideSearchBar.hides(this)) totalOffset -= dp(SEARCH_FIELD_HEIGHT) * (1f - searchAnimationProgress); // MultiGram: tabs and top panels take the bar's place at rest (their layout top in ContentView.onLayout still counts it)
 
         float searchVisibility = 0;
         if (fragmentSearchField != null && fragmentSearchField.getVisibility() == View.VISIBLE) {
@@ -7084,6 +7086,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     @Override
     public void onResume() {
         super.onResume();
+        if (org.telegram.messenger.multigram.HideSearchBar.refresh(this, viewPages)) { setScrollY(Math.max(scrollYOffset, -getMaxScrollYOffset())); invalidateScrollY = true; checkUi_searchFieldVisibility(); checkUi_menuItems(); } // MultiGram: "Hide chat list search" changed while this list was paused: re-derive its header
         if (dialogStoriesCell != null) {
             dialogStoriesCell.onResume();
         }
@@ -9107,7 +9110,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 viewPages[i].listView.cancelClickRunnables(true);
             }
         }
-        translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) + scrollYOffset);
+        translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) + scrollYOffset); // MultiGram: leaving action mode gives back only the header it took
         float finalTranslateListHeight = translateListHeight;
         actionBarColorAnimator = ValueAnimator.ofFloat(progressToActionMode, 0);
         actionBarColorAnimator.addUpdateListener(valueAnimator -> {
@@ -9133,7 +9136,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 invalidateScrollY = true;
                 fixScrollYAfterArchiveOpened = true;
                 fragmentView.invalidate();
-                scrollAdditionalOffset = -(dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) - finalTranslateListHeight);
+                scrollAdditionalOffset = -(dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) - finalTranslateListHeight); // MultiGram: pairs with translateListHeight
                 viewPages[0].setTranslationY(0);
                 for (int i = 0; i < viewPages.length; i++) {
                     if (viewPages[i] != null) {
@@ -10236,7 +10239,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     viewPages[i].listView.cancelClickRunnables(true);
                 }
             }
-            translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) + scrollYOffset);
+            translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) + scrollYOffset); // MultiGram: action mode lifts the list by the visible header only
             if (translateListHeight != 0) {
                 actionModeAdditionalHeight = (int) translateListHeight;
                 fragmentView.requestLayout();
@@ -10263,7 +10266,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     actionBarColorAnimator = null;
                     actionModeAdditionalHeight = 0;
                     actionModeFullyShowed = true;
-                    scrollAdditionalOffset = dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) - finalTranslateListHeight;
+                    scrollAdditionalOffset = dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) - finalTranslateListHeight; // MultiGram: pairs with translateListHeight
                     viewPages[0].setTranslationY(0);
                     for (int i = 0; i < viewPages.length; i++) {
                         if (viewPages[i] != null) {
@@ -14233,7 +14236,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
 
         final int maxScrollWithoutSearch = getMaxScrollYOffsetWithoutSearch();
-        final float alphaByScrollOffset = 1f - MathUtils.clamp((-scrollYOffset - maxScrollWithoutSearch) / dp(SEARCH_FIELD_HEIGHT), 0, 1);
+        final float alphaByScrollOffset = org.telegram.messenger.multigram.HideSearchBar.restAlpha(this, 1f - MathUtils.clamp((-scrollYOffset - maxScrollWithoutSearch) / dp(SEARCH_FIELD_HEIGHT), 0, 1)); // MultiGram: no bar at rest; the field shows only while searching
 
         final float actionModeVisible = Math.max(progressToActionMode, animatorActionModeVisible.getFloatValue());
         final float searchFieldVisible = animatorSearchVisible.getFloatValue();
@@ -14318,7 +14321,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
     }
 
     private void checkUi_itemSearchVisibility() {
-        final float factor0 = isSupportSearch() ? 1 : 0;
+        final float factor0 = isSupportSearch() && !org.telegram.messenger.multigram.HideSearchBar.hides(this) ? 1 : 0; // MultiGram: "no search": no header search icon either
         final float factor1 = animatorSearchButtonVisible.getFloatValue();
         final float factor2 = 1f - getRightSlidingProgress();
         final float factor3 = 1f - animatorDoneButtonVisible.getFloatValue();
