@@ -2,7 +2,7 @@
 
 This guide says how to keep MultiGram working after Telegram, and then Forkgram, release an update.
 
-MultiGram is Forkgram plus six commits of its own. Usually the automatic sync moves those commits onto each new Forkgram release by itself. When it cannot, this guide tells you what to do. It also lists every place where MultiGram edits a Forkgram file, with the exact text, so that you can put each change back by hand.
+MultiGram is Forkgram plus seven commits of its own. Usually the automatic sync moves those commits onto each new Forkgram release by itself. When it cannot, this guide tells you what to do. It also lists every place where MultiGram edits a Forkgram file, with the exact text, so that you can put each change back by hand.
 
 ## 1. About this document
 
@@ -10,11 +10,11 @@ MultiGram is Forkgram plus six commits of its own. Usually the automatic sync mo
 
 | | |
 |---|---|
-| Written for | `multigram` at 4780eb095b |
+| Written for | `multigram` at ff868b3ea4 |
 | Built on | Forkgram 12.10.6 (Forkgram commit b994e1446e), which is Telegram 12.10.5 (DrKLO commit dc780e81e, "update to 12.10.5 (7105)") |
 | Forkgram snapshot | `forkgram` at 4543767655 |
 | Sync scripts | `main` at da0cc7c548 |
-| Date | 2026-09-27 |
+| Date | 2026-09-28 |
 
 Line numbers, counts and outputs in this guide are from that state. When you use it after an update, expect line numbers to have moved. Every hook is therefore described by its content, not only by its line. Section 11 says how to bring this guide up to date.
 
@@ -26,7 +26,7 @@ Output marked "example output" comes from a test with a made-up Forkgram release
 |---|---|
 | Upstream | The code MultiGram builds on: Forkgram, which is Telegram's Android app (DrKLO/Telegram) plus Forkgram's own changes. |
 | Snapshot | A commit on the `forkgram` branch that holds one Forkgram release, without its `.github` folder. |
-| Stack | The six MultiGram commits on top of the snapshot. Together with the snapshot they form the `multigram` branch. |
+| Stack | The seven MultiGram commits on top of the snapshot. Together with the snapshot they form the `multigram` branch. |
 | Hook | A small edit in an upstream file that calls MultiGram code. Most hooks are one line that ends with `// MultiGram: ...`. |
 | New file | A file the stack adds. It never conflicts, but it can stop compiling when an upstream name it uses changes. |
 | Replay | Moving the stack onto a new snapshot with `git rebase`. |
@@ -64,10 +64,10 @@ Output marked "example output" comes from a test with a made-up Forkgram release
 
 ### 1.5 How a hook is described
 
-Section 8 describes each of the 62 hooks in the same way:
+Section 8 describes each of the 84 hooks in the same way:
 
 - **File** and **Where**: the file, the class and method, and (for upstream files) the line where the text starts in Forkgram 12.10.6.
-- **Find this**: text to search for. It is copied from the file, so a plain text search finds it. For K1 and for K18 to K24 it is the text as an earlier stack commit left the file, so it has no Forkgram line number.
+- **Find this**: text to search for. It is copied from the file, so a plain text search finds it. For K1, for K18 to K24 and for H22 it is the text as an earlier stack commit left the file, so it has no Forkgram line number.
 - **Change it to**: the change as a diff, copied from the stack commit. Lines starting with `-` go, lines starting with `+` are added, and the other lines are context that stays.
 - **Why**: what the hook does.
 - **If the code moved**: how to find the right place when the text above is gone.
@@ -83,7 +83,7 @@ Section 8 describes each of the 62 hooks in the same way:
 | No open issue. The last run is green, and `multigram` sits on the new snapshot (see the command below). | The stack moved by itself. | Build an APK and test it (10.4, 10.5). Also re-derive the palette values once (8.2.5, a few seconds): a colour change upstream can make them too weak without any conflict. |
 | An issue "Forkgram sync needs a hand" that says the stack "does not apply" | A conflict: git could not replay one of the commits. | Section 5 |
 | An issue that says "the compile check failed", and the failed step is **Compile** | The Java code no longer compiles. | Section 6 |
-| The same, but the failed step is **Run MultiGram tool checks** | `check.sh` found a problem. | 10.2 |
+| The same, but the failed step is **Run MultiGram tool checks** | `check.sh` found a problem. A line `hide-search-bar: ... unreviewed use of the bar height` asks you to review one upstream line, not to fix a bug. | 10.2; for `unreviewed use of the bar height`, 8.5.5 |
 | The rebase conflicts in many places, or Forkgram moved or rewrote the code around the hooks | Replaying is not practical. | Section 7, with section 8 for each hook |
 | Forkgram released, but there is no run and no issue | The schedule has not run yet, or Forkgram's `dev` branch has not moved. | Section 4.3 (run the sync by hand) |
 | The issue or the run says `next-edited` | A fix of yours on `multigram-next` is waiting. The sync did not replace it. | 4.2 |
@@ -101,7 +101,7 @@ git merge-base --is-ancestor origin/forkgram origin/multigram && echo "multigram
 
 ## 3. The stack at a glance
 
-### 3.1 The six commits
+### 3.1 The seven commits
 
 | Commit | What it does | Upstream files touched | New files | How it is checked |
 |---|---|---|---|---|
@@ -111,22 +111,24 @@ git merge-base --is-ancestor origin/forkgram origin/multigram && echo "multigram
 | 27d32d57b4 Give each install its own random style | Each fresh install picks a day and a night style from the table. Adds "Shuffle my style" to Chat Settings. Generated styles are never uploaded. | 7: `ApplicationLoader.java`, `MessagesController.java`, `Theme.java`, `AlertsCreator.java`, `DefaultThemesPreviewCell.java`, `ThemeActivity.java`, `ThemePreviewActivity.java` (+16 lines; hooks S1–S15) | 6. It also changes `check.sh` and `multigram/tools/README.md`. | `multigram/tools/random_style_check.py` |
 | 3b941c01de Randomise shapes and chat list layout per install | Derives corner radii, the chat list layout and the wallpaper phase from the install's seed. | 10: `ApplicationLoader.java`, `Theme.java`, `ThemeActivity.java`, `ChatActionCell.java`, `FragmentFloatingButton.java`, `GradientButtonWithCounterView.java`, `ReactionsLayoutInBubble.java`, `RecyclerListView.java`, `UniversalRecyclerView.java`, `ButtonWithCounterView.java` (+23 −16 lines; hooks K1–K17) | 3. It also changes `RandomStyle.java` and `RandomStyleUi.java` (hooks K18–K22), `check.sh` (K23), and two READMEs. | `multigram/tools/style_knobs_check.py` |
 | 4780eb095b Run the rebrand self-test in the CI checks | Adds the rebrand self-test to `check.sh`. | none | none. It changes `check.sh` (K24). | `check.sh` itself |
+| ff868b3ea4 Add an option to remove the chat list search bar | "Hide chat list search" in Fork Client Settings removes the search bar and the header search icon from the chat list (the "no search" variant, 8.5.1). Off by default, and then exactly stock. The commit title and the name `HideSearchBar` (class, setting key, string names) come from the first design, which hid only the bar (8.5.4). | 2: `DialogsActivity.java`, `ForkSettingsActivity.java` (+21 −16 lines; hooks H1–H21) | 3. It also changes `check.sh` (H22), `multigram_strings.xml` (two strings) and `multigram/tools/README.md`. | `multigram/tools/hide_search_bar_check.py` |
 
-In total the stack adds 37 new files and touches 30 upstream files:
+In total the stack adds 40 new files and touches 30 upstream files:
 
-- 25 Java or Gradle files: 78 added lines (3 of them blank) and 37 removed lines. Most removed lines are replaced by a changed copy.
+- 25 Java or Gradle files: 99 added lines (3 of them blank) and 53 removed lines. Most removed lines are replaced by a changed copy.
 - 5 `.attheme` files: 36 changed values.
 
-72 of the added lines carry the word `MultiGram`. The other six are the 3 blank lines, and 3 lines whose `// MultiGram:` comment sits on the line above them (hooks R2, R3 and R5).
+93 of the added lines carry the word `MultiGram`. The other six are the 3 blank lines, and 3 lines whose `// MultiGram:` comment sits on the line above them (hooks R2, R3 and R5).
 
 ### 3.2 Why the order matters
 
-Keep the six commits in this order. Later commits build on earlier ones:
+Keep the seven commits in this order. Later commits build on earlier ones:
 
 - 27d32d57b4 needs 5b53859682: `RandomStyle` uses `PaletteFix.LAST_STOCK_ACCENT_ID`, and generated styles are only readable with the palette fix.
 - 27d32d57b4 needs cddd62df98: it reads the style table asset, and it adds a step to `check.sh`, which cddd62df98 creates.
 - 3b941c01de needs 27d32d57b4: `StyleKnobs` uses `RandomStyle`, hook K1 sits on the line after hook S1, and the commit changes `RandomStyle.java` and `RandomStyleUi.java`.
 - 4780eb095b needs d457ac74ae (the self-test) and cddd62df98 (`check.sh`).
+- ff868b3ea4 needs 27d32d57b4, which creates `multigram_strings.xml`, and cddd62df98, which creates `check.sh` and `multigram/tools/README.md`. Its `check.sh` block sits between the knobs block (3b941c01de) and the self-test block (4780eb095b), and its README lines follow the knobs lines (3b941c01de), so it goes last. Its hooks in `DialogsActivity.java` and `ForkSettingsActivity.java` do not depend on the other commits: they apply to plain Forkgram too.
 - The file `overlay_A.json` exists twice: `multigram/palette-fix/overlay_A.json` (from 5b53859682) and `multigram/tools/sim/palette-fix/overlay_A.json` (from cddd62df98). The two copies must stay byte-identical. No script checks this; the `cmp` line in 5.4 does.
 
 ## 4. The automatic sync, briefly
@@ -218,7 +220,7 @@ To see what the sync makes of another source before you change the workflow, run
 bash scripts/sync-forkgram.sh --remote origin --url https://github.com/DrKLO/Telegram --branch master
 ```
 
-On 2026-09-27, with DrKLO's `master` at dc780e81e, it made a snapshot titled `Forkgram 12.10.5 snapshot` (the script says "Forkgram" whatever the source) with a correct `Telegram-Base` line. Then it ended with `status=conflict` at commit 1 of 6: the three conflicts of 9.1. With any new source, expect to settle conflicts with section 5 or 7. Afterwards update the stamp (11.2).
+On 2026-09-27, with DrKLO's `master` at dc780e81e, it made a snapshot titled `Forkgram 12.10.5 snapshot` (the script says "Forkgram" whatever the source) with a correct `Telegram-Base` line. Then it ended with `status=conflict` at commit 1 of 6 (the stack had six commits then): the three conflicts of 9.1. With any new source, expect to settle conflicts with section 5 or 7. Afterwards update the stamp (11.2).
 
 This trial run leaves its snapshot in your local `forkgram` branch, and a trial `multigram-next` if the replay went through. A later local sync that finds nothing new does not reset them. Never push them: 5.1 pushes your local `forkgram`. Put `forkgram` back with `git branch -f forkgram origin/forkgram`. If there is a trial `multigram-next`, delete it with `git branch -D multigram-next`.
 
@@ -237,7 +239,7 @@ git config rerere.enabled true
 git rebase origin/forkgram
 ```
 
-The third line switches on rerere for this clone (5.6). Git replays the six commits one by one. It stops at the first one that conflicts and names the files. If git answers `Current branch multigram-next is up to date.`, `origin/forkgram` is still the old snapshot: `git log -1 --format=%B origin/forkgram` shows which release it holds.
+The third line switches on rerere for this clone (5.6). Git replays the seven commits one by one. It stops at the first one that conflicts and names the files. If git answers `Current branch multigram-next is up to date.`, `origin/forkgram` is still the old snapshot: `git log -1 --format=%B origin/forkgram` shows which release it holds.
 
 `git switch -C` resets a local `multigram-next`. If yours holds work you have not pushed and want to keep, rename it first: `git branch -m multigram-next my-fix`.
 
@@ -248,7 +250,7 @@ The issue shows a longer form, `git rebase --onto <new snapshot> <old snapshot>`
 Example output, from a test with a made-up Forkgram 12.10.7 that changed the line under hook S2:
 
 ```text
-Rebasing (1/6)Rebasing (2/6)Rebasing (3/6)Rebasing (4/6)Auto-merging TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java
+Rebasing (1/7)Rebasing (2/7)Rebasing (3/7)Rebasing (4/7)Auto-merging TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java
 CONFLICT (content): Merge conflict in TMessagesProj/src/main/java/org/telegram/messenger/MessagesController.java
 error: could not apply 27d32d57b4... Give each install its own random style
 ```
@@ -276,7 +278,7 @@ How to read it:
 How to fix it depends on the hook. Its "Change it to" block in section 8 shows which kind it is:
 
 - **The hook only adds lines** (the block has no `-` line), as S2 here. Keep Forkgram's new code and put the MultiGram line back where the hook's "Where" says. If Forkgram added a line at the same spot, the hook's "Where" and "If the code moved" say which comes first. For example, P11 goes after every calculated-colour call, and S10 goes directly after `themeListRow2 = rowCount++;`.
-- **The hook replaces an upstream line** (the block has a `-` line), as R2 to R4, P1 to P6, P8, P12, P14, P15, P18, K3 to K7, K9 to K14 and K16. Take Forkgram's new line and make the MultiGram change to it again. Keep only that one line, not both. For example, if Forkgram changed the default title from `"Fork Client"` to `"Forkgram"`, R2 becomes `getString("forkCustomTitle", org.telegram.messenger.multigram.Rebrand.defaultTitle("Forkgram"))`. For the colour lines of P1 to P6, 5.3 says what to do.
+- **The hook replaces an upstream line** (the block has a `-` line), as R2 to R4, P1 to P6, P8, P12, P14, P15, P18, K3 to K7, K9 to K14, K16, H1 to H10, H14 to H18 and H21. Take Forkgram's new line and make the MultiGram change to it again. Keep only that one line, not both. For example, if Forkgram changed the default title from `"Fork Client"` to `"Forkgram"`, R2 becomes `getString("forkCustomTitle", org.telegram.messenger.multigram.Rebrand.defaultTitle("Forkgram"))`. For the colour lines of P1 to P6, 5.3 says what to do.
 - Delete the three marker lines.
 
 Four hooked files end without a final newline: `assets/arctic.attheme`, `assets/day.attheme`, `ui/Components/RecyclerListView.java` and `ui/PeerColorActivity.java`. Keep it that way. Many editors add one when they save (in vim, `:set nofixendofline` stops that). Check with `git diff`: it must not show the last line as changed. An added newline makes `palette_fix_check.py --base` report `unexpected arctic.attheme change: <last line>`, and `style_knobs_check.py --base` report `added line without a "MultiGram:" marker: }`.
@@ -304,8 +306,8 @@ Repeat until git prints `Successfully rebased and updated refs/heads/multigram-n
 | File | Hooks | A conflict here usually means |
 |---|---|---|
 | `ui/Cells/AppIconsSelectorCell.java` | R1 | Forkgram changed how the app icon list is built. Put the filter call after the list is filled. |
-| `ui/DialogsActivity.java` | R2 | Forkgram changed the chat list title code. Wrap every literal default of `forkCustomTitle` again. |
-| `ui/ForkSettingsActivity.java` | R3, R4 | Forkgram changed its own settings screen. Wrap the custom title defaults again. If the file was renamed, git reports it as deleted: find the new file with `git grep -n '"forkCustomTitle"'`. |
+| `ui/DialogsActivity.java` | R2, H1–H18, H21 | Forkgram changed the chat list title code (R2), or the code of the chat list's header, padding, scrolling, action mode or search field (the H hooks). For R2, wrap every literal default of `forkCustomTitle` again. For an H hook, take Forkgram's new line and make the hook's small change in it again: most only wrap `SEARCH_FIELD_HEIGHT` inside a `dp(...)` (8.5.6). H21 goes on the `factor0` line of `checkUi_itemSearchVisibility`, not on the identical line above it. Then run `hide_search_bar_check.py`: it also names every new use of the bar height. |
+| `ui/ForkSettingsActivity.java` | R3, R4, H19, H20 | Forkgram changed its own settings screen. Wrap the custom title defaults again. Put the "Hide chat list search" row back right after the Disable Global Search row (H19), and its click hook right after `final int id = item.id;` in `onClick` (H20). If the file was renamed, git reports it as deleted: find the new file with `git grep -n '"forkCustomTitle"'`. |
 | `TMessagesProj_App/build.gradle` | R5 | Forkgram added lines at the end of the file. Keep them, and keep the `apply from:` line last. |
 | `ui/ActionBar/ThemeColors.java` | P1 | Forkgram changed a stock colour next to, or on, one of the 11 grey lines. Take MultiGram's line for the 11 keys that carry `// MultiGram: contrast fix`, and Forkgram's line for every other key. The simulator is not in the tree at this stop (it comes with cddd62df98), so re-derive the values after the rebase (5.4). |
 | `assets/*.attheme` (5 files) | P2–P6 | Forkgram changed a colour of a bundled theme. As for ThemeColors: MultiGram's value for the keys of P2 to P6, Forkgram's for all others, and re-derive after the rebase. |
@@ -340,15 +342,16 @@ bash multigram/tools/check.sh
 python3 multigram/tools/palette_fix_check.py --base origin/forkgram
 python3 multigram/tools/random_style_check.py --base origin/forkgram
 python3 multigram/tools/style_knobs_check.py --base origin/forkgram
+python3 multigram/tools/hide_search_bar_check.py --base origin/forkgram
 git grep -n -e 'multigram\.Rebrand\.' -e 'multigram/rebrand/rebrand.gradle' -- TMessagesProj TMessagesProj_App
 git grep -n '"forkCustomTitle"' -- TMessagesProj/src/main/java
 cmp multigram/palette-fix/overlay_A.json multigram/tools/sim/palette-fix/overlay_A.json && echo "overlay copies identical"
 ```
 
 - `check.sh` must end with `== all MultiGram checks passed` (about 1 to 3 minutes; section 10.2 explains each part).
-- Each of the three Python checks must print one line ending in `OK`. With `--base`, `random_style_check.py` and `style_knobs_check.py` also require the `MultiGram:` marker on every non-blank line the stack adds to their hooked files, and `palette_fix_check.py` checks that `ThemeColors.java` and the `.attheme` files change only the keys of overlay A.
+- Each of the four Python checks must print one line ending in `OK`. With `--base`, `random_style_check.py`, `style_knobs_check.py` and `hide_search_bar_check.py` also require the `MultiGram:` marker on every non-blank line the stack adds to their hooked files, and `palette_fix_check.py` checks that `ThemeColors.java` and the `.attheme` files change only the keys of overlay A.
 - The first `git grep` must print 5 lines (hooks R1 to R5). Only R5 is also checked by a script (the rebrand self-test in `check.sh`).
-- The second `git grep` lists every use of the title setting. On 4780eb095b it prints 4 lines. Each line that reads the setting must pass its default through `Rebrand.defaultTitle(` or use `defaultValue` (R2 to R4). A doubled line here means a conflict was fixed by keeping both sides.
+- The second `git grep` lists every use of the title setting. On ff868b3ea4 it prints 4 lines. Each line that reads the setting must pass its default through `Rebrand.defaultTitle(` or use `defaultValue` (R2 to R4). A doubled line here means a conflict was fixed by keeping both sides.
 - The `cmp` must print `overlay copies identical`. If it does not, copy `multigram/palette-fix/overlay_A.json` over the other copy and fold that into "Add the style table and its generator" (6.3).
 
 If the conflict was in `ThemeColors.java`, an `.attheme` file or `Theme.java`, also re-derive the palette values (8.2.5).
@@ -367,6 +370,8 @@ If Forkgram now does what a MultiGram commit did, run `git rebase --skip` when g
 
 The automatic replay drops a commit by itself when it becomes empty because Forkgram took the same change. The closing note on the issue lists such commits.
 
+The last commit, "Add an option to remove the chat list search bar", can be left out as a whole. No other commit needs it. If Telegram rewrites the chat list header so that its hooks no longer fit, and you do not want to port them now, skip it the same way and tick **allow_drop**. The option, its check and its `check.sh` block all go with it, so also leave out the `hide_search_bar_check.py` line of 5.4. Anyone who had the option on gets the stock chat list back.
+
 ### 5.6 rerere: git's memory of your fixes
 
 With `rerere.enabled`, git records how you fixed each conflict. If you redo the same rebase in the same clone, git fills in the same fix. It still stops, and you still run `git add` and `git rebase --continue`. To have git stage its replayed fixes by itself, also run `git config rerere.autoUpdate true`.
@@ -382,7 +387,7 @@ git fetch origin
 bash scripts/export-patches.sh --base origin/forkgram --head origin/multigram
 ```
 
-It writes six numbered `.patch` files and `APPLY.txt` to the folder `multigram-patches/`. `APPLY.txt` says how to clone the matching Forkgram release and apply them with `git am -3`. The `-3` lets git merge like a rebase when the text around a hook changed.
+It writes seven numbered `.patch` files and `APPLY.txt` to the folder `multigram-patches/`. `APPLY.txt` says how to clone the matching Forkgram release and apply them with `git am -3`. The `-3` lets git merge like a rebase when the text around a hook changed.
 
 When a patch conflicts, git stops. The markers read `<<<<<<< HEAD` (Forkgram) and `>>>>>>> <commit subject>`. Fix the file as in 5.2, then:
 
@@ -434,8 +439,9 @@ The Java compiler prints each error as `<file>:<line>: error: <message>`. Search
 | `SharedConfig.bubbleRadius`, `useThreeLinesLayout` or `setUseThreeLinesLayout` in `StyleKnobs.java` | Telegram renamed a chat setting. | Use the new names (8.4.6). |
 | `duplicate case label` in `ThemeActivity.java` | Upstream now binds one of the three knob row types itself. | Call `bindStyleKnobRow` from upstream's `case` and remove hook K17's line. |
 | `cannot find symbol` and `DEFAULT` in `Rebrand.java` | Forkgram renamed `LauncherIconController.LauncherIcon.DEFAULT`. | Point `Rebrand.filterLauncherIcons` at the new default icon entry (R1). |
-| `cannot find symbol` for a variable used in a hook line, such as `applyingTheme`, `accent` or `sparseIntArray` | Upstream renamed a local variable or field. | Use the new name in the hook line. Keep the `// MultiGram:` comment. If a check script matches that line exactly, update its pattern too. |
-| `cannot find symbol` for any other method, class or field, in a file under `org/telegram/messenger/multigram/` | Upstream renamed or removed a name that a new file uses. The "Upstream names it relies on" columns of 8.1.2, 8.2.2, 8.3.2 and 8.4.2 list these names. | Find the new name, and fix every use (see below the table). `check.sh` does not find this; only the compile does. |
+| `cannot find symbol` and `setMultiline` in `HideSearchBar.java` | Forkgram removed `UItem.setMultiline`, which it added to Telegram's `UItem`. | Build the row the way Forkgram now builds its own Chat list rows, next to H19. |
+| `cannot find symbol` for a variable or method used in a hook line, such as `applyingTheme`, `accent`, `sparseIntArray` or `getMaxScrollYOffsetWithoutSearch` | Upstream renamed a local variable, field or method. | Use the new name in the hook line. Keep the `// MultiGram:` comment. If a check script matches that line exactly, update its pattern too. |
+| `cannot find symbol` for any other method, class or field, in a file under `org/telegram/messenger/multigram/` | Upstream renamed or removed a name that a new file uses. The "Upstream names it relies on" columns of 8.1.2, 8.2.2, 8.3.2, 8.4.2 and 8.5.2 list these names. | Find the new name, and fix every use (see below the table). `check.sh` does not find this; only the compile does. |
 | A Gradle message that starts with `[rebrand]` | `rebrand.gradle` found a problem. | See the list of messages in 8.1.5. |
 | A Gradle error that the task `buildNativeDeps` does not exist | Forkgram renamed or removed its native build task. The compile command skips it with `-x :TMessagesProj:buildNativeDeps`. | Update `.github/workflows/build.yml` on `main`. |
 
@@ -452,7 +458,7 @@ A rename can hit files of several stack commits. For example, a rename of `Theme
 
 ### 6.3 Fold the fix into the commit it belongs to
 
-The fix must go into the stack commit it belongs to, not on top as a seventh commit. A "fixup" commit and an automatic rebase do that.
+The fix must go into the stack commit it belongs to, not on top as an eighth commit. A "fixup" commit and an automatic rebase do that.
 
 **1. Get the branch.** Coming from 6.1 (a failed compile on Actions), start from the candidate the sync pushed:
 
@@ -463,7 +469,7 @@ git switch -C multigram-next origin/multigram-next
 
 Skip these two commands if you are already on your own `multigram-next` (from section 5, or from 7.5). `git switch -C` would replace your local branch, and everything on it you have not pushed, with the remote one.
 
-**2. Find the commit each change belongs to.** This lists the six commits with their short hashes:
+**2. Find the commit each change belongs to.** This lists the seven commits with their short hashes:
 
 ```sh
 git log --oneline origin/forkgram..multigram-next
@@ -483,7 +489,7 @@ GIT_SEQUENCE_EDITOR=: git rebase -i --autosquash origin/forkgram
 
 If one file needs changes for two commits (`Theme.java` holds hooks of three), edit the lines of one commit, run its `git commit --fixup`, then edit the lines of the next.
 
-`--fixup` makes a commit titled `fixup! <subject>`. `--autosquash` melts it into the commit with that subject. `GIT_SEQUENCE_EDITOR=:` accepts the plan without opening an editor. Afterwards the branch has six commits again, with the same subjects and authors: `git log --oneline origin/forkgram..multigram-next` shows them.
+`--fixup` makes a commit titled `fixup! <subject>`. `--autosquash` melts it into the commit with that subject. `GIT_SEQUENCE_EDITOR=:` accepts the plan without opening an editor. Afterwards the branch has seven commits again, with the same subjects and authors: `git log --oneline origin/forkgram..multigram-next` shows them.
 
 If the rebase stops with `CONFLICT (modify/delete): <file> deleted in HEAD and modified in ... (fixup! ...)`, a fixup holds a file that its commit does not have yet. Run `git rebase --abort`, then `git reset HEAD~1` for one fixup commit (`HEAD~2` for two, and so on). That removes the fixup commits and keeps your edits in the files. Then make the fixups again, one per commit.
 
@@ -511,7 +517,7 @@ Gradle finds the SDK through `ANDROID_HOME` or a `local.properties` file with `s
 
 Use this section when a rebase is not practical: many conflicts, or files that Forkgram moved or rewrote. You start from the new snapshot and add MultiGram's changes again.
 
-The result must again be six commits with the same subjects and authors. Then the sync's **use_next** accepts it.
+The result must again be seven commits with the same subjects and authors. Then the sync's **use_next** accepts it.
 
 If a rebase from section 5 is still running, stop it first with `git rebase --abort`: git refuses to switch branches during a rebase.
 
@@ -538,7 +544,7 @@ The next steps use these two shell variables. If you open a new terminal, set th
 
 ### 7.2 Copy all new files
 
-One command copies all 37 files the stack adds, as they are on `OLD`:
+One command copies all 40 files the stack adds, as they are on `OLD`:
 
 ```sh
 git checkout $OLD -- multigram TMessagesProj/src/main/java/org/telegram/messenger/multigram \
@@ -555,7 +561,7 @@ None of these paths exists in Forkgram 12.10.6. If a future Forkgram adds a file
 git ls-tree -r --name-only origin/forkgram -- multigram TMessagesProj/src/main/java/org/telegram/messenger/multigram TMessagesProj/src/main/res/values/multigram_rebrand.xml TMessagesProj/src/main/res/values/multigram_strings.xml TMessagesProj/src/main/assets/multigram_styles.bin
 ```
 
-The 37 files:
+The 40 files:
 
 | # | Path | Added by | Section |
 |---|---|---|---|
@@ -596,10 +602,13 @@ The 37 files:
 | 35 | `TMessagesProj/src/main/java/org/telegram/messenger/multigram/StyleKnobs.java` | 3b941c01de | 8.4 |
 | 36 | `multigram/style-knobs/README.md` | 3b941c01de | 8.4 |
 | 37 | `multigram/tools/style_knobs_check.py` | 3b941c01de | 8.4 |
+| 38 | `TMessagesProj/src/main/java/org/telegram/messenger/multigram/HideSearchBar.java` | ff868b3ea4 | 8.5 |
+| 39 | `multigram/hide-search-bar/README.md` | ff868b3ea4 | 8.5 |
+| 40 | `multigram/tools/hide_search_bar_check.py` | ff868b3ea4 | 8.5 |
 
 ### 7.3 Put the hooks back, commit by commit
 
-Work through the six commits in order. For each one: copy the commit's own files at that commit's version, put its hooks into the upstream files, and commit with the same message and author.
+Work through the seven commits in order. For each one: copy the commit's own files at that commit's version, put its hooks into the upstream files, and commit with the same message and author.
 
 **The quick way: a loop.** This loop does that for every commit. For each upstream file it tries the commit's change with `git apply -3`, which merges the way a rebase does. It stops at the first commit with a file it cannot patch cleanly, and names the files.
 
@@ -625,7 +634,7 @@ done
 
 `git commit -C $C` reuses the commit's message, author and date. That is what **use_next** matches on.
 
-This was tested on 2026-09-27 against the made-up Forkgram release of 5.2. The loop stopped at 27d32d57b4 on `MessagesController.java`. After the fix below, all six new commits had exactly the same content as the rebase in section 5 gave.
+This was tested on 2026-09-28, with the seven commits, against the made-up Forkgram release of 5.2. The loop stopped at 27d32d57b4 on `MessagesController.java`. After the fix below, all seven new commits had exactly the same content as the rebase in section 5 gave.
 
 **When the loop stops:**
 
@@ -646,13 +655,13 @@ This was tested on 2026-09-27 against the made-up Forkgram release of 5.2. The l
    START=$C
    ```
 
-**By hand, without the loop.** First list the six commits you re-apply, with their hashes:
+**By hand, without the loop.** First list the seven commits you re-apply, with their hashes:
 
 ```sh
 git log --reverse --format='%h %s' $OLDSNAP..$OLD
 ```
 
-Use these hashes as `<commit>` below, not the hashes printed in this guide. Those are the commits of `multigram` 4780eb095b, and every sync rebases the stack, so after the next sync they are old versions (still reachable through the `multigram-before-<version>` tags, so git would not complain). Then, for each commit in that order (the table in 7.7 shows what each one holds):
+Use these hashes as `<commit>` below, not the hashes printed in this guide. Those are the commits of `multigram` ff868b3ea4, and every sync rebases the stack, so after the next sync they are old versions (still reachable through the `multigram-before-<version>` tags, so git would not complain). Then, for each commit in that order (the table in 7.7 shows what each one holds):
 
 1. List what it touches: `git diff-tree --no-commit-id -r --name-status <commit>`.
 2. Copy the MultiGram files it adds or changes, at its version:
@@ -673,11 +682,12 @@ The check scripts name every missing or misplaced hook. Run them at any point:
 python3 multigram/tools/palette_fix_check.py --base origin/forkgram
 python3 multigram/tools/random_style_check.py --base origin/forkgram
 python3 multigram/tools/style_knobs_check.py --base origin/forkgram
+python3 multigram/tools/hide_search_bar_check.py --base origin/forkgram
 git grep -n -e 'multigram\.Rebrand\.' -e 'multigram/rebrand/rebrand.gradle' -- TMessagesProj TMessagesProj_App
 cmp multigram/palette-fix/overlay_A.json multigram/tools/sim/palette-fix/overlay_A.json && echo "overlay copies identical"
 ```
 
-With all 37 files copied but no hooks in place, a test tree gave 59, 27 and 35 problems from the three checks, and the rebrand self-test failed one check (`TMessagesProj_App/build.gradle applies rebrand.gradle`). When everything is back:
+With all 40 files copied but no hooks in place, a test tree gave 59, 27, 35 and 61 problems from the four checks, and the rebrand self-test failed one check (`TMessagesProj_App/build.gradle applies rebrand.gradle`). When everything is back:
 
 - each check prints a single line ending in `OK`;
 - the `git grep` prints 5 lines, one for each of R1 to R5;
@@ -692,7 +702,7 @@ Two things are derived from upstream sources and may need a refresh. Do this aft
 1. **The palette values** (overlay A). Re-derive them from the new plain snapshot with the simulator (8.2.5, step 2). If they change, adopt them as "To adopt a new overlay" in 8.2.5 says. Its last step names the commit each file goes into.
 2. **The style table** (`multigram_styles.bin`). Run `bash multigram/tools/check.sh`. If it asks for a new table, run `python3 multigram/tools/make_style_table.py` (8.3.5). The new file goes into "Add the style table and its generator".
 
-To fold a change into its commit, follow 6.3 from its step 2. Skip its step 1: your six commits exist only on your local branch until 7.6, and `git switch -C multigram-next origin/multigram-next` would throw them away.
+To fold a change into its commit, follow 6.3 from its step 2. Skip its step 1: your seven commits exist only on your local branch until 7.6, and `git switch -C multigram-next origin/multigram-next` would throw them away.
 
 Nothing else is derived. The rebrand output is generated at build time and never committed. The knob values are computed on the device.
 
@@ -704,12 +714,12 @@ Push the branch and run the compile check on it (10.1), or compile locally (6.4)
 git push --force origin multigram-next
 ```
 
-### 7.7 Check the six commits
+### 7.7 Check the seven commits
 
 The new commits must match the old ones in author, date and subject:
 
 ```sh
-diff <(git log --reverse --format='%an %ad %s' $OLDSNAP..$OLD) <(git log --reverse --format='%an %ad %s' origin/forkgram..multigram-next) && echo "same six commits"
+diff <(git log --reverse --format='%an %ad %s' $OLDSNAP..$OLD) <(git log --reverse --format='%an %ad %s' origin/forkgram..multigram-next) && echo "same seven commits"
 ```
 
 | # | Subject (keep it exactly) | Hooks | Section |
@@ -720,6 +730,7 @@ diff <(git log --reverse --format='%an %ad %s' $OLDSNAP..$OLD) <(git log --rever
 | 4 | Give each install its own random style | S1–S15 | 8.3 |
 | 5 | Randomise shapes and chat list layout per install | K1–K17 (K18–K23 come with the copied files) | 8.4 |
 | 6 | Run the rebrand self-test in the CI checks | none (K24 comes with the copied `check.sh`) | 8.4 |
+| 7 | Add an option to remove the chat list search bar | H1–H21 (H22 comes with the copied `check.sh`) | 8.5 |
 
 ### 7.8 Hand it to the sync
 
@@ -941,7 +952,7 @@ Nothing derived is committed. The generator looks for these upstream names. If F
 python3 multigram/rebrand/selftest.py
 ```
 
-It passes when no line starts with `FAIL` and the last line is `PASSED: 0 failure(s)` (exit status 0). Besides the `ok` lines it prints the throwaway folder, an indented "Rebrand identity" block per seed and blank lines. An excerpt of a passing run on 4780eb095b (the temporary path differs each time):
+It passes when no line starts with `FAIL` and the last line is `PASSED: 0 failure(s)` (exit status 0). Besides the `ok` lines it prints the throwaway folder, an indented "Rebrand identity" block per seed and blank lines. An excerpt of a passing run on ff868b3ea4 (the temporary path differs each time):
 
 ```text
 throwaway tree: /tmp/rebrand-selftest-n2jxoni1/tree
@@ -967,7 +978,7 @@ PASSED: 0 failure(s)
 git grep -n -e 'multigram\.Rebrand\.' -e 'multigram/rebrand/rebrand.gradle' -- TMessagesProj TMessagesProj_App
 ```
 
-On 4780eb095b they are `AppIconsSelectorCell.java:154`, `DialogsActivity.java:3513`, `ForkSettingsActivity.java:548` and `:1155`, and `TMessagesProj_App/build.gradle:335`.
+On ff868b3ea4 they are `AppIconsSelectorCell.java:154`, `DialogsActivity.java:3513`, `ForkSettingsActivity.java:548` and `:1157`, and `TMessagesProj_App/build.gradle:335`.
 
 Every use of the title setting must pass through `Rebrand.defaultTitle`. This lists them:
 
@@ -1898,7 +1909,7 @@ TG_REPO=$(git rev-parse --show-toplevel) CANVAS_OUT=/tmp/overlay-in-tree python3
 cd ../../..
 ```
 
-On 4780eb095b it prints `VARIANT A (1.6 s): 12 defaults, 0 attheme lines, 13 exclusions` (the time varies). The 12 defaults are the on-accent marks the app keeps white on purpose. Any `.attheme` line, or a 13th default, means a grey below 4.5 : 1.
+On ff868b3ea4 it prints `VARIANT A (1.7 s): 12 defaults, 0 attheme lines, 13 exclusions` (the time varies). The 12 defaults are the on-accent marks the app keeps white on purpose. Any `.attheme` line, or a 13th default, means a grey below 4.5 : 1.
 
 **4. Measure generated accents** on the plain new Forkgram from step 2:
 
@@ -1929,7 +1940,7 @@ On 12.10.6 the line `pass rate (generated, all pairs)` shows `100.00%` for all f
 - **Value-only edits to bundled themes reach users only through hook P12**, because upstream re-copies a theme file only when its size changes.
 - **Theme files use signed decimals without the `key_` prefix.** Overlay A uses unsigned numbers with the prefix. For a value with the top bit set, subtract 2^32. Write decimals; the checker ignores `#hex`. Match lines by key, because the same old value can occur on several lines.
 - **`chats_attachMessage` on Dark Blue is a pure grey (`#FF999999`) on purpose.** The key is accent-coloured on the light themes, so it cannot join the global exclusion list, and a pure grey is never tinted. `chat_messagePanelIcons` is excluded without a value change. Do not tidy either.
-- **New calls of `fillAccentColors`** are not found automatically. After an update, run the `git grep` of P13. On 4780eb095b it prints 11 lines: the method itself and 10 calls, 6 of them hooked (P7, P9, P11, P13, P16, P17). Decide for any new call.
+- **New calls of `fillAccentColors`** are not found automatically. After an update, run the `git grep` of P13. On ff868b3ea4 it prints 11 lines: the method itself and 10 calls, 6 of them hooked (P7, P9, P11, P13, P16, P17). Decide for any new call.
 
 ### 8.3 Style table and random style (cddd62df98 and 27d32d57b4)
 
@@ -2437,7 +2448,7 @@ Installs that existed before are never restyled automatically.
 | Directory | 32 bytes per theme | theme key (20 bytes, UTF-8, padded with zeros), flags (bit 0 = night), first record, record count |
 | Record | 40 bytes | 9 colours (accent, bubble, bubble gradient 1 to 3, wallpaper 1 to 4), rotation (a multiple of 45), flags (bit 0 animated bubble gradient, bit 1 pattern motion), a zero. Bubble gradient 2 and 3 and wallpaper 3 and 4 are 0 when unused; bubble gradient 1 equals the bubble for a plain bubble. |
 
-The themes are, in order: Blue, Arctic Blue and Day (day), then Dark Blue and Night (night). On 4780eb095b the CRC-32 is `884B1657`. `StyleTable.java` accepts only this version and these sizes. A format change means changing `style_table.py`, `StyleTable.java` and `multigram/tools/README.md` together.
+The themes are, in order: Blue, Arctic Blue and Day (day), then Dark Blue and Night (night). On ff868b3ea4 the CRC-32 is `884B1657`. `StyleTable.java` accepts only this version and these sizes. A format change means changing `style_table.py`, `StyleTable.java` and `multigram/tools/README.md` together.
 
 **The pick.** Day index = `(mix64(seed + 1 × 0x9E3779B97F4A7C15) >>> 1) % day count`, and the night index uses 2 in place of 1.
 
@@ -3439,7 +3450,7 @@ bash multigram/tools/check.sh
 
 - Both checks print `style-knobs: OK`. With `--base`, every non-blank line added to the 10 hooked files must carry `MultiGram:`.
 - A failure lists each problem, then `style-knobs: FAILED, N problem(s)`. For example, with K3's first line put back to stock: `style-knobs: TMessagesProj/src/main/java/org/telegram/ui/Cells/ChatActionCell.java: stock line 'final int corner = dp\\(11\\);' is back (the hook must replace it)`. Patterns are printed as Python strings, so each backslash shows doubled.
-- `check.sh` runs the knobs check and the rebrand self-test, and ends with `== all MultiGram checks passed`. On 4780eb095b it took 1 minute 8 seconds on 4 cores.
+- `check.sh` runs the knobs check and the rebrand self-test, and ends with `== all MultiGram checks passed`. On ff868b3ea4 it took 1 minute 13 seconds on 4 cores.
 
 **On a device** (the full list is "Device test checklist" in `multigram/style-knobs/README.md`). Knobs work only on installs with a seed: a fresh install, or an old install after "Shuffle my style".
 
@@ -3466,9 +3477,797 @@ bash multigram/tools/check.sh
 - **Never add Forkgram's avatar settings** (`avatarCorners`, `squareAvatars`) to the knobs. The check fails on them.
 - **The rebrand self-test in `check.sh`** takes about a third of the script's time (about 26 seconds on 4 cores; `make_style_table.py --check` takes the most, about 30 seconds). It writes a temporary folder in the system temp folder (and removes it), and skips the signing checks without `keytool`.
 
+### 8.5 Hide chat list search (ff868b3ea4)
+
+#### 8.5.1 What and why
+
+Commit **ff868b3ea4** adds the option "Hide chat list search". It is a switch in **Fork Client Settings > Chat list view**, right after Forkgram's "Disable Global Search", and it is off by default.
+
+When it is on, the chat list has no search bar (the 48 dp field under the header) and no search icon in the header. Stock Telegram shows that icon once the bar has scrolled away; with the option on it never shows. The list is laid out as stock lays it out when the bar has scrolled away, minus the room the bar keeps, so the first chat sits right under the header or the folder tabs. This applies to the main chat list with its folders, the Archive, community lists, and the plain list that `BackButtonMenu` opens. The owner chose this "no search" variant. The other design, the "search icon" variant, hid only the bar; `multigram/hide-search-bar/README.md` says how to go back to it.
+
+Some ways into search stay on purpose, because the user asks for each of them. They are left stock, and each shows the field in the header while searching:
+
+- the Downloads item in the header (it shows while files download, or while there are downloads you have not looked at);
+- `tg://search?query=...` links;
+- the search icon of the forum topics column (a forum opened beside the chat list).
+
+The music player's search by performer (a tap on the performer's name) is also left stock. From Chats it opens its own search screen, with the stock bar. From an open Archive or community list, or the list `BackButtonMenu` opens, it shows the field in that list's header. With 10 chats or fewer it does nothing, as in stock.
+
+Dialog pickers (forward, share and the like) and `#hashtag` screens keep their stock bar. With the option on, three things are lost:
+
+- the header icon's long-press shortcut to Saved Messages;
+- the usual way from the chat list into Forkgram's hidden-account unlock (tap search, type the code). The unlock still works from any of the searches above;
+- with Forkgram's option Hide the "All Chats" tab also on, that option's promise that chats outside folders "stay reachable through search and the archive". The chat list then offers no search to reach them.
+
+When the option is off, every hook returns the stock value it replaced, so the chat list is exactly stock.
+
+How it works. Each chat list reads the setting once, at first use, and keeps that value while it is on screen. When the list resumes (for example on the way back from Fork settings), hook H13 reads the setting again. If it changed, `HideSearchBar.refresh` first keeps each list's first chat in place, and then the list switches and redraws its header.
+
+The upstream changes are 21 one-line hooks: 19 in `DialogsActivity.java` (H1 to H18, H21) and 2 in `ForkSettingsActivity.java` (H19, H20). 13 of them (H1 to H4, H6 to H10, H14 to H17) only put `HideSearchBar.restHeight(...)` around `SEARCH_FIELD_HEIGHT` inside the stock `dp(...)`.
+
+#### 8.5.2 New files
+
+| Path | Purpose | Upstream names it relies on |
+|---|---|---|
+| `TMessagesProj/src/main/java/org/telegram/messenger/multigram/HideSearchBar.java` | The whole feature. `hides(f)` says whether a list hides the bar and the icon. `restHeight(f, stock)` and `restAlpha(f, stock)` return `stock` while the option is off and 0 while it is on. `refresh(f, pages)` applies a changed setting in `onResume` (H13). `settingsRow()` and `onSettingsClick(item, view)` are the settings row (H19, H20). Each list keeps its value and its scope in a `WeakHashMap` keyed by the fragment. | `DialogsActivity.ViewPage` and its field `listView` (both public), `DialogsActivity.getType()`, `isMainDialogList()`, `DIALOGS_TYPE_DEFAULT`, the fragment argument `onlySelect`; `BaseFragment.getArguments()` and `getFragmentView()`; androidx `LinearLayoutManager` (`hasPendingScrollPosition`, `findFirstVisibleItemPosition`, `findViewByPosition`, `scrollToPositionWithOffset`); `UItem.asButtonCheck(int, CharSequence, CharSequence)`, `setChecked`, `setMultiline` (Forkgram only), the fields `id` and `checked`; `TextCheckCell.setChecked`, `NotificationsCheckCell.setChecked`; `MessagesController.getGlobalMainSettings()` (`mainconfig`); `ApplicationLoader.applicationContext`; `FileLog.e(Throwable)` |
+| `multigram/hide-search-bar/README.md` | Design document: scope, what still opens search, what is lost, the lifecycle, the setting, the hook table (hooks 1 to 21 are H1 to H21 here), what was not done, a 14-item device checklist and known limitations. | Documentation only. It names upstream line numbers of `4780eb095b`. |
+| `multigram/tools/hide_search_bar_check.py` | Checks the 21 hooks (exact text, indentation, count, marker), where each one sits, that the ways into search left stock still open search, that every other line of `DialogsActivity.java` that uses `SEARCH_FIELD_HEIGHT` is on a reviewed list, and that `HideSearchBar` writes one setting only. `--base REV` also requires the `MultiGram:` marker on every line the stack adds to the two hooked files. Prints `hide-search-bar: OK`. | In `DialogsActivity.java`: the 12 reviewed lines that use `SEARCH_FIELD_HEIGHT` (`REVIEWED`: 11 texts, because `childTop += dp(SEARCH_FIELD_HEIGHT);` occurs twice), the method signatures of the hooked methods, the stock line next to each hook, the icon's click listener, the Downloads item (`id == 3`) and `search(String query, boolean animated)`. In `ForkSettingsActivity.java`: `fillSettings`, `onClick`, the `ID_...` and `MENU_SEARCH` ids. `TopicsFragment.java` (`parentDialogsActivity.searchItem.performClick();`), `Components/FragmentSearchField.java`, and `forkgram/SettingsBackup.kt` with its `ALLOWED_PREFS` (Forkgram only, like `ForkSettingsActivity.java`). The check stops with `FileNotFoundError` if any file it reads is missing. |
+
+ff868b3ea4 also adds two strings to `multigram_strings.xml` (8.5.4), a block to `check.sh` (H22), and three lines about the check to `multigram/tools/README.md`.
+
+#### 8.5.3 Hooks
+
+H1 to H21 are in upstream files. Their numbers are the numbers of the hook table in `multigram/hide-search-bar/README.md` and of `H` in `hide_search_bar_check.py`. So H21, the header icon, comes after the two settings hooks, although it is in `DialogsActivity.java`. H22 is in MultiGram's own `check.sh`. Section 7 copies that file from the commit, so there its lines are already in place.
+
+The line numbers below are Forkgram's. The README's table uses the numbers of `4780eb095b`. There, lines of `DialogsActivity.java` after line 3512 are one higher (hook R2 adds a line), and so are lines of `ForkSettingsActivity.java` after line 547 (hook R3).
+
+##### H1. Header: no room for a hidden bar
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Inner class `ContentView`, method `getActionBarFullHeight()`: the last line before `return (int) h;`. In Forkgram 12.10.6 the text below starts at line 881.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+            h += dp(SEARCH_FIELD_HEIGHT) * (1f - progressToActionMode) * (1f - searchAnimationProgress) * (1f - rightSlidingProgress);
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                 h += storiesHeight * (1f - searchAnimationProgress) * (1f - rightSlidingProgress) * (1f - progressToActionMode);
+             }
+             h += storiesOverscroll;
+-            h += dp(SEARCH_FIELD_HEIGHT) * (1f - progressToActionMode) * (1f - searchAnimationProgress) * (1f - rightSlidingProgress);
++            h += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) * (1f - progressToActionMode) * (1f - searchAnimationProgress) * (1f - rightSlidingProgress); // MultiGram: no header band behind a hidden bar
+ 
+             return (int) h;
+         }
+```
+
+**Why:** This is the full height of the header: the action bar, the stories and the bar. The header background, the list's clip, the header shadow, the top of the topics column and the swipe area all follow it. `restHeight` returns `SEARCH_FIELD_HEIGHT` while the option is off, so the line is stock then. While it is on, it returns 0, and `dp(0)` is 0.
+
+**If the code moved:** Find where the header height adds `dp(SEARCH_FIELD_HEIGHT)`, multiplied by the action mode, search and topics column factors. Put `org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)` in place of `SEARCH_FIELD_HEIGHT` inside the `dp(...)`, and leave the rest of the line as upstream has it. `hide_search_bar_check.py` requires the hook directly after `h += storiesOverscroll;` in `getActionBarFullHeight`.
+
+
+##### H2. Action mode: lift the tabs by the visible header only
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Inner class `ContentView`, method `dispatchDraw(Canvas)`: the first argument of `tabsYOffset -= Math.min(`. In Forkgram 12.10.6 the text below starts at line 1059.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(SEARCH_FIELD_HEIGHT) + scrollYOffset,
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays). H2 and H3 are next to each other, so git shows them in one hunk, with both `-` lines first. The first `-` line and the first `+` line are H2:
+
+```diff
+             tabsYOffset = 0;
+             storiesYOffset = 0;
+             tabsYOffset -= Math.min(
+-                dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(SEARCH_FIELD_HEIGHT) + scrollYOffset,
+-                progressToActionMode * (dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(SEARCH_FIELD_HEIGHT))
++                dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) + scrollYOffset, // MultiGram: action mode lifts the tabs by the visible header only
++                progressToActionMode * (dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT))) // MultiGram: same, for the full lift
+             );
+             storiesYOffset = tabsYOffset;
+             if ((rightSlidingDialogContainer != null && rightSlidingDialogContainer.hasFragment())) {
+```
+
+**Why:** When chats are selected (action mode), the folder tabs move up over the stories and the bar, but never by more than the header shows. With the bar hidden there is no bar to cover, so the tabs move up by the stories only.
+
+**If the code moved:** These are the two arguments of the `Math.min` that lifts `tabsYOffset` by `progressToActionMode`. Change `SEARCH_FIELD_HEIGHT` inside `dp(...)` in both, as the block shows. The check requires H2 and H3 directly after `tabsYOffset -= Math.min(`, in this order.
+
+
+##### H3. Action mode: the same, for the full lift
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Same `Math.min(` as H2: its second argument, on the line below H2. In Forkgram 12.10.6 the text below starts at line 1060.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                progressToActionMode * (dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(SEARCH_FIELD_HEIGHT))
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added). H2's block shows this change with its context. H3 alone:
+
+```diff
+-                progressToActionMode * (dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(SEARCH_FIELD_HEIGHT))
++                progressToActionMode * (dp(hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT))) // MultiGram: same, for the full lift
+```
+
+**Why:** The lift as the action mode animation runs (`progressToActionMode` goes from 0 to 1). It must use the same height as H2.
+
+**If the code moved:** See H2.
+
+
+##### H4. Topics column: move the list up only by the header it covers
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Inner class `ContentView`, method `dispatchDraw(Canvas)`, in the branch `if ((rightSlidingDialogContainer != null && rightSlidingDialogContainer.hasFragment()))`: the line before `addH *= rightSlidingDialogContainer.openedProgress;`. In Forkgram 12.10.6 the text below starts at line 1086.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                addH += dp(SEARCH_FIELD_HEIGHT);
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                 if (hasStories) {
+                     addH += dp(DialogStoriesCell.HEIGHT_IN_DP);
+                 }
+-                addH += dp(SEARCH_FIELD_HEIGHT);
++                addH += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: the topics column moves the list up only by the header it covers
+                 addH *= rightSlidingDialogContainer.openedProgress;
+ 
+                 viewPages[0].setTranslationY(rightFragmentOffset - addH);
+```
+
+**Why:** When a forum opens in the topics column beside the list, the chat list moves up under the header by the stories and the bar. With the bar hidden it moves up by the stories only.
+
+**If the code moved:** H4, H6 and H8 must use the same height: H4 moves the list up as the column opens, H6 measures the list taller by that amount, and H8 gives it back when the column closes. The check requires H4 directly before `addH *= rightSlidingDialogContainer.openedProgress;`.
+
+
+##### H5. Search field: slide in from where a scrolled-away bar sits
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Inner class `ContentView`, method `dispatchDraw(Canvas)`, the `else` branch after H4: the first argument (the start) of the `lerp` that places `fragmentSearchField` while search opens. In Forkgram 12.10.6 the text below starts at line 1093.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                        scrollYOffset + tabsYOffset + storiesOverscroll - dp(4),
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+             } else {
+                 if (fragmentSearchField != null) {
+                     fragmentSearchField.setTranslationY(lerp(
+-                        scrollYOffset + tabsYOffset + storiesOverscroll - dp(4),
++                        scrollYOffset + tabsYOffset + storiesOverscroll - dp(4) - dp(SEARCH_FIELD_HEIGHT - org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)), // MultiGram: a hidden bar fades in where a scrolled-away stock bar does
+                         -dp(SEARCH_FIELD_HEIGHT + (hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0)),
+                         searchAnimationProgress
+                     ));
+```
+
+**Why:** When search opens another way (Downloads, a link, the topics column's icon), the field slides from its place at rest up to the header row. With the bar hidden, it starts 48 dp higher, where a scrolled-away stock bar sits, so it fades in near its final place. While the option is off the new term is `dp(SEARCH_FIELD_HEIGHT - SEARCH_FIELD_HEIGHT)`, which is 0. The end of the slide (`-dp(SEARCH_FIELD_HEIGHT + ...)`, the next line) stays stock.
+
+**If the code moved:** This is the start value of the field's slide into search. Subtract `dp(SEARCH_FIELD_HEIGHT - restHeight(...))` from it. The check requires the hook directly followed by the stock `-dp(SEARCH_FIELD_HEIGHT + (hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0)),` and then `searchAnimationProgress`.
+
+
+##### H6. Topics column: measure the page taller by the same amount
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Inner class `ContentView`, method `onMeasure(int, int)`, branch `child instanceof ViewPage`, inside `if (rightSlidingDialogContainer.hasFragment())`: the last line, after the stories block. In Forkgram 12.10.6 the text below starts at line 1185.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                        h += dp(SEARCH_FIELD_HEIGHT);
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                         if (hasStories) {
+                             h += dp(DialogStoriesCell.HEIGHT_IN_DP);
+                         }
+-                        h += dp(SEARCH_FIELD_HEIGHT);
++                        h += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: page measured taller by that same amount
+                     }
+                     h += actionModeAdditionalHeight;
+                     if (actionBarColorAnimator == null) {
+```
+
+**Why:** With the topics column open, the chat list page is measured taller by the height H4 moves it up.
+
+**If the code moved:** Same height as H4 and H8. The check requires the hook as the last statement of that `if`, right after `if (hasStories) { h += dp(DialogStoriesCell.HEIGHT_IN_DP); }` and before `h += actionModeAdditionalHeight;`.
+
+
+##### H7. List padding: the first chat starts right under the header
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Inner class `DialogsRecyclerView`, method `onMeasure(int, int)`: inside `if (!actionModeFullyShowed) {`, after the stories padding. In Forkgram 12.10.6 the text below starts at line 2079.
+
+**Find this** (without its indentation, the second line also matches the end of H8's line `offset += dp(SEARCH_FIELD_HEIGHT);`; the block as shown occurs once; text from Forkgram 12.10.6):
+
+```java
+            if (!actionModeFullyShowed) {
+                t += dp(SEARCH_FIELD_HEIGHT);
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                 t += dp(DialogStoriesCell.HEIGHT_IN_DP);
+             }
+             if (!actionModeFullyShowed) {
+-                t += dp(SEARCH_FIELD_HEIGHT);
++                t += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: the first chat starts right under the header
+             }
+             additionalPadding = 0;
+ 
+```
+
+**Why:** This is the list's top padding, the room above the first chat. It is the hook that takes the bar's room away: with the bar hidden, the first chat starts right under the header or the folder tabs.
+
+**If the code moved:** Find the padding the chat list keeps for the bar, next to the padding for the stories. The check requires the hook directly after `if (!actionModeFullyShowed) {`.
+
+
+##### H8. Topics column: closing it gives back only the header it took
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Inner class `DialogsRecyclerView`, method `setAnimationSupportView(RecyclerListView, float, boolean, boolean)`: inside `if (backward) {`. In Forkgram 12.10.6 the text below starts at line 2368.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                        offset += dp(SEARCH_FIELD_HEIGHT);
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                         offset += dp(DialogStoriesCell.HEIGHT_IN_DP);
+                     }
+                     if (backward) {
+-                        offset += dp(SEARCH_FIELD_HEIGHT);
++                        offset += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: closing the topics column gives back only the header it took
+                         // offset += canShowFilterTabsView ? dp(50) : 0;
+                     }
+                     if (p >= 0) {
+```
+
+**Why:** When the topics column closes, the list scrolls back by the stories and the bar it lost. With the bar hidden, by the stories only.
+
+**If the code moved:** Same height as H4 and H6. The check requires the hook directly after `if (backward) {`.
+
+
+##### H9. Fling: stop at the first chat
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Method `createView(Context)`, the `LinearLayoutManager` each page gets (`viewPage.layoutManager = new LinearLayoutManager(context) {`), method `scrollVerticallyBy(int, RecyclerView.Recycler, RecyclerView.State)`: the `if` right after `int canScrollDy = -(view.getTop() - pTop) + viewsH;`. In Forkgram 12.10.6 the text below starts at line 4225.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                                    canScrollDy -= dp(SEARCH_FIELD_HEIGHT);
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                                 }
+                                 int canScrollDy = -(view.getTop() - pTop) + viewsH;
+                                 if (!rightSlidingDialogContainer.hasFragment() && !(actionBar != null && actionBar.isActionModeShowed())) {
+-                                    canScrollDy -= dp(SEARCH_FIELD_HEIGHT);
++                                    canScrollDy -= dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: a fling stops at the first chat, not past a hidden bar
+                                 }
+                                 if (hasStories && (viewPage.scroller.isRunning() || dialogStoriesCell.isExpanded()) && !rightSlidingDialogContainer.hasFragment() && !fixScrollYAfterArchiveOpened) {
+                                     canScrollDy += dp(DialogStoriesCell.HEIGHT_IN_DP);
+```
+
+**Why:** When a fling towards the top would show a hidden Archive row, stock limits it so that it stops at the first chat. That limit takes off the bar's height. With the bar hidden it takes off nothing, so the fling still stops at the first chat, not past a bar that is not there, and the Archive stays hidden.
+
+**If the code moved:** H9 and H10 must use the same height. The check requires H9 as the only statement of the stock `if` directly after `int canScrollDy = ...`.
+
+
+##### H10. Fling: the pair of H9
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Same method as H9: the `if ((viewPage.scroller.isRunning() || dialogStoriesCell.isExpanded()) && ...)` right before `int positiveDy = Math.abs(dy);`. In Forkgram 12.10.6 the text below starts at line 4231.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                                    canScrollDy += dp(SEARCH_FIELD_HEIGHT);
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                                     canScrollDy += dp(DialogStoriesCell.HEIGHT_IN_DP);
+                                 }
+                                 if ((viewPage.scroller.isRunning() || dialogStoriesCell.isExpanded()) && !rightSlidingDialogContainer.hasFragment() && !fixScrollYAfterArchiveOpened && !(actionBar != null && actionBar.isActionModeShowed())) {
+-                                    canScrollDy += dp(SEARCH_FIELD_HEIGHT);
++                                    canScrollDy += dp(org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)); // MultiGram: pairs with the line above
+                                 }
+                                 int positiveDy = Math.abs(dy);
+                                 if (canScrollDy < positiveDy) {
+```
+
+**Why:** While the stories scroll or are expanded, stock adds the bar's height back. It must be the height H9 takes away.
+
+**If the code moved:** The check requires H10 as the only statement of that stock `if`, directly before `int positiveDy = Math.abs(dy);`.
+
+
+##### H11. The header collapses by the stories only
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Class `DialogsActivity`, method `getMaxScrollYOffset()`: a new first statement. In Forkgram 12.10.6 the text below starts at line 5742.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+    private int getMaxScrollYOffset() {
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+     }
+ 
+     private int getMaxScrollYOffset() {
++        if (org.telegram.messenger.multigram.HideSearchBar.hides(this)) return getMaxScrollYOffsetWithoutSearch(); // MultiGram: the header collapses by the stories only
+         if (hasStories) {
+             return dp(DialogStoriesCell.HEIGHT_IN_DP) + dp(SEARCH_FIELD_HEIGHT);
+         } else {
+```
+
+**Why:** This is how far the header can scroll away: in stock, the stories plus the bar. With the bar hidden, only the stories, which is stock's own `getMaxScrollYOffsetWithoutSearch()`. Without stories that is 0, so the header never moves. It also keeps stock's "snap the bar" code from running.
+
+**If the code moved:** The first statement of the method that returns the header's maximum scroll. The check requires exactly that.
+
+
+##### H12. Tabs and top panels take the bar's place
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Class `DialogsActivity`, method `updateContextViewPosition()`: right after `totalOffset += storiesOverscroll;`. In Forkgram 12.10.6 the text below starts at line 6583.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+        totalOffset += storiesOverscroll;
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                     searchTabsHeight * searchAnimationProgress + tabsYOffset;
+         }
+         totalOffset += storiesOverscroll;
++        if (org.telegram.messenger.multigram.HideSearchBar.hides(this)) totalOffset -= dp(SEARCH_FIELD_HEIGHT) * (1f - searchAnimationProgress); // MultiGram: tabs and top panels take the bar's place at rest (their layout top in ContentView.onLayout still counts it)
+ 
+         float searchVisibility = 0;
+         if (fragmentSearchField != null && fragmentSearchField.getVisibility() == View.VISIBLE) {
+```
+
+**Why:** `ContentView.onLayout` places the folder tabs and the top panels (proxy, requests, suggestions) below the bar's place (`childTop += dp(SEARCH_FIELD_HEIGHT);`). That line is not hooked, because it also places the top panel in search mode. This hook moves them up by the bar's height at rest, and by nothing once search is open, so they sit right under the header.
+
+**If the code moved:** The check requires the hook directly after `totalOffset += storiesOverscroll;`, and before `float fadeViewT = totalOffset;` and `filterTabsView.setTranslationY(` in the same method.
+
+
+##### H13. Apply a changed setting when the list comes back
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Class `DialogsActivity`, method `onResume()`: right after `super.onResume();`. In Forkgram 12.10.6 the text below starts at line 7084.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+    public void onResume() {
+        super.onResume();
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+     @Override
+     public void onResume() {
+         super.onResume();
++        if (org.telegram.messenger.multigram.HideSearchBar.refresh(this, viewPages)) { setScrollY(Math.max(scrollYOffset, -getMaxScrollYOffset())); invalidateScrollY = true; checkUi_searchFieldVisibility(); checkUi_menuItems(); } // MultiGram: "Hide chat list search" changed while this list was paused: re-derive its header
+         if (dialogStoriesCell != null) {
+             dialogStoriesCell.onResume();
+         }
+```
+
+**Why:** A list reads the setting at first use and keeps it while it is on screen. On resume, `HideSearchBar.refresh` reads it again. If this list's value changed, it keeps each page's first chat in place relative to the new padding, switches, and returns `true`. The line then limits the header's scroll to the new maximum, lets the next draw derive the scroll again (`invalidateScrollY`), and updates the field and the header icons. `checkUi_menuItems()` reaches H21, so the icon follows at once. When nothing changed, `refresh` returns `false` and changes nothing.
+
+**If the code moved:** It must run before the loop in `onResume` that calls `notifyDataSetChanged()` on each page. After that call, stock skips its own re-anchoring of the list, and turning the option on would show 48 dp of a hidden Archive row (turning it off would leave the list 48 dp scrolled). The check requires the hook directly after `super.onResume();` and before `.notifyDataSetChanged()`.
+
+
+##### H14. Leaving action mode: give back only the header it took
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Class `DialogsActivity`, method `hideActionMode(boolean)`: right before `float finalTranslateListHeight = translateListHeight;`. In Forkgram 12.10.6 the text below starts at line 9109.
+
+**Find this** (the first line's text also occurs, indented deeper, at H16; the whole block occurs once; text from Forkgram 12.10.6):
+
+```java
+        translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) + scrollYOffset);
+        float finalTranslateListHeight = translateListHeight;
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                 viewPages[i].listView.cancelClickRunnables(true);
+             }
+         }
+-        translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) + scrollYOffset);
++        translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) + scrollYOffset); // MultiGram: leaving action mode gives back only the header it took
+         float finalTranslateListHeight = translateListHeight;
+         actionBarColorAnimator = ValueAnimator.ofFloat(progressToActionMode, 0);
+         actionBarColorAnimator.addUpdateListener(valueAnimator -> {
+```
+
+**Why:** How far the list moves back down as action mode ends. H14 to H17 must use the same height; together they keep entering and leaving action mode free of jumps.
+
+**If the code moved:** H14 and H15 stay in `hideActionMode`. The check requires H14 directly before `float finalTranslateListHeight = translateListHeight;`.
+
+
+##### H15. Leaving action mode: the pair of H14
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Method `hideActionMode(boolean)`, in `onAnimationEnd(Animator)` of the animator's listener: right before `viewPages[0].setTranslationY(0);`. In Forkgram 12.10.6 the text below starts at line 9135.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                scrollAdditionalOffset = -(dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) - finalTranslateListHeight);
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                 invalidateScrollY = true;
+                 fixScrollYAfterArchiveOpened = true;
+                 fragmentView.invalidate();
+-                scrollAdditionalOffset = -(dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) - finalTranslateListHeight);
++                scrollAdditionalOffset = -(dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) - finalTranslateListHeight); // MultiGram: pairs with translateListHeight
+                 viewPages[0].setTranslationY(0);
+                 for (int i = 0; i < viewPages.length; i++) {
+                     if (viewPages[i] != null) {
+```
+
+**Why:** The scroll correction at the end of the animation. It must match H14.
+
+**If the code moved:** The check requires H15 inside `hideActionMode`, directly before `viewPages[0].setTranslationY(0);`.
+
+
+##### H16. Entering action mode: lift the list by the visible header only
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Class `DialogsActivity`, method `showOrUpdateActionMode(long, View)`: right before `if (translateListHeight != 0) {`. In Forkgram 12.10.6 the text below starts at line 10238.
+
+**Find this** (the first line's text also occurs, indented less, at H14; the whole block occurs once; text from Forkgram 12.10.6):
+
+```java
+            translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) + scrollYOffset);
+            if (translateListHeight != 0) {
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                     viewPages[i].listView.cancelClickRunnables(true);
+                 }
+             }
+-            translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) + scrollYOffset);
++            translateListHeight = Math.max(0, dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) + scrollYOffset); // MultiGram: action mode lifts the list by the visible header only
+             if (translateListHeight != 0) {
+                 actionModeAdditionalHeight = (int) translateListHeight;
+                 fragmentView.requestLayout();
+```
+
+**Why:** How far the list moves up as chats are selected. It matches H2 and H3, which move the tabs.
+
+**If the code moved:** H16 and H17 stay in `showOrUpdateActionMode`. The check requires H16 directly before `if (translateListHeight != 0) {`.
+
+
+##### H17. Entering action mode: the pair of H16
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Method `showOrUpdateActionMode(long, View)`, in `onAnimationEnd(Animator)` of the animator's listener: right before `viewPages[0].setTranslationY(0);`. In Forkgram 12.10.6 the text below starts at line 10265.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+                    scrollAdditionalOffset = dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) - finalTranslateListHeight;
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+                     actionBarColorAnimator = null;
+                     actionModeAdditionalHeight = 0;
+                     actionModeFullyShowed = true;
+-                    scrollAdditionalOffset = dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + SEARCH_FIELD_HEIGHT) - finalTranslateListHeight;
++                    scrollAdditionalOffset = dp((hasStories ? DialogStoriesCell.HEIGHT_IN_DP : 0) + org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)) - finalTranslateListHeight; // MultiGram: pairs with translateListHeight
+                     viewPages[0].setTranslationY(0);
+                     for (int i = 0; i < viewPages.length; i++) {
+                         if (viewPages[i] != null) {
+```
+
+**Why:** The scroll correction at the end of the animation. It must match H16.
+
+**If the code moved:** The check requires H17 inside `showOrUpdateActionMode`, directly before `viewPages[0].setTranslationY(0);`.
+
+
+##### H18. No bar at rest
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Class `DialogsActivity`, method `checkUi_searchFieldVisibility()`: the line that sets `alphaByScrollOffset`. In Forkgram 12.10.6 the text below starts at line 14235.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+        final float alphaByScrollOffset = 1f - MathUtils.clamp((-scrollYOffset - maxScrollWithoutSearch) / dp(SEARCH_FIELD_HEIGHT), 0, 1);
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+         }
+ 
+         final int maxScrollWithoutSearch = getMaxScrollYOffsetWithoutSearch();
+-        final float alphaByScrollOffset = 1f - MathUtils.clamp((-scrollYOffset - maxScrollWithoutSearch) / dp(SEARCH_FIELD_HEIGHT), 0, 1);
++        final float alphaByScrollOffset = org.telegram.messenger.multigram.HideSearchBar.restAlpha(this, 1f - MathUtils.clamp((-scrollYOffset - maxScrollWithoutSearch) / dp(SEARCH_FIELD_HEIGHT), 0, 1)); // MultiGram: no bar at rest; the field shows only while searching
+ 
+         final float actionModeVisible = Math.max(progressToActionMode, animatorActionModeVisible.getFloatValue());
+         final float searchFieldVisible = animatorSearchVisible.getFloatValue();
+```
+
+**Why:** This method is the only code that sets the field's alpha and visibility. `restAlpha` keeps the stock value while the option is off. While it is on, the bar's alpha from scrolling is 0, so the field shows only while searching (`animatorSearchVisible` then keeps it visible). The method's last line would then show the header icon, as stock does once the bar has scrolled away. H21 stops that.
+
+**If the code moved:** Wrap the whole stock value of `alphaByScrollOffset` in `org.telegram.messenger.multigram.HideSearchBar.restAlpha(this, ...)`. The check requires the hook in `checkUi_searchFieldVisibility`, together with the stock `fragmentSearchField.setVisibility(alpha > 0 ? View.VISIBLE : View.GONE);` and `animatorSearchButtonVisible.setValue(alpha <= 0.01f, true);`, and with that method's own `factor0` line left stock (see H21).
+
+
+##### H19. Fork Client Settings: the row
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/ForkSettingsActivity.java`
+
+**Where:** Class `ForkSettingsActivity`, method `fillSettings(ArrayList<UItem>)`, section "Chat list view": right after the "Disable Global Search" row. In Forkgram 12.10.6 the text below starts at line 576.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+        items.add(UItem.asButtonCheck(ID_DISABLE_GLOBAL_SEARCH, LocaleController.getString(R.string.DisableGlobalSearch), LocaleController.getString(R.string.DisableGlobalSearchInfo))
+            .setChecked(pref("disableGlobalSearch", false)).setMultiline(true));
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+             .setChecked(pref("disableThumbsInDialogList", false)).setMultiline(true));
+         items.add(UItem.asButtonCheck(ID_DISABLE_GLOBAL_SEARCH, LocaleController.getString(R.string.DisableGlobalSearch), LocaleController.getString(R.string.DisableGlobalSearchInfo))
+             .setChecked(pref("disableGlobalSearch", false)).setMultiline(true));
++        items.add(org.telegram.messenger.multigram.HideSearchBar.settingsRow()); // MultiGram: "Hide chat list search" row, right after Disable Global Search
+         items.add(UItem.asButtonCheck(ID_HIDE_CONTACTS_IN_DIALOGS, LocaleController.getString(R.string.HideContactsInDialogs), LocaleController.getString(R.string.HideContactsInDialogsInfo))
+             .setChecked(pref("hideContactsInDialogs", false)).setMultiline(true));
+         items.add(UItem.asButtonCheck(ID_ENABLE_LAST_SEEN_DOTS, LocaleController.getString(R.string.EnableLastSeenDots), LocaleController.getString(R.string.EnableLastSeenDotsInfo))
+```
+
+**Why:** Adds the row "Hide chat list search" with its info line. `settingsRow()` builds it the way Forkgram builds its own Chat list rows, with id 9101.
+
+**If the code moved:** Keep the row right after the Disable Global Search row. If that row moves or goes, put it in the same section. The check requires the hook in `fillSettings`, directly after `.setChecked(pref("disableGlobalSearch", false)).setMultiline(true));`.
+
+**On plain Telegram (DrKLO):** Forkgram only: `ForkSettingsActivity.java` does not exist in plain Telegram (9.2, item 7).
+
+
+##### H20. Fork Client Settings: the switch
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/ForkSettingsActivity.java`
+
+**Where:** Class `ForkSettingsActivity`, method `onClick(UItem, View, int, float, float)`: right after `final int id = item.id;`. In Forkgram 12.10.6 the text below starts at line 744.
+
+**Find this** (it occurs once in the file; text from Forkgram 12.10.6):
+
+```java
+    private void onClick(UItem item, View view, int position, float x, float y) {
+        final int id = item.id;
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+ 
+     private void onClick(UItem item, View view, int position, float x, float y) {
+         final int id = item.id;
++        if (org.telegram.messenger.multigram.HideSearchBar.onSettingsClick(item, view)) return; // MultiGram: "Hide chat list search" toggle
+ 
+         if (id == ID_HIDE_SENSITIVE_DATA) {
+             toggle("hideSensitiveData", item, view);
+```
+
+**Why:** Handles a tap on the row: it flips the value, saves it with `commit`, and checks the cell, as Forkgram's private `toggle()` does. For every other row it returns `false`, so Forkgram's own rows work as before.
+
+**If the code moved:** The first statement after the click handler of the settings screen reads the row's id. The check requires the hook directly after `final int id = item.id;` at the start of `onClick`.
+
+**On plain Telegram (DrKLO):** Forkgram only.
+
+
+##### H21. No header search icon either
+
+**File:** `TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java`
+
+**Where:** Class `DialogsActivity`, method `checkUi_itemSearchVisibility()`: its first line. In Forkgram 12.10.6 the text below starts at line 14319.
+
+**Find this** (its second line occurs twice in the file, the whole block once; text from Forkgram 12.10.6):
+
+```java
+    private void checkUi_itemSearchVisibility() {
+        final float factor0 = isSupportSearch() ? 1 : 0;
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+     }
+ 
+     private void checkUi_itemSearchVisibility() {
+-        final float factor0 = isSupportSearch() ? 1 : 0;
++        final float factor0 = isSupportSearch() && !org.telegram.messenger.multigram.HideSearchBar.hides(this) ? 1 : 0; // MultiGram: "no search": no header search icon either
+         final float factor1 = animatorSearchButtonVisible.getFloatValue();
+         final float factor2 = 1f - getRightSlidingProgress();
+         final float factor3 = 1f - animatorDoneButtonVisible.getFloatValue();
+```
+
+**Why:** The header icon's visibility is the product of four factors. Stock shows the icon whenever the bar is invisible, and H18 keeps the bar invisible at rest. With `factor0` at 0 while the option is on, the icon never shows in the chat list. This one line is what makes this the "no search" variant.
+
+**If the code moved:** Change the factor that says whether this list supports search, in the method that sets `searchItem`'s visibility. Leave the identical line in `checkUi_searchFieldVisibility` alone: there it decides whether the field can show at all, also while searching (8.5.6). The check requires the hook as the only `factor0` of `checkUi_itemSearchVisibility`, as its first line, directly followed by the stock `factor1` line, and the stock `factor0` line exactly once, in `checkUi_searchFieldVisibility`.
+
+
+##### H22. check.sh: run the check
+
+**File:** `multigram/tools/check.sh`
+
+**Where:** MultiGram's own file. After the style knobs block, before the rebrand self-test block (K24).
+
+**Find this** (it occurs once in the file; text from the file as commit 4780eb095b left it):
+
+```sh
+  python3 multigram/tools/style_knobs_check.py
+fi
+```
+
+**Change it to** (lines starting with `-` go, lines starting with `+` are added, the rest stays):
+
+```diff
+   python3 multigram/tools/style_knobs_check.py
+ fi
+ 
++if [ -f multigram/tools/hide_search_bar_check.py ]; then
++  # "Hide chat list search": hooks and their placement, every bar-height use reviewed, one owned setting.
++  echo "== hide search bar: hooks, reviewed bar-height uses and owned setting"
++  python3 multigram/tools/hide_search_bar_check.py
++fi
++
+ if [ -f multigram/rebrand/selftest.py ]; then
+   # Rebrand toolkit: generate two identities on a scratch copy, check the output, then --clean back to the commit.
+   echo "== rebrand toolkit: self-test"
+```
+
+**Why:** CI runs `hide_search_bar_check.py` on every build and every sync candidate.
+
+**If the code moved:** Order does not matter. The `[ -f ... ]` guard lets older trees without the file pass.
+
+
+#### 8.5.4 Data
+
+Nothing is generated or derived.
+
+| What | Value | Where it is set |
+|---|---|---|
+| The setting | Key `multigramHideSearchBar` in `mainconfig` (`MessagesController.getGlobalMainSettings()`, the file of Forkgram's own Chat list rows). A boolean, default `false`, written only by the row, with `commit`. | `HideSearchBar.KEY` |
+| The row's id | 9101: above 0, so the search inside Fork settings finds the row, and clear of Forkgram's ids (1 to 100). The check compares it with every `ID_...` and `MENU_SEARCH` in `ForkSettingsActivity.java`. | `HideSearchBar.ROW_ID` |
+| Scope | Lists with the default dialogs type, without the `onlySelect` argument, for which `isMainDialogList()` is true (no delegate, no search string), decided once per list | `HideSearchBar.inScope`. To keep community lists stock, add `&& !f.isCommunity()`; a comment there says so. |
+| Bar height | `SEARCH_FIELD_HEIGHT = 48` (dp), unchanged | Stock `DialogsActivity` |
+
+Forkgram's settings export (`forkgram/SettingsBackup.kt`) exports and imports all of `mainconfig`, so the setting comes along. The Android backup agent does not back up `mainconfig`.
+
+The two strings, in `TMessagesProj/src/main/res/values/multigram_strings.xml` (English only, read with `Context.getString`):
+
+```xml
+    <string name="MultiGramHideSearchBar">Hide chat list search</string>
+    <string name="MultiGramHideSearchBarInfo">Remove the search bar and the search icon from the chat list.</string>
+```
+
+The resource names and the key keep the name `HideSearchBar` of the first design. Only the texts changed.
+
+#### 8.5.5 Regenerate and verify
+
+Nothing is generated in this unit. To verify, from the root of a checkout:
+
+```sh
+python3 multigram/tools/hide_search_bar_check.py
+python3 multigram/tools/hide_search_bar_check.py --base origin/forkgram
+bash multigram/tools/check.sh
+```
+
+- Both checks print `hide-search-bar: OK`, in under a second. With `--base`, every non-blank line the stack adds to `DialogsActivity.java` and `ForkSettingsActivity.java` must carry `MultiGram:`, or follow a `// MultiGram:` comment line (the form of R2 and R3).
+- A failure lists each problem, then `hide-search-bar: FAILED, N problem(s)`, with exit status 1. For example, with H7 put back to stock:
+
+  ```text
+  hide-search-bar: hook '^                t \\+= dp\\(org\\.telegram\\.messenger\\.multigram\\.HideSearchBar\\.restHeight\\(DialogsActivity\\.this, SEARCH_FIELD_HEIGHT\\)\\); // MultiGram: ' found 0 times in TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java (expected 1)
+  hide-search-bar: TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java: unreviewed use of the bar height (a new upstream use, or a stock line a hook replaced): t += dp(SEARCH_FIELD_HEIGHT);
+  hide-search-bar: TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java: the list padding hook must directly follow "if (!actionModeFullyShowed) {"
+  hide-search-bar: FAILED, 3 problem(s)
+  ```
+
+  Patterns are printed as Python strings, so each backslash shows doubled.
+- `check.sh` prints `== hide search bar: hooks, reviewed bar-height uses and owned setting` and `hide-search-bar: OK` between the style knobs check and the rebrand self-test, and ends with `== all MultiGram checks passed`. On ff868b3ea4 it took 1 minute 13 seconds on 4 cores.
+
+**When the check reports `unreviewed use of the bar height`.** An update added or changed a line of `DialogsActivity.java` that uses `SEARCH_FIELD_HEIGHT`, or a hook line lost its marker. Read the line in context and decide:
+
+- If the line is part of the room the bar keeps at rest (list padding, header height, a scroll limit), hook it like the others, with `restHeight` inside its `dp(...)`, and add it to `H` and `LAYOUT` in the check.
+- Otherwise add its text, without indentation, to `REVIEWED` in the check, with the number of times it occurs.
+
+The message `reviewed line ... found N times (expected M)` means upstream removed or doubled a reviewed line: review it the same way and fix the count. Fold the change into "Add an option to remove the chat list search bar" (6.3).
+
+**On a device** (the full list is "Device test checklist" in `multigram/hide-search-bar/README.md`, 14 items):
+
+1. With the option off (the default), the chat list is exactly stock: the bar at rest and hiding on scroll, the header icon once the bar has scrolled away, search from both, and the icon's long-press opening Saved Messages. Compare it with a Forkgram build.
+2. Turn the option on in **Fork Client Settings > Chat list view** and go back to Chats: no bar, no gap and no search icon, with the first chat right under the header or the folder tabs. With a hidden Archive, no strip of the Archive row shows. Check the Archive, a folder and a community list too.
+3. Search still opens from the Downloads item (while a file downloads), from a `tg://search?query=` link and from the forum topics column's search icon. The field fades in in the header, and closing search brings back the list with no bar and no icon.
+4. Action mode, stories (collapse, expand, fling) and the topics column cause no jump.
+5. Pickers (forward, share from another app) keep their stock bar.
+6. Turn the option off and go back: the bar is back at rest, with the first chat under it. The header search icon may show and fade out over about a third of a second (350 ms). Stock does the same when the bar scrolls back in, so this is expected.
+
+#### 8.5.6 Gotchas
+
+- **Most hooks change one word inside an existing `dp(...)`.** 13 of them (H1 to H4, H6 to H10, H14 to H17) only put `org.telegram.messenger.multigram.HideSearchBar.restHeight(DialogsActivity.this, SEARCH_FIELD_HEIGHT)` in place of `SEARCH_FIELD_HEIGHT`. The rest of each line is upstream's text. So when upstream edits one of these lines, for example to add a factor or rename a variable, git reports a conflict on the whole line. Take Forkgram's new line and make the same one-word change in it again. Never keep MultiGram's side: it would bring back the old line. Then run the check: it matches each hook line exactly, and it also finds a stock line that came back.
+- **Keep the call inside `dp(...)`.** `restHeight` works in dp and returns 0 while the option is on, and `dp(0)` is 0. Do not move it outside (`restHeight(..., dp(SEARCH_FIELD_HEIGHT))`) or write 48: the check matches the exact text.
+- **Two identical `factor0` lines.** `final float factor0 = isSupportSearch() ? 1 : 0;` is in `checkUi_searchFieldVisibility` (it decides whether the field can show at all) and, lower down, in `checkUi_itemSearchVisibility` (the header icon). H21 changes only the second one. An editor's search, or a `sed` that takes the first match, changes the wrong one. Search opened from Downloads or a link would then show no field, and the icon would come back. The check reports it with four problems: the stock line must stay exactly once in `checkUi_searchFieldVisibility`, and the hook must be the first line of `checkUi_itemSearchVisibility`. A search for the text alone finds other near-twins too: H14 and H16 differ only in their indentation, and `t += dp(SEARCH_FIELD_HEIGHT);` (H7) also matches the end of H8's line. Use the blocks of 8.5.3, which occur once.
+- **`this` or `DialogsActivity.this`.** Every `restHeight` hook passes `DialogsActivity.this`, which works everywhere. Most of them sit in inner classes (`ContentView`, `DialogsRecyclerView`, the page's `LinearLayoutManager`, animator listeners), where `this` would be the inner object and would not compile. H11, H12, H13, H18 and H21 pass `this`, because they sit in `DialogsActivity`'s own methods. Keep each as its block shows: the check matches the text.
+- **Hooks that must pair up:** H2 and H3; H4, H6 and H8 (topics column); H9 and H10 (fling); H14 to H17 (action mode). Change one, change its partners.
+- **H13 must come before `onResume`'s `notifyDataSetChanged()`.** See H13.
+- **Deliberately not hooked:** the `SEARCH_FIELD_HEIGHT = 48` declaration (`javac` copies the constant into other classes, and it also sets how far the field slides in search), `FragmentSearchField.java` (shared with other screens; the check fails if it names MultiGram), the tabs' layout line in `ContentView.onLayout` (H12 compensates), and a few cosmetic lines. The README lists them all. `REVIEWED` in the check holds each of these lines of `DialogsActivity.java`; the check tests `FragmentSearchField.java` separately.
+- **The ways into search that stay are checked.** If an update stops the icon's click listener, the Downloads item or `search(String, boolean)` from calling `showSearch`, or `TopicsFragment` stops calling `searchItem.performClick()`, the check fails. Then review "What still opens search" in the README, and update the README and the check together.
+- **The topics column's icon opens search through the hidden header icon.** `performClick()` runs the click listener even while the icon is hidden. Never block that listener: it would also break the topics column's search.
+- **Scope is decided once per list,** at first use, because a picker may reset its delegate later. Pickers and `#hashtag` screens are out of scope and keep the stock bar.
+- **Forkgram-only dependencies:** `ForkSettingsActivity.java` (the row), `UItem.setMultiline` (in `settingsRow()`), and `forkgram/SettingsBackup.kt`, which the check reads.
+- **The strings are English only.** They are read with `Context.getString`, not `LocaleController`, like the other MultiGram strings.
+- **To go back to the "search icon" variant** (bar hidden, icon shown), follow "Considered and not done" in the README: undo H21, and change the two strings and the check.
+
 ## 9. Plain Telegram (DrKLO)
 
-This section says what happens if you put the stack on Telegram's own code (DrKLO/Telegram) instead of Forkgram. It was tested by applying the six exported patches (5.7) with `git am -3`, one at a time, to DrKLO dc780e81e ("update to 12.10.5 (7105)"), the Telegram base of Forkgram 12.10.6.
+This section says what happens if you put the stack on Telegram's own code (DrKLO/Telegram) instead of Forkgram. It was tested by applying the seven exported patches (5.7) with `git am -3`, one at a time, to DrKLO dc780e81e ("update to 12.10.5 (7105)"), the Telegram base of Forkgram 12.10.6.
 
 ### 9.1 What applies
 
@@ -3480,6 +4279,7 @@ This section says what happens if you put the stack on Telegram's own code (DrKL
 | 27d32d57b4 random style | Yes, cleanly. Every hook lands where the check expects it. | none | `ThemeInfo.isMonet()` in `RandomStyle.java` (a compile error); `random_style_check.py` crashes because `forkgram/SettingsBackup.kt` is missing |
 | 3b941c01de knobs | Yes, cleanly. `style_knobs_check.py` passes. | none | none |
 | 4780eb095b CI | Yes, cleanly. | none | Indirect: `check.sh` stops at the random style check, and the rebrand self-test fails on DrKLO's icons (9.2, item 2). |
+| ff868b3ea4 hide search | No: `git am -3` stops on one file. The new files and the 19 `DialogsActivity.java` hooks go in cleanly, where the check expects them. | `ForkSettingsActivity.java` (the file does not exist: hooks H19 and H20) | `UItem.setMultiline` in `HideSearchBar.java` (a compile error); `hide_search_bar_check.py` crashes because `ForkSettingsActivity.java` and `forkgram/SettingsBackup.kt` are missing (9.2, item 7) |
 
 So the text applies almost completely, but the result does not build or pass `check.sh` as it is.
 
@@ -3498,6 +4298,10 @@ So the text applies almost completely, but the result does not build or pass `ch
 4. **`random_style_check.py`.** Make the `SettingsBackup.kt` part optional. DrKLO has no settings export. The Android backup part applies as it is.
 5. **API id and hash.** DrKLO sets `APP_ID = 4` and Telegram's `APP_HASH` in `BuildVars.java`, and ignores the `APP_ID` and `APP_HASH` Gradle properties that the APK job writes. Forkgram copies them from `BuildConfig` (`BuildVars.java` lines 66 and 67). On DrKLO, edit `BuildVars.java` or port Forkgram's way.
 6. **Application id and Firebase.** DrKLO's id is `org.telegram.messenger`, the official app's id. A rebrand, or at least a new id, is required. DrKLO applies the google-services plugin in two modules: `TMessagesProj/build.gradle` (line 253) and `TMessagesProj_App/build.gradle` (line 208). Both `google-services.json` files list only `org.telegram.messenger`, `.beta` and `.web`. For a new id, put a `google-services.json` from your own Firebase project that lists `<id>`, `<id>.beta` and `<id>.web` in `TMessagesProj_App/`, or delete the `apply plugin` line of `TMessagesProj_App/build.gradle`. While that line is there, the rebrand generator warns about it (item 2).
+7. **Hide chat list search** (patch 7). Its 19 hooks in `DialogsActivity.java` apply cleanly, but its settings row (H19, H20) belongs in `ForkSettingsActivity.java`, which plain Telegram does not have. Without a row nothing turns the option on, and with the option off the hooks behave as stock. So either leave patch 7 out (`git am --skip`, 9.4), or keep it and:
+   - Remove `.setMultiline(true)` from `HideSearchBar.settingsRow()`. `UItem.setMultiline` exists only in Forkgram, so the file does not compile otherwise.
+   - Give the row a new home in Telegram's own settings screens. This has not been written or tested.
+   - In `hide_search_bar_check.py`, make the parts that read `ForkSettingsActivity.java` and `forkgram/SettingsBackup.kt` optional: the check stops with `FileNotFoundError` on the first. Also add `"maxScrollYOffset = dp(SEARCH_FIELD_HEIGHT);": 1` to `REVIEWED`: DrKLO's `DialogsActivity.java` has one more use of the bar height (line 4580 in dc780e81e), in scroll code that never runs, because `applyScrollY` is set to `false` just before it. With these changes the rest of the check passes on DrKLO.
 
 ### 9.3 Build differences
 
@@ -3528,24 +4332,33 @@ git checkout --ours TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.
 sed -i -e '/^<<<<<<< /d' -e '/^=======$/d' -e '/^>>>>>>> /d' TMessagesProj_App/build.gradle
 git add TMessagesProj/src/main/java/org/telegram/ui/DialogsActivity.java TMessagesProj_App/build.gradle
 git am --continue
-git am -3 /path/to/multigram-patches/000[2-6]-*.patch
+git am -3 /path/to/multigram-patches/000[2-7]-*.patch
 ```
 
 - `git rm` drops R3 and R4 with Forkgram's file. `git checkout --ours` keeps DrKLO's `DialogsActivity.java`, without R2. The `sed` deletes the three marker lines, the only conflict in `build.gradle`: DrKLO's `apply plugin` line stays first and R5 follows.
 - Patches 2 to 6 then apply without conflicts.
+- Patch 7 stops once more, with `CONFLICT (modify/delete)` on `ForkSettingsActivity.java`, because that file is gone. `git am` calls it patch 0006, because it counts the patches of this run. Its `DialogsActivity.java` part merges cleanly.
 
-Then make changes 2 to 6 of 9.2 and commit them; without change 3 the Java code does not compile. To check the result:
+Settle patch 7 in one of two ways. To leave the option out, run `git am --skip`. To keep its chat list hooks without the settings row (9.2, item 7):
+
+```sh
+git rm -q TMessagesProj/src/main/java/org/telegram/ui/ForkSettingsActivity.java
+git am --continue
+```
+
+Then make changes 2 to 6 of 9.2, and change 7 if you kept patch 7, and commit them. Without change 3 the Java code does not compile, nor without change 7 when patch 7 is kept. To check the result:
 
 ```sh
 python3 multigram/tools/palette_fix_check.py --base dc780e81e
 python3 multigram/tools/style_knobs_check.py --base dc780e81e
 python3 multigram/tools/random_style_check.py --base dc780e81e
+python3 multigram/tools/hide_search_bar_check.py --base dc780e81e
 git grep -n -e 'multigram\.Rebrand\.' -e 'multigram/rebrand/rebrand.gradle' -- TMessagesProj TMessagesProj_App
 ```
 
-- The first two print `OK` right after the patches. `random_style_check.py` stops with `FileNotFoundError` on `SettingsBackup.kt` until change 4 is done; then it prints `OK` too.
+- The first two print `OK` right after the patches. `random_style_check.py` stops with `FileNotFoundError` on `SettingsBackup.kt` until change 4 is done; then it prints `OK` too. If you kept patch 7, `hide_search_bar_check.py` stops with `FileNotFoundError` on `ForkSettingsActivity.java` until change 7 is done; then it prints `OK` too.
 - The `git grep` prints 2 lines here (R1 and R5), not the 5 of 5.4.
-- `bash multigram/tools/check.sh` stops at the random style check until change 4 is done, and at the rebrand self-test until change 2 is done and the google-services `apply plugin` line of `TMessagesProj_App/build.gradle` is gone (change 6). While that line is there, the self-test fails `seed A: no warnings`.
+- `bash multigram/tools/check.sh` stops at the random style check until change 4 is done, at the hide search bar check until change 7 is done (if you kept patch 7), and at the rebrand self-test until change 2 is done and the google-services `apply plugin` line of `TMessagesProj_App/build.gradle` is gone (change 6). While that line is there, the self-test fails `seed A: no warnings`.
 
 ## 10. Verifying
 
@@ -3573,25 +4386,27 @@ Past runs took about 8 to 9 minutes: about 4.5 minutes to compile and about 3 mi
 
 ### 10.2 check.sh
 
-`bash multigram/tools/check.sh` needs only bash and python3. It took 1 minute 8 seconds on 4 cores locally, and 2 to 3 minutes on CI. It stops at the first failure. Each part prints a header line that starts with `==`:
+`bash multigram/tools/check.sh` needs only bash and python3. On ff868b3ea4 it took 1 minute 13 seconds on 4 cores locally, and about 3 minutes on CI (3 minutes 7 seconds in run 36467179859). It stops at the first failure. Each part prints a header line that starts with `==`:
 
 | Header | What it checks | Passes with | A failure usually means |
 |---|---|---|---|
 | `== palette fix: ...` | `palette_fix_check.py`: colour values, `PaletteFix.java` tables, the 12 palette hook lines | `palette-fix: OK` | A palette hook is missing or doubled, or upstream changed a colour that overlay A replaces. See 8.2.5. |
 | `== random style: ...` | `random_style_check.py`: the 15 hooks and their places, privacy, strings, backup policy | `random-style: OK` | A random style hook is missing or in the wrong place. A Python `FileNotFoundError` means Forkgram moved `forkgram/SettingsBackup.kt`. A line `<file>: <X> not found after <Y>` can also mean that upstream changed a line the check uses as a landmark (`check_placement()` in `random_style_check.py`): if the hook still sits where its "If the code moved" says, update that pattern. See 8.3.5. |
 | `== style knobs: ...` | `style_knobs_check.py`: the knob hooks, stock lines gone, safe ranges | `style-knobs: OK` | A knob hook is missing, a stock line came back, or upstream reformatted a hooked line. Placement failures can also come from a changed landmark (8.4.2 lists them in `style_knobs_check.py`). See 8.4.5. |
+| `== hide search bar: ...` | `hide_search_bar_check.py`: the 21 hooks and their places, the ways into search left stock, every other use of the bar height, the one setting and its row | `hide-search-bar: OK` | A hook is missing or moved, a stock line came back, or upstream added or changed a line that uses `SEARCH_FIELD_HEIGHT` (`unreviewed use of the bar height`). A placement failure can also come from a changed landmark next to a hook (8.5.2). A Python `FileNotFoundError` means Forkgram moved a file the check reads. See 8.5.5. |
 | `== rebrand toolkit: self-test` | `selftest.py`: two generated identities and `--clean` | `PASSED: 0 failure(s)` | Forkgram renamed or re-encoded an icon, string or account type literal the generator targets. The error names it, for example `update ICON_TARGETS`. See 8.1.5. |
 | `== style table: format and readability ...` | `check_style_table.py`: all 20,480 styles on this tree's theme sources | `style table check: PASS (...)` | Upstream colours changed so much that some styles are unreadable. Make a new table (8.3.5). |
 | `== style table: does this tree regenerate the same asset?` | `make_style_table.py --check` | `identical to ...` | Status 3 prints a `WARNING` and passes: make a new table when convenient. Status 4 fails: fix the palette first. Any other status fails with `FAIL: make_style_table.py exited with status N`. |
 
 The last line on success is `== all MultiGram checks passed`.
 
-A fix to a check script goes into the commit that added the script (6.3): `random_style_check.py` into "Give each install its own random style", `style_knobs_check.py` into "Randomise shapes and chat list layout per install", `palette_fix_check.py` into "Fix palette contrast for generated accents".
+A fix to a check script goes into the commit that added the script (6.3): `random_style_check.py` into "Give each install its own random style", `style_knobs_check.py` into "Randomise shapes and chat list layout per install", `palette_fix_check.py` into "Fix palette contrast for generated accents", `hide_search_bar_check.py` into "Add an option to remove the chat list search bar".
 
 ### 10.3 Hooks no script checks
 
 - The four rebrand Java hooks: run the `git grep` of 8.1.5 and expect 5 lines (with R5).
 - Seven of the nine MultiGram lines in `ChatActivityEnterView.java` (P14, and all of P15 except the `int glyph = ...` and `drawableInverse` lines). Read them with `git grep -n MultiGram -- TMessagesProj/src/main/java/org/telegram/ui/Components/ChatActivityEnterView.java`. It must print 9 lines.
+- The `check.sh` steps that run the checks (K23, K24, H22, and the random style step that 27d32d57b4 adds). If one is missing, its check silently does not run. `bash multigram/tools/check.sh` must print the seven `==` headers of the table in 10.2 before `== all MultiGram checks passed`.
 
 ### 10.4 Release APK
 
@@ -3623,8 +4438,9 @@ After each update:
 7. **Monet:** a selected Monet theme survives a restart. Shuffle replaces it with a generated style (by design). "Reset to defaults" leaves it alone.
 8. **Rebranded build only:** app name, launcher, splash and notification icons, a single icon in the icon picker, the chat list title, and the account in **Settings > Accounts** with working contact sync.
 9. **Tablet or unfolded foldable:** knob values from the first frame.
+10. **Hide chat list search** (Fork Client Settings > Chat list view): off, the chat list is exactly stock. On, Chats, a folder and the Archive show no search bar and no search icon, and the first chat sits right under the header. The Downloads item, a `tg://search?query=` link and the forum topics column's search icon still open search. Pickers keep their bar. See 8.5.5.
 
-The full lists are in `multigram/random-style/README.md` (15 items) and `multigram/style-knobs/README.md` (10 items).
+The full lists are in `multigram/random-style/README.md` (15 items), `multigram/style-knobs/README.md` (10 items) and `multigram/hide-search-bar/README.md` (14 items).
 
 ## 11. Keeping this guide current
 
@@ -3643,7 +4459,7 @@ for part in re.split(r'^##### ', doc, flags=re.M)[1:]:
     hook = part.split('.')[0]
     path = re.search(r'\*\*File:\*\* `([^`]+)`', part).group(1)
     if 'multigram' in path.split('/'):
-        continue  # MultiGram's own files (K18 to K24)
+        continue  # MultiGram's own files (K18 to K24, H22)
     show = subprocess.run(['git', 'show', rev + ':' + path], capture_output=True, text=True)
     if show.returncode:
         print(hook, path, 'is missing')
@@ -3678,14 +4494,14 @@ git diff --name-only --diff-filter=A origin/forkgram origin/multigram
 git diff -U0 --diff-filter=M origin/forkgram origin/multigram -- . ':!multigram' ':!TMessagesProj/src/main/java/org/telegram/messenger/multigram'
 ```
 
-1. The first command lists the upstream files the stack touches. On 4780eb095b it ends with `30 files changed, 114 insertions(+), 73 deletions(-)`: 78 and 37 lines in Java and Gradle files, plus 36 and 36 in the `.attheme` files.
-2. The second lists the new files: 37 on 4780eb095b.
+1. The first command lists the upstream files the stack touches. On ff868b3ea4 it ends with `30 files changed, 135 insertions(+), 89 deletions(-)`: 99 and 53 lines in Java and Gradle files, plus 36 and 36 in the `.attheme` files.
+2. The second lists the new files: 40 on ff868b3ea4.
 3. The third shows every hook line with no context.
 
 The code blocks of each hook come straight from git:
 
-- "Change it to" is `git diff -U3 <commit>^ <commit> -- <file>` for the commit that adds the hook. The value lists P1 to P6 use `-U0`, which shows only the changed lines.
-- "Find this" is the matching text in `git show origin/forkgram:<file>`, and the line number in "Where" is its line there. For hooks in MultiGram's own files (K18 to K24), and for K1, which sits on the line after S1, it is the text in the file as the previous stack commit left it.
+- "Change it to" is `git diff -U3 <commit>^ <commit> -- <file>` for the commit that adds the hook. The value lists P1 to P6 use `-U0`, which shows only the changed lines. When two hooks are so close that git shows them in one hunk, each block keeps only its own change and the stock lines around it (K6 and K7, H4 and H5, H9 and H10). H2 and H3 are on adjacent lines, so git prints both `-` lines before both `+` lines: H2's block shows that hunk as git prints it, and H3's block keeps only its own two lines.
+- "Find this" is the matching text in `git show origin/forkgram:<file>`, and the line number in "Where" is its line there. For hooks in MultiGram's own files (K18 to K24 and H22), and for K1, which sits on the line after S1, it is the text in the file as the previous stack commit left it.
 
 When a hook changes, refresh its blocks with these commands. Do not type code by hand.
 
@@ -3698,15 +4514,15 @@ Change the table in 1.1:
 - the `forkgram` and `main` commits;
 - the date.
 
-Then update the data that belongs to one version. Most of it is marked "on 4780eb095b", "in Forkgram 12.10.6" or "today"; `grep -n -e '4780eb095b' -e '12\.10\.6' -e '[Tt]oday' PATCH.md` finds those places. In short:
+Then update the data that belongs to one version. Most of it is marked "on ff868b3ea4", "in Forkgram 12.10.6" or "today"; `grep -n -e 'ff868b3ea4' -e '12\.10\.6' -e '[Tt]oday' PATCH.md` finds those places. In short:
 
 - the counts in 3.1, and the stat line and file count in 11.1;
 - the "starts at line" of each hook (the script in 11.1 names the stale ones);
 - line numbers in MultiGram's own files: 6.2 and 9.2 (`PaletteFix.java` 165, 225 and 316; `RandomStyle.java` 449 and 624), and `selftest.py` line 270 (8.1.4, 8.1.6);
-- the problem counts in 7.4 (59, 27 and 35), and the line counts of the `git grep` commands in 5.4, 8.1.5, P13 and 8.2.6;
+- the problem counts in 7.4 (59, 27, 35 and 61), the line counts of the `git grep` commands in 5.4, 8.1.5, P13 and 8.2.6, and the seven `check.sh` headers of 10.3;
 - 8.1.4 (string lines, 54 icon files), the old-value counts in P3 and P6, and the values and contrasts in 8.2.4;
-- the expected outputs in 8.1.5, 8.2.5 and 8.3.5, and the CRC in 8.3.4;
-- the timings in 4.4, 8.1.5, 8.3.5, 8.4.5, 8.4.6, 10.1 and 10.2;
+- the expected outputs in 8.1.5, 8.2.5, 8.3.5 and 8.5.5, and the CRC in 8.3.4;
+- the timings in 4.4, 8.1.5, 8.3.5, 8.4.5, 8.4.6, 8.5.5, 10.1 and 10.2;
 - the DrKLO commit and line numbers in section 9.
 
 This guide lives on the branch `docs`. If you keep a separate worktree for that branch, run these commands there instead of switching:
