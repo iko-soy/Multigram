@@ -23,6 +23,12 @@ if [ -f multigram/tools/style_knobs_check.py ]; then
   python3 multigram/tools/style_knobs_check.py
 fi
 
+if [ -f multigram/tools/hide_search_bar_check.py ]; then
+  # "Hide chat list search": hooks and their placement, every bar-height use reviewed, one owned setting.
+  echo "== hide search bar: hooks, reviewed bar-height uses and owned setting"
+  python3 multigram/tools/hide_search_bar_check.py
+fi
+
 if [ -f multigram/rebrand/selftest.py ]; then
   # Rebrand toolkit: generate two identities on a scratch copy, check the output, then --clean back to the commit.
   echo "== rebrand toolkit: self-test"
