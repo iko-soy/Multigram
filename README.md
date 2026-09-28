@@ -113,6 +113,8 @@ plain Forkgram checkout (`git am -3`).
 
 - `multigram/rebrand/`: the rebrand toolkit that gives a build its own name, applicationId,
   launcher icon and signing key (instructions in its `README.md`).
+- `multigram/hide-search-bar/`: the "Hide chat list search" option in Fork Client Settings >
+  Chat list view (off by default), which removes the search bar and search icon from the chat list.
 - `multigram/`: the other MultiGram tools and notes, such as the per-install random style and
   its palette check; the app code is in
   `TMessagesProj/src/main/java/org/telegram/messenger/multigram/`.
