@@ -576,6 +576,7 @@ public class ForkSettingsActivity extends BaseFragment {
             .setChecked(pref("disableThumbsInDialogList", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_DISABLE_GLOBAL_SEARCH, LocaleController.getString(R.string.DisableGlobalSearch), LocaleController.getString(R.string.DisableGlobalSearchInfo))
             .setChecked(pref("disableGlobalSearch", false)).setMultiline(true));
+        items.add(org.telegram.messenger.multigram.HideSearchBar.settingsRow()); // MultiGram: "Hide chat list search" row, right after Disable Global Search
         items.add(UItem.asButtonCheck(ID_HIDE_CONTACTS_IN_DIALOGS, LocaleController.getString(R.string.HideContactsInDialogs), LocaleController.getString(R.string.HideContactsInDialogsInfo))
             .setChecked(pref("hideContactsInDialogs", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_ENABLE_LAST_SEEN_DOTS, LocaleController.getString(R.string.EnableLastSeenDots), LocaleController.getString(R.string.EnableLastSeenDotsInfo))
@@ -744,6 +745,7 @@ public class ForkSettingsActivity extends BaseFragment {
 
     private void onClick(UItem item, View view, int position, float x, float y) {
         final int id = item.id;
+        if (org.telegram.messenger.multigram.HideSearchBar.onSettingsClick(item, view)) return; // MultiGram: "Hide chat list search" toggle
 
         if (id == ID_HIDE_SENSITIVE_DATA) {
             toggle("hideSensitiveData", item, view);
