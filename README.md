@@ -21,6 +21,17 @@ the exact code, so the stack can be re-applied by hand.
 code (a few minutes). Tick **APK** to also build a release APK; it compiles the native code
 too, so it takes much longer, and the APK is attached to the run as `multigram-apk`.
 
+## Releases
+
+**Actions > Release MultiGram > Run workflow** builds the release APK of `multigram` and publishes
+it on the Releases page (about 80 minutes; tick **dry_run** to see only the version and notes).
+Versions follow Forkgram's scheme: `12.10.6.1` is the first MultiGram release on Forkgram 12.10.6,
+`12.10.6.2` the second, and after a Forkgram update the count starts again at 1 (at most 9 per
+Forkgram version). The tag is the version. It needs the API id and hash secrets below. Without the
+signing secrets the APK is signed with Forkgram's public test key and published as a pre-release
+that says so. Details: section 10.6 of
+[PATCH.md](https://github.com/iko-soy/Multigram/blob/docs/PATCH.md).
+
 ## Secrets
 
 Set these in **Settings > Secrets and variables > Actions**:

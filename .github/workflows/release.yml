@@ -37,8 +37,44 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  check_secrets:
+    # A job of its own, so that no secret value is registered in the job that writes the release
+    # notes: the runner drops any job output that contains a secret's value (a key alias like
+    # "release" would otherwise blank the notes).
+    name: Check the secrets
+    runs-on: ubuntu-latest
+    outputs:
+      signed: ${{ steps.s.outputs.signed }}
+    steps:
+      - name: Check the secrets
+        id: s
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+          APP_ID: ${{ secrets.MULTIGRAM_APP_ID }}
+          APP_HASH: ${{ secrets.MULTIGRAM_APP_HASH }}
+          KEYSTORE_BASE64: ${{ secrets.MULTIGRAM_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.MULTIGRAM_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.MULTIGRAM_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          # Stop here, in seconds, rather than after the long build. A dry run only warns.
+          problem() { if [ "$DRY_RUN" = true ]; then echo "::warning::$1"; else echo "::error::$1"; exit 1; fi; }
+          if [ -z "$APP_ID" ] || [ -z "$APP_HASH" ]; then
+            problem "The MULTIGRAM_APP_ID and MULTIGRAM_APP_HASH secrets are not set, so the APK could not log in. Add them (Settings > Secrets and variables > Actions) and run this again."
+          fi
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            if [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ]; then
+              problem "MULTIGRAM_KEYSTORE_BASE64 is set, but MULTIGRAM_KEYSTORE_PASSWORD or MULTIGRAM_KEY_ALIAS is not: signing would fail at the end of the build. Add both."
+            fi
+            echo "signed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::warning::No MULTIGRAM_KEYSTORE_BASE64 secret: the release will be signed with Forkgram's public test key and published as a pre-release."
+            echo "signed=false" >> "$GITHUB_OUTPUT"
+          fi
+
   prepare:
     name: Work out the version
+    needs: check_secrets
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.v.outputs.sha }}
@@ -58,9 +94,7 @@ jobs:
           NUMBER: ${{ inputs.number }}
           PRERELEASE: ${{ inputs.prerelease }}
           DRY_RUN: ${{ inputs.dry_run }}
-          APP_ID: ${{ secrets.MULTIGRAM_APP_ID }}
-          APP_HASH: ${{ secrets.MULTIGRAM_APP_HASH }}
-          KEYSTORE_BASE64: ${{ secrets.MULTIGRAM_KEYSTORE_BASE64 }}
+          SIGNED: ${{ needs.check_secrets.outputs.signed }}
         run: |
           set -euo pipefail
           fail() { echo "::error::$1"; exit 1; }
@@ -97,17 +131,9 @@ jobs:
             fg_version=${fg_version:-unknown}; tg_version=${tg_version:-unknown}
           fi
 
-          if [ -z "$APP_ID" ] || [ -z "$APP_HASH" ]; then
-            m="The MULTIGRAM_APP_ID and MULTIGRAM_APP_HASH secrets are not set, so the APK could not log in. Add them (Settings > Secrets and variables > Actions) and run this again."
-            if [ "$DRY_RUN" = true ]; then echo "::warning::$m"; else fail "$m"; fi
-          fi
-          signed=true
-          [ -n "$KEYSTORE_BASE64" ] || signed=false
+          signed=${SIGNED:-false}
           prerelease=$PRERELEASE
-          if [ "$signed" = false ]; then
-            prerelease=true
-            echo "::warning::No MULTIGRAM_KEYSTORE_BASE64 secret: MultiGram $version will be signed with Forkgram's public test key and published as a pre-release."
-          fi
+          [ "$signed" = true ] || prerelease=true
 
           notes=$(mktemp)
           {
@@ -151,7 +177,7 @@ jobs:
 
   build:
     name: Build
-    needs: prepare
+    needs: [check_secrets, prepare]
     if: ${{ !inputs.dry_run }}
     uses: ./.github/workflows/build.yml
     with:
