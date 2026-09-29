@@ -13,7 +13,7 @@ MultiGram is Forkgram plus seven commits of its own. Usually the automatic sync 
 | Written for | `multigram` at ff868b3ea4 |
 | Built on | Forkgram 12.10.6 (Forkgram commit b994e1446e), which is Telegram 12.10.5 (DrKLO commit dc780e81e, "update to 12.10.5 (7105)") |
 | Forkgram snapshot | `forkgram` at 4543767655 |
-| Sync scripts | `main` at da0cc7c548 |
+| Workflows and scripts | `main` at 1f233339e5 (the sync scripts are unchanged since da0cc7c548) |
 | Date | 2026-09-28 |
 
 Line numbers, counts and outputs in this guide are from that state. When you use it after an update, expect line numbers to have moved. Every hook is therefore described by its content, not only by its line. Section 11 says how to bring this guide up to date.
@@ -53,6 +53,7 @@ Output marked "example output" comes from a test with a made-up Forkgram release
 | `main` | README, the workflows and the scripts in `scripts/`. |
 | `multigram-next` | The next `multigram`, while it is being checked or fixed. |
 | `multigram-before-<version>` | A tag on each `multigram` the sync replaced. |
+| `12.10.6.1` and so on | A tag on each published MultiGram release, made by the **Release MultiGram** workflow (10.6). |
 | `docs` | This guide. |
 
 ### 1.4 What you need
@@ -80,7 +81,7 @@ Section 8 describes each of the 84 hooks in the same way:
 
 | What you see | What it means | Go to |
 |---|---|---|
-| No open issue. The last run is green, and `multigram` sits on the new snapshot (see the command below). | The stack moved by itself. | Build an APK and test it (10.4, 10.5). Also re-derive the palette values once (8.2.5, a few seconds): a colour change upstream can make them too weak without any conflict. |
+| No open issue. The last run is green, and `multigram` sits on the new snapshot (see the command below). | The stack moved by itself. | Build an APK and test it (10.4, 10.5), then publish a release (10.6). Also re-derive the palette values once (8.2.5, a few seconds): a colour change upstream can make them too weak without any conflict. |
 | An issue "Forkgram sync needs a hand" that says the stack "does not apply" | A conflict: git could not replay one of the commits. | Section 5 |
 | An issue that says "the compile check failed", and the failed step is **Compile** | The Java code no longer compiles. | Section 6 |
 | The same, but the failed step is **Run MultiGram tool checks** | `check.sh` found a problem. A line `hide-search-bar: ... unreviewed use of the bar height` asks you to review one upstream line, not to fix a bug. | 10.2; for `unreviewed use of the bar height`, 8.5.5 |
@@ -4441,6 +4442,46 @@ After each update:
 10. **Hide chat list search** (Fork Client Settings > Chat list view): off, the chat list is exactly stock. On, Chats, a folder and the Archive show no search bar and no search icon, and the first chat sits right under the header. The Downloads item, a `tg://search?query=` link and the forum topics column's search icon still open search. Pickers keep their bar. See 8.5.5.
 
 The full lists are in `multigram/random-style/README.md` (15 items), `multigram/style-knobs/README.md` (10 items) and `multigram/hide-search-bar/README.md` (14 items).
+
+### 10.6 Publishing a release
+
+**Actions > Release MultiGram > Run workflow** builds the release APK of `multigram` (or the ref you give) and publishes it on the repository's **Releases** page. It takes about as long as the APK build in 10.4, about 80 minutes. From a terminal:
+
+```sh
+gh workflow run release.yml -R iko-soy/Multigram -f ref=multigram
+gh workflow run release.yml -R iko-soy/Multigram -f ref=multigram -f dry_run=true   # version and notes only, in a minute
+```
+
+**Version numbers** follow Forkgram's own scheme, so a MultiGram version says which Forkgram it is built on:
+
+| Part | Example | Where it comes from |
+|---|---|---|
+| Version (versionName and tag) | `12.10.6.1` | `APP_VERSION_NAME` in the snapshot's `gradle.properties` (Forkgram 12.10.6), then the MultiGram release number N for that Forkgram version: 1, 2, 3 ... up to 9. |
+| Android version code | `710619` | `(APP_VERSION_CODE * 10 + N) * 10 + 9`: Forkgram's formula in `utils.gradle` and `TMessagesProj_App/build.gradle`, with N as `ADDITIONAL_BUILD_NUMBER` and 9 for the `afat` flavor. |
+| Release title | `MultiGram 12.10.6.1` | |
+| Assets | `MultiGram-12.10.6.1.apk`, `SHA256SUMS` | |
+
+Leave **number** empty and the workflow takes the next free N from the existing tags. After a Forkgram update the version name changes (say to 12.11.0) and N starts again at 1; its version code is higher, because Forkgram normally raises `APP_VERSION_CODE` with each Telegram release (7106 for 12.10.6). Nine releases on one Forkgram version are the most the version code allows; the workflow refuses a tenth.
+
+**What it checks before it publishes:**
+
+| Check | What happens when it fails |
+|---|---|
+| `MULTIGRAM_APP_ID` and `MULTIGRAM_APP_HASH` are set (10.4) | It stops in the first minute, before the long build: an APK without them cannot log in. A dry run only warns. |
+| With `MULTIGRAM_KEYSTORE_BASE64` set, `MULTIGRAM_KEYSTORE_PASSWORD` and `MULTIGRAM_KEY_ALIAS` are set too | It stops in the first minute. Without them Gradle would fail only when it signs the APK, after the native build. |
+| The tag does not exist yet | It stops and says the version is already released. |
+| The compile check and `check.sh` pass | The same compile job as 10.1 runs first. |
+| The APK's versionName and versionCode are the expected ones (`aapt2 dump badging`) and its signature verifies (`apksigner verify`) | It stops without publishing. The APK stays attached to the run as `multigram-apk`. For a passing problem, such as a network error, **Re-run failed jobs** runs only the publish step again, with the same workflow file. A fix to the workflow needs a new run. |
+
+**Signing.** With the `MULTIGRAM_KEYSTORE_*` secrets set (10.4) the release is signed with your key and becomes the repository's latest release. Without them it is signed with Forkgram's public test key, published as a **pre-release**, and its notes say so in bold. Tick **prerelease** to mark a signed release as a pre-release too.
+
+**The notes** give the Forkgram and Telegram versions, the commit, the MultiGram commits on top of the snapshot, the APK's SHA-256 and the signing certificate's SHA-256, so that people can check what they install.
+
+Things to know:
+
+- The repository is private, so only people with access to it can see and download its releases.
+- The in-app update check stays off (`CHECK_UPDATES=0` in `gradle.properties`). Forkgram's own builds turn it on with `USER_REPO` set to their repository, and the app then looks for a newer tag on that repository's releases. It could look at this repository's releases in the same way, but only once the repository is public.
+- The sync does not publish releases by itself. Publish one after a sync you have tested (section 2, first row).
 
 ## 11. Keeping this guide current
 
