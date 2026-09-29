@@ -20,6 +20,10 @@ on:
       apk:
         type: boolean
         default: false
+      build_number:
+        description: MultiGram build number (0 to 9), the fourth part of the version (release.yml sets it)
+        type: string
+        default: '0'
 
 permissions:
   contents: read
@@ -94,8 +98,13 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.MULTIGRAM_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.MULTIGRAM_KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.MULTIGRAM_KEY_PASSWORD }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
           vars=gradle.properties
+          # Forkgram's versioning: versionName APP_VERSION_NAME.N and versionCode
+          # (APP_VERSION_CODE * 10 + N) * 10 + the flavor's ABI code, with N = ADDITIONAL_BUILD_NUMBER.
+          case "${BUILD_NUMBER:-0}" in [0-9]) ;; *) echo "::error::build_number must be one digit"; exit 1;; esac
+          echo "ADDITIONAL_BUILD_NUMBER=${BUILD_NUMBER:-0}" >> $vars
           echo "org.gradle.workers.max=1" >> $vars
           # Forkgram asks for an 8 GB heap, sized for the bigger runners of public repositories.
           echo "org.gradle.jvmargs=-Xmx3g -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8" >> $vars
