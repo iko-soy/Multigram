@@ -195,6 +195,9 @@ import org.telegram.messenger.forkgram.ForkUtils;
 import org.telegram.messenger.forkgram.ExtractMediaFromPreview;
 import org.telegram.messenger.forkgram.FormattingMenu;
 import org.telegram.messenger.forkgram.MediaSpoiler;
+import org.telegram.messenger.forkgram.QuickAttachConfig;
+import org.telegram.messenger.forkgram.VoiceTimecodes;
+import org.telegram.messenger.forkgram.VoiceTimecodesConfig;
 import org.telegram.messenger.forkgram.WebPublishConfig;
 import org.telegram.messenger.forkgram.WebPublishFlow;
 import org.telegram.messenger.support.LongSparseIntArray;
@@ -1282,6 +1285,7 @@ public class ChatActivity extends BaseFragment implements
     public final static int OPTION_VIEW_STATISTICS = 115;
     public final static int OPTION_WELCOME_REVERT = 116;
     public final static int OPTION_SEND_MONEY = 117;
+    public final static int OPTION_VOICE_TIMECODES = 118;
 
     private final static int[] allowedNotificationsDuringChatListAnimations = new int[]{
             NotificationCenter.messagesRead,
@@ -2617,6 +2621,40 @@ public class ChatActivity extends BaseFragment implements
         }
 
         @Override
+        public boolean canQuickAttach() {
+            if (getParentActivity() == null || chatActivityEnterView != null && !TextUtils.isEmpty(chatActivityEnterView.getSlowModeTimer())) {
+                return false;
+            }
+            return QuickAttachConfig.isEnabled();
+        }
+
+        @Override
+        public void onStartQuickAttach(View attachButton, float touchX, float touchY) {
+            ChatActivity.this.startQuickAttach(attachButton, touchX, touchY);
+        }
+
+        @Override
+        public void onQuickAttachTracking(float touchX, float touchY) {
+            if (quickAttachOverlay != null) {
+                quickAttachOverlay.updateTracking(touchX, touchY);
+            }
+        }
+
+        @Override
+        public void onQuickAttachFinish(float touchX, float touchY) {
+            if (quickAttachOverlay != null) {
+                quickAttachOverlay.finishTracking(touchX, touchY);
+            }
+        }
+
+        @Override
+        public void onQuickAttachCancel() {
+            if (quickAttachOverlay != null) {
+                quickAttachOverlay.cancelTracking();
+            }
+        }
+
+        @Override
         public void didPressSuggestionButton() {
             new MessageSuggestionOfferSheet(getContext(), currentAccount, dialog_id, messageSuggestionParams != null ? messageSuggestionParams: MessageSuggestionParams.empty(), ChatActivity.this, getResourceProvider(), MessageSuggestionOfferSheet.MODE_INPUT, ChatActivity.this::showFieldPanelForSuggestionParams).show();
         }
@@ -3602,6 +3640,13 @@ public class ChatActivity extends BaseFragment implements
         }
         if (chatAttachAlert != null) {
             chatAttachAlert.dismissInternal();
+        }
+        if (quickAttachOverlay != null) {
+            quickAttachOverlay.detach();
+            if (quickAttachOverlay.getParent() != null) {
+                ((ViewGroup) quickAttachOverlay.getParent()).removeView(quickAttachOverlay);
+            }
+            quickAttachOverlay = null;
         }
         ContentPreviewViewer.getInstance().clearDelegate(contentPreviewViewerDelegate);
         getNotificationCenter().onAnimationFinish(transitionAnimationIndex);
@@ -14124,6 +14169,137 @@ public class ChatActivity extends BaseFragment implements
         showDialog(chatAttachAlert);
     }
 
+    private QuickAttachOverlay quickAttachOverlay;
+
+    private void startQuickAttach(View attachButton, float touchX, float touchY) {
+        FileLog.d("QuickAttach: ChatActivity.startQuickAttach activity=" + (getParentActivity() != null) + " contentView=" + (contentView != null));
+        if (getParentActivity() == null || contentView == null) {
+            return;
+        }
+        if (quickAttachOverlay == null) {
+            quickAttachOverlay = new QuickAttachOverlay(getParentActivity(), themeDelegate);
+            quickAttachOverlay.setDelegate(new QuickAttachOverlay.Delegate() {
+                @Override
+                public void onCameraSelected() {
+                    FileLog.d("QuickAttach: Delegate.onCameraSelected");
+                    openCameraFromQuickAttach();
+                }
+
+                @Override
+                public void onPhotoSelected(MediaController.PhotoEntry photoEntry) {
+                    FileLog.d("QuickAttach: Delegate.onPhotoSelected " + (photoEntry != null ? photoEntry.path : "null"));
+                    if (QuickAttachConfig.sendImmediately()) {
+                        sendPhotoFromQuickAttach(photoEntry);
+                    } else {
+                        openPhotoEditorFromQuickAttach(photoEntry);
+                    }
+                }
+
+                @Override
+                public void onSettingsSelected() {
+                    FileLog.d("QuickAttach: Delegate.onSettingsSelected");
+                    presentFragment(new QuickAttachSettingsActivity());
+                }
+
+                @Override
+                public void onDismiss() {
+                    FileLog.d("QuickAttach: Delegate.onDismiss");
+                    if (quickAttachOverlay != null && quickAttachOverlay.getParent() != null) {
+                        contentView.removeView(quickAttachOverlay);
+                    }
+                    quickAttachOverlay = null;
+                }
+            });
+        }
+        if (quickAttachOverlay.getParent() == null) {
+            contentView.addView(quickAttachOverlay, LayoutHelper.createFrame(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT));
+        }
+        quickAttachOverlay.bringToFront();
+        quickAttachOverlay.present(attachButton, touchX, touchY);
+    }
+
+    private void openCameraFromQuickAttach() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        openAttachMenu();
+        if (chatAttachAlert != null) {
+            chatAttachAlert.openCameraWhenOpened();
+        }
+    }
+
+    private void sendPhotoFromQuickAttach(MediaController.PhotoEntry photoEntry) {
+        if (photoEntry == null || getParentActivity() == null) {
+            return;
+        }
+        if (currentChat != null && !ChatObject.hasAdminRights(currentChat) && currentChat.slowmode_enabled) {
+            AlertsCreator.createSimpleAlert(getContext(), LocaleController.getString(R.string.Slowmode), LocaleController.getString(R.string.SlowmodeSendError), themeDelegate).show();
+            return;
+        }
+
+        CharSequence caption = chatActivityEnterView != null ? chatActivityEnterView.getFieldText() : null;
+        if (caption != null && caption.length() > 0) {
+            photoEntry = photoEntry.clone();
+            photoEntry.caption = caption.toString();
+            photoEntry.entities = MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{caption}, false);
+        }
+
+        ArrayList<MediaController.PhotoEntry> entries = new ArrayList<>();
+        entries.add(photoEntry);
+        sendPhotosGroup(entries, true, 0, false);
+        afterMessageSend();
+
+        if (chatActivityEnterView != null) {
+            chatActivityEnterView.setFieldText("");
+        }
+
+        BulletinFactory.of(ChatActivity.this).createSimpleBulletin(R.raw.done, LocaleController.getString(R.string.PhotoSent)).show();
+    }
+
+    private void openPhotoEditorFromQuickAttach(MediaController.PhotoEntry photoEntry) {
+        if (photoEntry == null || getParentActivity() == null) {
+            return;
+        }
+        if (currentChat != null && !ChatObject.hasAdminRights(currentChat) && currentChat.slowmode_enabled) {
+            AlertsCreator.createSimpleAlert(getContext(), LocaleController.getString(R.string.Slowmode), LocaleController.getString(R.string.SlowmodeSendError), themeDelegate).show();
+            return;
+        }
+
+        final MediaController.PhotoEntry entry = photoEntry.clone();
+        CharSequence caption = chatActivityEnterView != null ? chatActivityEnterView.getFieldText() : null;
+        if (caption != null && caption.length() > 0) {
+            entry.caption = caption.toString();
+            entry.entities = MediaDataController.getInstance(currentAccount).getEntities(new CharSequence[]{caption}, false);
+        }
+
+        PhotoViewer.getInstance().setParentActivity(this, themeDelegate);
+        if (PhotoViewer.getInstance().isVisible()) {
+            PhotoViewer.getInstance().closePhoto(false, false);
+        }
+
+        final ArrayList<Object> photos = new ArrayList<>();
+        photos.add(entry);
+        PhotoViewer.getInstance().openPhotoForSelect(photos, 0, 0, false, new PhotoViewer.EmptyPhotoViewerProvider() {
+            @Override
+            public void sendButtonPressed(int index, VideoEditedInfo videoEditedInfo, boolean notify, int scheduleDate, int scheduleRepeatPeriod, boolean forceDocument) {
+                ArrayList<MediaController.PhotoEntry> entries = new ArrayList<>();
+                entries.add(entry);
+                sendPhotosGroup(entries, notify, scheduleDate, forceDocument);
+                BulletinFactory.of(ChatActivity.this).createSimpleBulletin(R.raw.done, LocaleController.getString(R.string.PhotoSent)).show();
+            }
+
+            @Override
+            public boolean canScrollAway() {
+                return false;
+            }
+
+            @Override
+            public boolean canCaptureMorePhotos() {
+                return false;
+            }
+        }, this);
+    }
+
     public void openAttachMenuForCreatingSticker() {
         ContentPreviewViewer.getInstance().setStickerSetForCustomSticker(null);
         if (getParentActivity() == null) {
@@ -19430,6 +19606,9 @@ public class ChatActivity extends BaseFragment implements
                 } else if (child == videoPlayerContainer) {
                     childTop = actionBar.getMeasuredHeight();
                 } else if (child == instantCameraView || child == overlayView || child == animatingImageView) {
+                    childTop = 0;
+                } else if (child == quickAttachOverlay) {
+                    childLeft = 0;
                     childTop = 0;
                 } else if (child instanceof MessagePreviewView) {
                     childTop = AndroidUtilities.statusBarHeight;
@@ -34753,6 +34932,15 @@ public class ChatActivity extends BaseFragment implements
                 selectedObjectToEditCaption = null;
                 break;
             }
+            case OPTION_VOICE_TIMECODES: {
+                if (selectedObject != null && selectedObject.messageOwner != null) {
+                    VoiceTimecodes.processManual(currentAccount, selectedObject.messageOwner);
+                }
+                selectedObject = null;
+                selectedObjectGroup = null;
+                selectedObjectToEditCaption = null;
+                break;
+            }
             case OPTION_EDIT_PRICE: {
                 final MessageObject msg = selectedObject;
                 TLRPC.TL_messageMediaPaidMedia paidMedia = (TLRPC.TL_messageMediaPaidMedia) selectedObject.messageOwner.media;
@@ -35618,7 +35806,7 @@ public class ChatActivity extends BaseFragment implements
         } else if (actionBar != null && actionBar.isActionModeShowed()) {
             if (invoked) clearSelectionMode();
             return false;
-        } else if (chatActivityEnterView != null && chatActivityEnterView.isPopupShowing()) {
+        } else if (chatActivityEnterView != null && chatActivityEnterView.canHidePopupByBackButton()) {
             if (invoked) chatActivityEnterView.hidePopup(true);
             return false;
 //        } else if (chatActivityEnterView != null && chatActivityEnterView.hasBotWebView() && chatActivityEnterView.botCommandsMenuIsShowing() && chatActivityEnterView.onBotWebViewBackPressed()) {
@@ -46815,6 +47003,11 @@ public class ChatActivity extends BaseFragment implements
                     options.add(OPTION_EDIT);
                     icons.add(R.drawable.msg_edit);
                 }
+                if (selectedObject != null && selectedObject.isVoice() && (allowEdit || message.canEditMessage(currentChat)) && VoiceTimecodesConfig.sttUrl().length() > 0 && VoiceTimecodesConfig.llmUrl().length() > 0) {
+                    items.add(LocaleController.getString(R.string.VoiceTimecodesGenerate));
+                    options.add(OPTION_VOICE_TIMECODES);
+                    icons.add(R.drawable.msg_premium_voice);
+                }
                 if (ChatObject.isMonoForum(currentChat) && selectedObject.getGroupId() == 0 && selectedObjectGroup == null && message != null && message.messageOwner != null && message.messageOwner.suggested_post == null && message.messageOwner.action == null) {
                     items.add(LocaleController.getString(R.string.EditOfferAdd));
                     options.add(OPTION_SUGGESTION_ADD_OFFER);
@@ -47165,6 +47358,11 @@ public class ChatActivity extends BaseFragment implements
                     items.add(LocaleController.getString(R.string.Edit));
                     options.add(OPTION_EDIT);
                     icons.add(R.drawable.msg_edit);
+                }
+                if (selectedObject != null && selectedObject.isVoice() && (allowEdit || (selectedObject != null && selectedObject.canEditMessage(currentChat))) && VoiceTimecodesConfig.sttUrl().length() > 0 && VoiceTimecodesConfig.llmUrl().length() > 0) {
+                    items.add(LocaleController.getString(R.string.VoiceTimecodesGenerate));
+                    options.add(OPTION_VOICE_TIMECODES);
+                    icons.add(R.drawable.msg_premium_voice);
                 }
                 if (ChatObject.isMonoForum(currentChat) && selectedObject.getGroupId() == 0 && selectedObjectGroup == null && message != null && message.messageOwner != null && message.messageOwner.suggested_post == null && message.messageOwner.action == null) {
                     items.add(LocaleController.getString(R.string.EditOfferAdd));

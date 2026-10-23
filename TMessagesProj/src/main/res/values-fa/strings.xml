@@ -265,4 +265,36 @@
     <string name="FolderTabsStyleInfo">انتخاب کنید که پوشه‌ها چگونه در نوار زبانه‌ها نمایش داده شوند. آیکون هر پوشه را در تنظیمات همان پوشه تعیین کنید.</string>
     <string name="ShareDeleteOriginals">حذف پیام‌های اصلی</string>
     <string name="SendAsSinglePhoto">ارسال به‌صورت یک عکس</string>
+
+    <string name="VoiceTimecodes">کدهای زمانی صدا</string>
+    <string name="VoiceTimecodesSection">کدهای زمانی پیام‌های صوتی</string>
+    <string name="VoiceTimecodesInfo">پیام‌های صوتی ارسال‌شده را به‌طور خودکار رونویسی می‌کند، کدهای زمانی فصل‌ها را با یک LLM می‌سازد و آن‌ها را به‌عنوان توضیح پیام پیوست می‌کند.</string>
+    <string name="VoiceTimecodesEnabled">فعال‌کردن کدهای زمانی صدا</string>
+    <string name="VoiceTimecodesSttUrl">نشانی سرویس STT</string>
+    <string name="VoiceTimecodesSttUrlHint">https://stt.example.com/v1/audio/transcriptions</string>
+    <string name="VoiceTimecodesSttToken">توکن Bearer سرویس STT</string>
+    <string name="VoiceTimecodesLlmUrl">نشانی API گفتگوی LLM</string>
+    <string name="VoiceTimecodesLlmUrlHint">https://api.example.com/v1/chat/completions</string>
+    <string name="VoiceTimecodesLlmToken">کلید API مدل LLM</string>
+    <string name="VoiceTimecodesLlmModel">مدل LLM</string>
+    <string name="VoiceTimecodesLlmModelHint">aistudio-gemini-3.8-flash</string>
+    <string name="VoiceTimecodesMinDuration">حداقل مدت پیام صوتی (ثانیه)</string>
+    <string name="VoiceTimecodesPrompt">قالب دستور ({transcript} = متن)</string>
+    <string name="VoiceTimecodesResetPrompt">بازنشانی دستور به حالت پیش‌فرض</string>
+    <string name="VoiceTimecodesImportFile">درون‌ریزی از /sdcard/Download/voice_timecodes.json</string>
+    <string name="VoiceTimecodesImportSuccess">تنظیمات با موفقیت درون‌ریزی شد</string>
+    <string name="VoiceTimecodesImportFailed">فایل یافت نشد یا قالب نامعتبر است</string>
+    <string name="VoiceTimecodesSaved">تنظیمات کدهای زمانی صدا ذخیره شد</string>
+    <string name="VoiceTimecodesDone">کدهای زمانی افزوده شد</string>
+    <string name="VoiceTimecodesGenerate">افزودن کدهای زمانی</string>
+    <string name="VoiceTimecodesProcessing">در حال ساخت کدهای زمانی…</string>
+    <string name="VoiceTimecodesError">ساخت کدهای زمانی ناموفق بود</string>
+
+    <string name="QuickAttach">پیوست سریع</string>
+    <string name="QuickAttachInfo">برای بازشدن عکس‌های اخیر و دوربین به‌صورت بادبزنی، دکمهٔ پیوست را نگه دارید.</string>
+    <string name="QuickAttachSendImmediately">ارسال فوری</string>
+    <string name="QuickAttachSendImmediatelyInfo">عکس انتخاب‌شده را بی‌درنگ ارسال می‌کند. اگر خاموش باشد، ابتدا در ویرایشگر باز می‌شود تا بتوانید آن را تنظیم کنید یا توضیحی بیفزایید.</string>
+    <string name="QuickAttachNewestFirst">جدیدترین عکس‌ها در سمت چپ</string>
+    <string name="QuickAttachNewestFirstInfo">اگر خاموش باشد، عکس‌های اخیر از قدیمی به جدید، از چپ به راست مرتب می‌شوند.</string>
+    <string name="PhotoSent">عکس ارسال شد</string>
 </resources>

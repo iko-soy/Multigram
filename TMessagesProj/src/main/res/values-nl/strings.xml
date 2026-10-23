@@ -1345,4 +1345,36 @@
     <string name="FolderTabsStyleInfo">Kies hoe mappen in de tabbalk verschijnen. Wijs in de instellingen van elke map een pictogram toe.</string>
     <string name="ShareDeleteOriginals">Oorspronkelijke berichten verwijderen</string>
     <string name="SendAsSinglePhoto">Als één foto versturen</string>
+
+    <string name="VoiceTimecodes">Spraaktijdmarkeringen</string>
+    <string name="VoiceTimecodesSection">Tijdmarkeringen voor spraakberichten</string>
+    <string name="VoiceTimecodesInfo">Schrijft verzonden spraakberichten automatisch uit, maakt hoofdstuktijdmarkeringen via een LLM en voegt ze toe als onderschrift bij het bericht.</string>
+    <string name="VoiceTimecodesEnabled">Tijdmarkeringen inschakelen</string>
+    <string name="VoiceTimecodesSttUrl">URL van STT-dienst</string>
+    <string name="VoiceTimecodesSttUrlHint">https://stt.example.com/v1/audio/transcriptions</string>
+    <string name="VoiceTimecodesSttToken">STT-bearertoken</string>
+    <string name="VoiceTimecodesLlmUrl">URL van LLM-chat-API</string>
+    <string name="VoiceTimecodesLlmUrlHint">https://api.example.com/v1/chat/completions</string>
+    <string name="VoiceTimecodesLlmToken">LLM-API-sleutel</string>
+    <string name="VoiceTimecodesLlmModel">LLM-model</string>
+    <string name="VoiceTimecodesLlmModelHint">aistudio-gemini-3.8-flash</string>
+    <string name="VoiceTimecodesMinDuration">Minimale duur van spraakbericht (seconden)</string>
+    <string name="VoiceTimecodesPrompt">Promptsjabloon ({transcript} = tekst)</string>
+    <string name="VoiceTimecodesResetPrompt">Prompt terugzetten naar standaard</string>
+    <string name="VoiceTimecodesImportFile">Importeren uit /sdcard/Download/voice_timecodes.json</string>
+    <string name="VoiceTimecodesImportSuccess">Instellingen geïmporteerd</string>
+    <string name="VoiceTimecodesImportFailed">Bestand niet gevonden of ongeldige indeling</string>
+    <string name="VoiceTimecodesSaved">Instellingen voor tijdmarkeringen opgeslagen</string>
+    <string name="VoiceTimecodesDone">Tijdmarkeringen toegevoegd</string>
+    <string name="VoiceTimecodesGenerate">Tijdmarkeringen toevoegen</string>
+    <string name="VoiceTimecodesProcessing">Tijdmarkeringen genereren…</string>
+    <string name="VoiceTimecodesError">Tijdmarkeringen genereren mislukt</string>
+
+    <string name="QuickAttach">Snel bijvoegen</string>
+    <string name="QuickAttachInfo">Houd de bijvoegknop ingedrukt om recente foto\'s en de camera uit te klappen.</string>
+    <string name="QuickAttachSendImmediately">Direct versturen</string>
+    <string name="QuickAttachSendImmediatelyInfo">Verstuurt de gekozen foto meteen. Staat dit uit, dan opent de foto eerst in de editor, waar je hem kunt aanpassen of een onderschrift kunt toevoegen.</string>
+    <string name="QuickAttachNewestFirst">Nieuwste foto\'s links</string>
+    <string name="QuickAttachNewestFirstInfo">Staat dit uit, dan staan recente foto\'s van oud naar nieuw, van links naar rechts.</string>
+    <string name="PhotoSent">Foto verstuurd</string>
 </resources>

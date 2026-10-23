@@ -3963,6 +3963,11 @@
     <string name="SendingGif">Sending GIF...</string>
     <!--bot-->
     <string name="Bot">bot</string>
+    <string name="BotTypeAgent">Agent</string>
+    <string name="BotTypeGame">Game</string>
+    <string name="BotTypeApp">App</string>
+    <string name="BotTypeAI">AI</string>
+    <string name="BotTypeNonBinary">Non-binary</string>
     <string name="BotShare">Share</string>
     <string name="BotSettings">Settings</string>
     <string name="BotHelp">Help</string>
@@ -11522,6 +11527,14 @@
     <string name="RoundVideoCompositionEnabled">Round video styling</string>
     <string name="RoundVideoCompositionInfo">Disable styling to record a plain square without outside-circle blur, dimming or Telegram overlays.</string>
 
+    <string name="AudioRecorderSettings">Voice Messages</string>
+    <string name="AudioRecorderGeneral">Recorder</string>
+    <string name="AudioRecorderUseNewRecorder">Use new recorder</string>
+    <string name="AudioRecorderNoiseSuppression">Noise suppression</string>
+    <string name="AudioRecorderNoiseSuppressionOff">Off</string>
+    <string name="AudioRecorderNoiseSuppressionRNNoise">RNNoise</string>
+    <string name="AudioRecorderGeneralInfo">RNNoise removes background noise may affect music or very quiet speech.</string>
+
     <!-- Wallet -->
     <string name="WalletUseDevicePasscode">Use device PIN or password</string>
     <string name="WalletTouchFingerprint">Touch the fingerprint sensor to unlock your wallet.</string>
@@ -11806,4 +11819,36 @@
     <string name="WebPublishTemplate">Clipboard template (%q = link)</string>
     <string name="WebPublishAdvanced">Advanced</string>
     <string name="WebPublishSaved">Publish settings saved</string>
+
+    <string name="VoiceTimecodes">Voice Timecodes</string>
+    <string name="VoiceTimecodesSection">Voice Message Timecodes</string>
+    <string name="VoiceTimecodesInfo">Automatically transcribes sent voice messages, generates chapter timecodes via an LLM, and attaches them as the message caption.</string>
+    <string name="VoiceTimecodesEnabled">Enable voice timecodes</string>
+    <string name="VoiceTimecodesSttUrl">STT Service URL</string>
+    <string name="VoiceTimecodesSttUrlHint">https://stt.example.com/v1/audio/transcriptions</string>
+    <string name="VoiceTimecodesSttToken">STT Bearer Token</string>
+    <string name="VoiceTimecodesLlmUrl">LLM Chat API URL</string>
+    <string name="VoiceTimecodesLlmUrlHint">https://api.example.com/v1/chat/completions</string>
+    <string name="VoiceTimecodesLlmToken">LLM API Key</string>
+    <string name="VoiceTimecodesLlmModel">LLM Model</string>
+    <string name="VoiceTimecodesLlmModelHint">aistudio-gemini-3.8-flash</string>
+    <string name="VoiceTimecodesMinDuration">Minimum voice duration (seconds)</string>
+    <string name="VoiceTimecodesPrompt">Prompt template ({transcript} = text)</string>
+    <string name="VoiceTimecodesResetPrompt">Reset prompt to default</string>
+    <string name="VoiceTimecodesImportFile">Import from /sdcard/Download/voice_timecodes.json</string>
+    <string name="VoiceTimecodesImportSuccess">Settings imported successfully</string>
+    <string name="VoiceTimecodesImportFailed">File not found or invalid format</string>
+    <string name="VoiceTimecodesSaved">Voice timecodes settings saved</string>
+    <string name="VoiceTimecodesDone">Timecodes added</string>
+    <string name="VoiceTimecodesGenerate">Add timecodes</string>
+    <string name="VoiceTimecodesProcessing">Generating timecodes…</string>
+    <string name="VoiceTimecodesError">Failed to generate timecodes</string>
+
+    <string name="QuickAttach">Quick Attach</string>
+    <string name="QuickAttachInfo">Long-press the attachment button to fan out recent photos and camera.</string>
+    <string name="QuickAttachSendImmediately">Send immediately</string>
+    <string name="QuickAttachSendImmediatelyInfo">Send the selected photo right away. When off, it opens in the editor first, where you can adjust it or add a caption.</string>
+    <string name="QuickAttachNewestFirst">Newest photos on the left</string>
+    <string name="QuickAttachNewestFirstInfo">When off, recent photos are ordered from oldest to newest, left to right.</string>
+    <string name="PhotoSent">Photo sent</string>
 </resources>

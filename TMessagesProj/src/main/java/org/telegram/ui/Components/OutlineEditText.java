@@ -1,6 +1,7 @@
 package org.telegram.ui.Components;
 
 import android.content.Context;
+import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.text.InputType;
@@ -22,6 +23,18 @@ public class OutlineEditText extends OutlineTextContainerView {
             protected void onFocusChanged(boolean focused, int direction, Rect previouslyFocusedRect) {
                 super.onFocusChanged(focused, direction, previouslyFocusedRect);
                 animateSelection(focused || isFocused() ? 1f : 0f);
+            }
+
+            @Override
+            protected void onDraw(Canvas canvas) {
+                canvas.save();
+                int right = getWidth() - getPaddingRight();
+                int left = getPaddingLeft();
+                if (right > left) {
+                    canvas.clipRect(getScrollX() + left, 0, getScrollX() + right, getHeight());
+                }
+                super.onDraw(canvas);
+                canvas.restore();
             }
         };
         editText.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 18);
