@@ -1361,9 +1361,14 @@
     <string name="VoiceTimecodesMinDuration">Minimale duur van spraakbericht (seconden)</string>
     <string name="VoiceTimecodesPrompt">Promptsjabloon ({transcript} = tekst)</string>
     <string name="VoiceTimecodesResetPrompt">Prompt terugzetten naar standaard</string>
-    <string name="VoiceTimecodesImportFile">Importeren uit /sdcard/Download/voice_timecodes.json</string>
-    <string name="VoiceTimecodesImportSuccess">Instellingen geïmporteerd</string>
-    <string name="VoiceTimecodesImportFailed">Bestand niet gevonden of ongeldige indeling</string>
+    <string name="VoiceTimecodesCodeTitle">Instellingencode</string>
+    <string name="VoiceTimecodesCodeInfo">Een code van één regel met alle instellingen voor spraaktijdstempels, inclusief API-sleutels. Kopieer hem naar Opgeslagen berichten en kopieer hem op een ander apparaat opnieuw en tik op ‘Code importeren’. Houd de code privé.</string>
+    <string name="VoiceTimecodesCodeHint">Tik op ‘Exporteren’ of plak een code van een ander apparaat</string>
+    <string name="VoiceTimecodesCodeExport">Naar klembord exporteren</string>
+    <string name="VoiceTimecodesCodeImport">Code importeren</string>
+    <string name="VoiceTimecodesCodeCopied">Instellingencode gekopieerd</string>
+    <string name="VoiceTimecodesCodeImported">Instellingen geïmporteerd</string>
+    <string name="VoiceTimecodesCodeImportFailed">Ongeldige of lege instellingencode</string>
     <string name="VoiceTimecodesSaved">Instellingen voor tijdmarkeringen opgeslagen</string>
     <string name="VoiceTimecodesDone">Tijdmarkeringen toegevoegd</string>
     <string name="VoiceTimecodesGenerate">Tijdmarkeringen toevoegen</string>

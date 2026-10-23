@@ -1652,9 +1652,14 @@
     <string name="VoiceTimecodesMinDuration">Mindestdauer der Sprachnachricht (Sekunden)</string>
     <string name="VoiceTimecodesPrompt">Prompt-Vorlage ({transcript} = Text)</string>
     <string name="VoiceTimecodesResetPrompt">Prompt zurücksetzen</string>
-    <string name="VoiceTimecodesImportFile">Aus /sdcard/Download/voice_timecodes.json importieren</string>
-    <string name="VoiceTimecodesImportSuccess">Einstellungen erfolgreich importiert</string>
-    <string name="VoiceTimecodesImportFailed">Datei nicht gefunden oder ungültiges Format</string>
+    <string name="VoiceTimecodesCodeTitle">Einstellungscode</string>
+    <string name="VoiceTimecodesCodeInfo">Ein einzeiliger Code mit allen Einstellungen für Sprach-Zeitstempel, einschließlich API-Schlüsseln. Kopieren Sie ihn in die Gespeicherten Nachrichten und kopieren Sie ihn auf einem anderen Gerät erneut und tippen Sie auf „Code importieren“. Halten Sie den Code geheim.</string>
+    <string name="VoiceTimecodesCodeHint">Tippen Sie auf „Exportieren“ oder fügen Sie einen Code von einem anderen Gerät ein</string>
+    <string name="VoiceTimecodesCodeExport">In Zwischenablage exportieren</string>
+    <string name="VoiceTimecodesCodeImport">Code importieren</string>
+    <string name="VoiceTimecodesCodeCopied">Einstellungscode kopiert</string>
+    <string name="VoiceTimecodesCodeImported">Einstellungen importiert</string>
+    <string name="VoiceTimecodesCodeImportFailed">Ungültiger oder leerer Einstellungscode</string>
     <string name="VoiceTimecodesSaved">Zeitmarken-Einstellungen gespeichert</string>
     <string name="VoiceTimecodesDone">Zeitmarken hinzugefügt</string>
     <string name="VoiceTimecodesGenerate">Zeitmarken hinzufügen</string>

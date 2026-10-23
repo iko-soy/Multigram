@@ -552,9 +552,14 @@
     <string name="VoiceTimecodesMinDuration">Мин. длительность голосового (сек)</string>
     <string name="VoiceTimecodesPrompt">Шаблон промпта ({transcript} = текст)</string>
     <string name="VoiceTimecodesResetPrompt">Сбросить промпт по умолчанию</string>
-    <string name="VoiceTimecodesImportFile">Импортировать из /sdcard/Download/voice_timecodes.json</string>
-    <string name="VoiceTimecodesImportSuccess">Настройки успешно импортированы</string>
-    <string name="VoiceTimecodesImportFailed">Файл не найден или содержит ошибку</string>
+    <string name="VoiceTimecodesCodeTitle">Код настроек</string>
+    <string name="VoiceTimecodesCodeInfo">Однострочный код со всеми настройками автотаймкодов, включая API-ключи. Скопируйте его в «Избранное», а на другом устройстве скопируйте оттуда и нажмите «Импортировать код». Никому не показывайте этот код.</string>
+    <string name="VoiceTimecodesCodeHint">Нажмите «Экспорт» или вставьте код с другого устройства</string>
+    <string name="VoiceTimecodesCodeExport">Экспортировать в буфер</string>
+    <string name="VoiceTimecodesCodeImport">Импортировать код</string>
+    <string name="VoiceTimecodesCodeCopied">Код настроек скопирован</string>
+    <string name="VoiceTimecodesCodeImported">Настройки импортированы</string>
+    <string name="VoiceTimecodesCodeImportFailed">Код настроек пуст или повреждён</string>
     <string name="VoiceTimecodesSaved">Настройки таймкодов сохранены</string>
     <string name="VoiceTimecodesDone">Таймкоды добавлены</string>
     <string name="VoiceTimecodesGenerate">Добавить таймкоды</string>

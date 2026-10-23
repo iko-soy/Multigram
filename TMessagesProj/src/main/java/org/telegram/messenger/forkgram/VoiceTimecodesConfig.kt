@@ -1,14 +1,14 @@
 package org.telegram.messenger.forkgram
 
 import android.content.SharedPreferences
-import android.os.Environment
+import android.util.Base64
 import org.json.JSONObject
-import org.telegram.messenger.ApplicationLoader
 import org.telegram.messenger.FileLog
 import org.telegram.messenger.MessagesController
 import org.telegram.messenger.UserConfig
-import java.io.File
-import java.net.URL
+import java.io.ByteArrayOutputStream
+import java.util.zip.Deflater
+import java.util.zip.Inflater
 
 object VoiceTimecodesConfig {
 
@@ -20,6 +20,20 @@ object VoiceTimecodesConfig {
     const val PREF_LLM_MODEL = "voice_timecodes_llm_model"
     const val PREF_MIN_DURATION = "voice_timecodes_min_duration"
     const val PREF_PROMPT = "voice_timecodes_prompt"
+
+    private const val CODE_PREFIX = "FVT1:"
+    private const val MAX_DECODED_SIZE = 256 * 1024
+    private val BASE64_FLAGS = Base64.URL_SAFE or Base64.NO_WRAP or Base64.NO_PADDING
+    private val PREF_KEYS = setOf(
+        PREF_ENABLED,
+        PREF_STT_URL,
+        PREF_STT_TOKEN,
+        PREF_LLM_URL,
+        PREF_LLM_TOKEN,
+        PREF_LLM_MODEL,
+        PREF_MIN_DURATION,
+        PREF_PROMPT
+    )
 
     const val DEFAULT_LLM_MODEL = "gpt-4o-mini"
     const val DEFAULT_MIN_DURATION = 10
@@ -40,7 +54,6 @@ object VoiceTimecodesConfig {
 
     @JvmStatic
     fun isEnabled(): Boolean {
-        ensureAutoImport()
         return prefs().getBoolean(PREF_ENABLED, false)
     }
 
@@ -51,31 +64,26 @@ object VoiceTimecodesConfig {
 
     @JvmStatic
     fun sttUrl(): String {
-        ensureAutoImport()
         return prefs().getString(PREF_STT_URL, "")?.trim() ?: ""
     }
 
     @JvmStatic
     fun sttToken(): String {
-        ensureAutoImport()
         return prefs().getString(PREF_STT_TOKEN, "")?.trim() ?: ""
     }
 
     @JvmStatic
     fun llmUrl(): String {
-        ensureAutoImport()
         return prefs().getString(PREF_LLM_URL, "")?.trim() ?: ""
     }
 
     @JvmStatic
     fun llmToken(): String {
-        ensureAutoImport()
         return prefs().getString(PREF_LLM_TOKEN, "")?.trim() ?: ""
     }
 
     @JvmStatic
     fun llmModel(): String {
-        ensureAutoImport()
         val m = prefs().getString(PREF_LLM_MODEL, DEFAULT_LLM_MODEL)?.trim() ?: ""
         return if (m.isEmpty()) DEFAULT_LLM_MODEL else m
     }
@@ -125,62 +133,57 @@ object VoiceTimecodesConfig {
             .apply()
     }
 
-    @Volatile
-    private var autoImportChecked = false
-
     @JvmStatic
-    fun ensureAutoImport() {
-        if (autoImportChecked) return
-        autoImportChecked = true
-
-        val currentStt = prefs().getString(PREF_STT_URL, null)
-        val currentLlm = prefs().getString(PREF_LLM_URL, null)
-        if (!currentStt.isNullOrEmpty() && !currentLlm.isNullOrEmpty()) {
-            return
-        }
-
-        val candidateDirs = mutableListOf<File>()
-        try {
-            val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            if (downloadDir != null) {
-                candidateDirs.add(downloadDir)
-            }
-        } catch (e: Exception) {
-            FileLog.e(e)
-        }
-        val context = ApplicationLoader.applicationContext
-        if (context != null) {
-            try {
-                val extFiles = context.getExternalFilesDir(null)
-                if (extFiles != null) {
-                    candidateDirs.add(extFiles)
-                }
-            } catch (e: Exception) {
-                FileLog.e(e)
-            }
-        }
-
-        for (dir in candidateDirs) {
-            val f1 = File(dir, "voice_timecodes.json")
-            if (f1.exists() && f1.canRead() && importFromFile(f1)) {
-                return
-            }
-            val f2 = File(dir, "voice_timecodes_backup.json")
-            if (f2.exists() && f2.canRead() && importFromFile(f2)) {
-                return
-            }
-        }
+    fun exportToString(): String {
+        return exportToString(
+            isEnabled(), sttUrl(), sttToken(), llmUrl(), llmToken(), llmModel(), minDuration(), promptTemplate()
+        )
     }
 
     @JvmStatic
-    fun importFromFile(file: File): Boolean {
-        return try {
-            val text = file.readText(Charsets.UTF_8)
-            importFromJson(text)
-        } catch (e: Exception) {
-            FileLog.e("VoiceTimecodesConfig import error from ${file.absolutePath}: $e")
-            false
+    fun exportToString(
+        enabled: Boolean,
+        sttUrl: String,
+        sttToken: String,
+        llmUrl: String,
+        llmToken: String,
+        llmModel: String,
+        minDuration: Int,
+        prompt: String
+    ): String {
+        val root = JSONObject()
+        root.put("v", 1)
+        root.put("enabled", enabled)
+        root.put("stt_url", sttUrl.trim())
+        root.put("stt_token", sttToken.trim())
+        root.put("llm_url", llmUrl.trim())
+        root.put("llm_token", llmToken.trim())
+        root.put("llm_model", llmModel.trim())
+        root.put("min_duration", if (minDuration <= 0) DEFAULT_MIN_DURATION else minDuration)
+        root.put("prompt", if (prompt.isBlank()) DEFAULT_PROMPT else prompt)
+        val encoded = Base64.encodeToString(compress(root.toString().toByteArray(Charsets.UTF_8)), BASE64_FLAGS)
+        return CODE_PREFIX + encoded
+    }
+
+    @JvmStatic
+    fun importFromString(text: String): Boolean {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) {
+            return false
         }
+        val prefixIndex = trimmed.indexOf(CODE_PREFIX, ignoreCase = true)
+        if (prefixIndex >= 0) {
+            return try {
+                val payload = trimmed.substring(prefixIndex + CODE_PREFIX.length)
+                    .filter { it.isLetterOrDigit() || it == '-' || it == '_' }
+                val json = String(inflate(Base64.decode(payload, BASE64_FLAGS)), Charsets.UTF_8)
+                importFromJson(json)
+            } catch (e: Exception) {
+                FileLog.e("VoiceTimecodesConfig code import error: $e")
+                false
+            }
+        }
+        return importFromJson(trimmed)
     }
 
     @JvmStatic
@@ -188,68 +191,112 @@ object VoiceTimecodesConfig {
         return try {
             val root = JSONObject(jsonString)
             val editor = prefs().edit()
+            var updated = false
 
-            if (root.has("prefs")) {
-                val prefsObj = root.optJSONObject("prefs")
-                val mainConfig = prefsObj?.optJSONObject("mainconfig")
-                if (mainConfig != null) {
-                    val it = mainConfig.keys()
-                    while (it.hasNext()) {
-                        val key = it.next()
-                        val item = mainConfig.optJSONObject(key) ?: continue
-                        val t = item.optString("t")
-                        when (t) {
-                            "b" -> editor.putBoolean(key, item.optBoolean("v"))
-                            "s" -> editor.putString(key, item.optString("v"))
-                            "i" -> editor.putInt(key, item.optInt("v"))
+            val mainConfig = root.optJSONObject("prefs")?.optJSONObject("mainconfig")
+            if (mainConfig != null) {
+                val keys = mainConfig.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    if (key !in PREF_KEYS) {
+                        continue
+                    }
+                    val item = mainConfig.optJSONObject(key) ?: continue
+                    when (item.optString("t")) {
+                        "b" -> {
+                            editor.putBoolean(key, item.optBoolean("v"))
+                            updated = true
+                        }
+                        "s" -> {
+                            editor.putString(key, item.optString("v"))
+                            updated = true
+                        }
+                        "i" -> {
+                            editor.putInt(key, item.optInt("v"))
+                            updated = true
                         }
                     }
-                    editor.apply()
-                    return true
+                }
+            } else {
+                if (root.has("enabled")) {
+                    editor.putBoolean(PREF_ENABLED, root.optBoolean("enabled"))
+                    updated = true
+                }
+                if (root.has("stt_url")) {
+                    editor.putString(PREF_STT_URL, root.optString("stt_url"))
+                    updated = true
+                }
+                if (root.has("stt_token")) {
+                    editor.putString(PREF_STT_TOKEN, root.optString("stt_token"))
+                    updated = true
+                }
+                if (root.has("llm_url")) {
+                    editor.putString(PREF_LLM_URL, root.optString("llm_url"))
+                    updated = true
+                }
+                if (root.has("llm_token")) {
+                    editor.putString(PREF_LLM_TOKEN, root.optString("llm_token"))
+                    updated = true
+                }
+                if (root.has("llm_model")) {
+                    editor.putString(PREF_LLM_MODEL, root.optString("llm_model"))
+                    updated = true
+                }
+                if (root.has("min_duration")) {
+                    editor.putInt(PREF_MIN_DURATION, root.optInt("min_duration", DEFAULT_MIN_DURATION))
+                    updated = true
+                }
+                if (root.has("prompt")) {
+                    editor.putString(PREF_PROMPT, root.optString("prompt"))
+                    updated = true
                 }
             }
 
-            var updated = false
-            if (root.has("enabled")) {
-                editor.putBoolean(PREF_ENABLED, root.getBoolean("enabled"))
-                updated = true
-            }
-            if (root.has("stt_url")) {
-                editor.putString(PREF_STT_URL, root.getString("stt_url"))
-                updated = true
-            }
-            if (root.has("stt_token")) {
-                editor.putString(PREF_STT_TOKEN, root.getString("stt_token"))
-                updated = true
-            }
-            if (root.has("llm_url")) {
-                editor.putString(PREF_LLM_URL, root.getString("llm_url"))
-                updated = true
-            }
-            if (root.has("llm_token")) {
-                editor.putString(PREF_LLM_TOKEN, root.getString("llm_token"))
-                updated = true
-            }
-            if (root.has("llm_model")) {
-                editor.putString(PREF_LLM_MODEL, root.getString("llm_model"))
-                updated = true
-            }
-            if (root.has("min_duration")) {
-                editor.putInt(PREF_MIN_DURATION, root.getInt("min_duration"))
-                updated = true
-            }
-            if (root.has("prompt")) {
-                editor.putString(PREF_PROMPT, root.getString("prompt"))
-                updated = true
-            }
             if (updated) {
                 editor.apply()
-                return true
             }
-            false
+            updated
         } catch (e: Exception) {
             FileLog.e(e)
             false
         }
+    }
+
+    private fun compress(data: ByteArray): ByteArray {
+        val deflater = Deflater(Deflater.BEST_COMPRESSION)
+        val out = ByteArrayOutputStream()
+        val buffer = ByteArray(4096)
+        try {
+            deflater.setInput(data)
+            deflater.finish()
+            while (!deflater.finished()) {
+                out.write(buffer, 0, deflater.deflate(buffer))
+            }
+        } finally {
+            deflater.end()
+        }
+        return out.toByteArray()
+    }
+
+    private fun inflate(data: ByteArray): ByteArray {
+        val inflater = Inflater()
+        val out = ByteArrayOutputStream()
+        val buffer = ByteArray(4096)
+        try {
+            inflater.setInput(data)
+            while (!inflater.finished()) {
+                val count = inflater.inflate(buffer)
+                if (count == 0) {
+                    throw IllegalArgumentException("Truncated settings code")
+                }
+                out.write(buffer, 0, count)
+                if (out.size() > MAX_DECODED_SIZE) {
+                    throw IllegalArgumentException("Settings code is too large")
+                }
+            }
+        } finally {
+            inflater.end()
+        }
+        return out.toByteArray()
     }
 }

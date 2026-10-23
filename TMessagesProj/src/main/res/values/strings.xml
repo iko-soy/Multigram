@@ -11835,9 +11835,14 @@
     <string name="VoiceTimecodesMinDuration">Minimum voice duration (seconds)</string>
     <string name="VoiceTimecodesPrompt">Prompt template ({transcript} = text)</string>
     <string name="VoiceTimecodesResetPrompt">Reset prompt to default</string>
-    <string name="VoiceTimecodesImportFile">Import from /sdcard/Download/voice_timecodes.json</string>
-    <string name="VoiceTimecodesImportSuccess">Settings imported successfully</string>
-    <string name="VoiceTimecodesImportFailed">File not found or invalid format</string>
+    <string name="VoiceTimecodesCodeTitle">Settings code</string>
+    <string name="VoiceTimecodesCodeInfo">A single-line code with all voice timecode settings, including API keys. Copy it to Saved Messages, then on another device copy it again and tap Import code. Keep the code private.</string>
+    <string name="VoiceTimecodesCodeHint">Tap Export or paste a code from another device</string>
+    <string name="VoiceTimecodesCodeExport">Export to clipboard</string>
+    <string name="VoiceTimecodesCodeImport">Import code</string>
+    <string name="VoiceTimecodesCodeCopied">Settings code copied</string>
+    <string name="VoiceTimecodesCodeImported">Settings imported</string>
+    <string name="VoiceTimecodesCodeImportFailed">Invalid or empty settings code</string>
     <string name="VoiceTimecodesSaved">Voice timecodes settings saved</string>
     <string name="VoiceTimecodesDone">Timecodes added</string>
     <string name="VoiceTimecodesGenerate">Add timecodes</string>

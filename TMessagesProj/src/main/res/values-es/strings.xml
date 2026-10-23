@@ -1592,9 +1592,14 @@
     <string name="VoiceTimecodesMinDuration">Duración mínima del mensaje de voz (segundos)</string>
     <string name="VoiceTimecodesPrompt">Plantilla del prompt ({transcript} = texto)</string>
     <string name="VoiceTimecodesResetPrompt">Restablecer el prompt</string>
-    <string name="VoiceTimecodesImportFile">Importar desde /sdcard/Download/voice_timecodes.json</string>
-    <string name="VoiceTimecodesImportSuccess">Ajustes importados correctamente</string>
-    <string name="VoiceTimecodesImportFailed">Archivo no encontrado o formato no válido</string>
+    <string name="VoiceTimecodesCodeTitle">Código de ajustes</string>
+    <string name="VoiceTimecodesCodeInfo">Un código de una sola línea con todos los ajustes de marcas de tiempo de voz, incluidas las claves de API. Cópialo en Mensajes guardados y, en otro dispositivo, vuelve a copiarlo y pulsa «Importar código». Mantén el código en privado.</string>
+    <string name="VoiceTimecodesCodeHint">Toca «Exportar» o pega un código de otro dispositivo</string>
+    <string name="VoiceTimecodesCodeExport">Exportar al portapapeles</string>
+    <string name="VoiceTimecodesCodeImport">Importar código</string>
+    <string name="VoiceTimecodesCodeCopied">Código de ajustes copiado</string>
+    <string name="VoiceTimecodesCodeImported">Ajustes importados</string>
+    <string name="VoiceTimecodesCodeImportFailed">Código de ajustes no válido o vacío</string>
     <string name="VoiceTimecodesSaved">Ajustes de marcas de tiempo guardados</string>
     <string name="VoiceTimecodesDone">Marcas de tiempo añadidas</string>
     <string name="VoiceTimecodesGenerate">Añadir marcas de tiempo</string>

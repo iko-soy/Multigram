@@ -1520,9 +1520,14 @@
     <string name="VoiceTimecodesMinDuration">الحد الأدنى لمدة الرسالة الصوتية (بالثواني)</string>
     <string name="VoiceTimecodesPrompt">قالب التوجيه ({transcript} = النص)</string>
     <string name="VoiceTimecodesResetPrompt">إعادة التوجيه إلى الوضع الافتراضي</string>
-    <string name="VoiceTimecodesImportFile">استيراد من /sdcard/Download/voice_timecodes.json</string>
-    <string name="VoiceTimecodesImportSuccess">تم استيراد الإعدادات بنجاح</string>
-    <string name="VoiceTimecodesImportFailed">الملف غير موجود أو التنسيق غير صالح</string>
+    <string name="VoiceTimecodesCodeTitle">رمز الإعدادات</string>
+    <string name="VoiceTimecodesCodeInfo">رمز من سطر واحد يحتوي على جميع إعدادات الطوابع الزمنية للصوت، بما في ذلك مفاتيح API. انسخه إلى الرسائل المحفوظة، ثم على جهاز آخر انسخه مرة أخرى واضغط على «استيراد الرمز». احتفظ بالرمز خاصًا.</string>
+    <string name="VoiceTimecodesCodeHint">اضغط على «تصدير» أو الصق رمزًا من جهاز آخر</string>
+    <string name="VoiceTimecodesCodeExport">تصدير إلى الحافظة</string>
+    <string name="VoiceTimecodesCodeImport">استيراد الرمز</string>
+    <string name="VoiceTimecodesCodeCopied">تم نسخ رمز الإعدادات</string>
+    <string name="VoiceTimecodesCodeImported">تم استيراد الإعدادات</string>
+    <string name="VoiceTimecodesCodeImportFailed">رمز الإعدادات فارغ أو غير صالح</string>
     <string name="VoiceTimecodesSaved">تم حفظ إعدادات أكواد توقيت الصوت</string>
     <string name="VoiceTimecodesDone">تمت إضافة أكواد التوقيت</string>
     <string name="VoiceTimecodesGenerate">إضافة أكواد التوقيت</string>

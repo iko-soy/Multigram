@@ -281,9 +281,14 @@
     <string name="VoiceTimecodesMinDuration">حداقل مدت پیام صوتی (ثانیه)</string>
     <string name="VoiceTimecodesPrompt">قالب دستور ({transcript} = متن)</string>
     <string name="VoiceTimecodesResetPrompt">بازنشانی دستور به حالت پیش‌فرض</string>
-    <string name="VoiceTimecodesImportFile">درون‌ریزی از /sdcard/Download/voice_timecodes.json</string>
-    <string name="VoiceTimecodesImportSuccess">تنظیمات با موفقیت درون‌ریزی شد</string>
-    <string name="VoiceTimecodesImportFailed">فایل یافت نشد یا قالب نامعتبر است</string>
+    <string name="VoiceTimecodesCodeTitle">کد تنظیمات</string>
+    <string name="VoiceTimecodesCodeInfo">کدی تک‌خطی با همهٔ تنظیمات مهرهای زمانی صدا، شامل کلیدهای API. آن را در پیام‌های ذخیره‌شده کپی کنید، سپس در دستگاه دیگر دوباره کپی کنید و «درون‌ریزی کد» را بزنید. کد را خصوصی نگه دارید.</string>
+    <string name="VoiceTimecodesCodeHint">روی «برون‌ریزی» بزنید یا کدی از دستگاه دیگر بچسبانید</string>
+    <string name="VoiceTimecodesCodeExport">برون‌ریزی به کلیپ‌بورد</string>
+    <string name="VoiceTimecodesCodeImport">درون‌ریزی کد</string>
+    <string name="VoiceTimecodesCodeCopied">کد تنظیمات کپی شد</string>
+    <string name="VoiceTimecodesCodeImported">تنظیمات درون‌ریزی شد</string>
+    <string name="VoiceTimecodesCodeImportFailed">کد تنظیمات خالی یا نامعتبر است</string>
     <string name="VoiceTimecodesSaved">تنظیمات کدهای زمانی صدا ذخیره شد</string>
     <string name="VoiceTimecodesDone">کدهای زمانی افزوده شد</string>
     <string name="VoiceTimecodesGenerate">افزودن کدهای زمانی</string>

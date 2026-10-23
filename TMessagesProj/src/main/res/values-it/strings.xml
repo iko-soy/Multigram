@@ -1814,9 +1814,14 @@
     <string name="VoiceTimecodesMinDuration">Durata minima del vocale (secondi)</string>
     <string name="VoiceTimecodesPrompt">Modello di prompt ({transcript} = testo)</string>
     <string name="VoiceTimecodesResetPrompt">Ripristina il prompt</string>
-    <string name="VoiceTimecodesImportFile">Importa da /sdcard/Download/voice_timecodes.json</string>
-    <string name="VoiceTimecodesImportSuccess">Impostazioni importate correttamente</string>
-    <string name="VoiceTimecodesImportFailed">File non trovato o formato non valido</string>
+    <string name="VoiceTimecodesCodeTitle">Codice impostazioni</string>
+    <string name="VoiceTimecodesCodeInfo">Un codice su una sola riga con tutte le impostazioni dei timestamp vocali, incluse le chiavi API. Copialo nei Messaggi salvati, poi su un altro dispositivo copialo di nuovo e tocca «Importa codice». Mantieni il codice privato.</string>
+    <string name="VoiceTimecodesCodeHint">Tocca «Esporta» o incolla un codice da un altro dispositivo</string>
+    <string name="VoiceTimecodesCodeExport">Esporta negli appunti</string>
+    <string name="VoiceTimecodesCodeImport">Importa codice</string>
+    <string name="VoiceTimecodesCodeCopied">Codice impostazioni copiato</string>
+    <string name="VoiceTimecodesCodeImported">Impostazioni importate</string>
+    <string name="VoiceTimecodesCodeImportFailed">Codice impostazioni non valido o vuoto</string>
     <string name="VoiceTimecodesSaved">Impostazioni dei timecode vocali salvate</string>
     <string name="VoiceTimecodesDone">Timecode aggiunti</string>
     <string name="VoiceTimecodesGenerate">Aggiungi timecode</string>
