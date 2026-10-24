@@ -67,6 +67,18 @@
     <string name="QRLoginSubtitle">Öffne Telegram auf einem anderen Gerät und scanne diesen QR-Code, um dich bei deinem Konto anzumelden.</string>
     <string name="QRLoginTitle">Per QR-Code anmelden</string>
     <string name="AppNameFdroid">Forkgram</string>
+    <string name="GoToTags">GoTo-Chats: %1$s</string>
+    <string name="GoToNotFound">Kein GoTo-Chat für #%1$s (%2$s) gefunden</string>
+    <string name="GoToAmbiguous">Tag #%1$s passt zu mehreren Chats: %2$s</string>
+    <string name="WebPublish">Im Web veröffentlichen</string>
+    <string name="WebPublishAdvanced">Erweitert</string>
+    <string name="WebPublishBase">Basis-URL des Dienstes</string>
+    <string name="WebPublishBaseHint">https://example.com</string>
+    <string name="WebPublishInfo">Erstellt Text aus ausgewählten Nachrichten, lädt ihn mit Medien in einer Anfrage zum Webdienst hoch und kopiert den Seitenlink in die Zwischenablage. Keine lokalen Dateien: Medien liegen nur in einem temporären Cache, bis der Upload fertig ist.</string>
+    <string name="WebPublishSaved">Veröffentlichungseinstellungen gespeichert</string>
+    <string name="WebPublishSection">Web-Veröffentlichung</string>
+    <string name="WebPublishTemplate">Zwischenablage-Vorlage (%q = Link)</string>
+    <string name="WebPublishToken">Upload-Token</string>
     <string name="UnifiedPush">UnifiedPush</string>
     <string name="ForkSectionAppearance">Erscheinungsbild</string>
     <string name="ForkSectionMedia">Fotos und Videos</string>
@@ -825,8 +837,6 @@
     <string name="UseProxyInfo">SOCKS5 Proxy-Einstellungen</string>
     <string name="UseProxyTelegramInfo">MTProto Proxy-Einstellungen.</string>
     <string name="UseProxyTelegramInfo2">Dieser Proxy könnte einen gesponserten Kanal in deiner Chatliste anzeigen. Das wird jedoch nicht deinen Telegram-Datenverkehr enthüllen.</string>
-    <string name="UseProxyForCalls">Proxy für Anrufe benutzen</string>
-    <string name="UseProxyForCallsInfo">Proxyserver können die Qualität von Anrufen beinflussen.</string>
     <string name="ConnectingToProxyEnable">Aktivieren</string>
     <string name="LowDiskSpaceTitle">Warnung</string>
     <string name="LowDiskSpaceMessage">Du hast kaum noch freien Speicher. Lege fest, ob du nur kürzlich erhaltene Medien im Cache behalten willst.</string>

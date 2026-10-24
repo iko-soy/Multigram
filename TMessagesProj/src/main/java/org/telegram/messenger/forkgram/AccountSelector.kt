@@ -115,7 +115,7 @@ object AccountSelector {
             AndroidUtilities.dp(6f).toFloat(),
             0f,
             AndroidUtilities.dp(1f).toFloat(),
-            Theme.multAlpha(0xFF000000.toInt(), 0.15f)
+            Theme.multAlpha(fragment.getThemedColor(Theme.key_windowBackgroundWhiteBlackText), 0.15f)
         )
         options.setViewAdditionalOffsets(
             -AndroidUtilities.dp(4f),

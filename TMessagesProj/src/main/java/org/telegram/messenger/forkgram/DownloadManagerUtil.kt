@@ -6,14 +6,13 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Environment
-import android.util.Log
 import android.widget.Toast
 import androidx.core.net.toUri
+import org.telegram.messenger.FileLog
 
 class DownloadManagerUtil(private val mContext: Context) {
 
     private companion object {
-        const val TAG = "DownloadManagerUtil"
         const val DOWNLOADS_PROVIDER = "com.android.providers.downloads"
     }
 
@@ -28,14 +27,14 @@ class DownloadManagerUtil(private val mContext: Context) {
                     intent.data = "package:$DOWNLOADS_PROVIDER".toUri()
                     mContext.startActivity(intent)
                 } catch (e: ActivityNotFoundException) {
-                    Log.e(TAG, "Download manager error", e)
+                    FileLog.e("Download manager error", e)
                     val intent = Intent(android.provider.Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS)
                     mContext.startActivity(intent)
                 }
                 return false
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Download manager error", e)
+            FileLog.e("Download manager error", e)
             return false
         }
         return true
@@ -67,7 +66,7 @@ class DownloadManagerUtil(private val mContext: Context) {
         try {
             dm.remove(downloadId)
         } catch (ex: IllegalArgumentException) {
-            Log.e(TAG, "Failed to remove download task", ex)
+            FileLog.e("Failed to remove download task", ex)
         }
     }
 }

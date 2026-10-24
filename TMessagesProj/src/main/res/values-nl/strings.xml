@@ -67,6 +67,18 @@
     <string name="QRLoginSubtitle">Open Telegram op een ander apparaat en scan deze QR-code om in te loggen op je account.</string>
     <string name="QRLoginTitle">Inloggen met QR-code</string>
     <string name="AppNameFdroid">Forkgram</string>
+    <string name="GoToTags">GoTo-chats: %1$s</string>
+    <string name="GoToNotFound">Geen GoTo-chat gevonden voor #%1$s (%2$s)</string>
+    <string name="GoToAmbiguous">Tag #%1$s komt overeen met meerdere chats: %2$s</string>
+    <string name="WebPublish">Op het web publiceren</string>
+    <string name="WebPublishAdvanced">Geavanceerd</string>
+    <string name="WebPublishBase">Basis-URL van de dienst</string>
+    <string name="WebPublishBaseHint">https://example.com</string>
+    <string name="WebPublishInfo">Bouwt tekst uit geselecteerde berichten, uploadt die met media in één verzoek naar de webdienst en kopieert de paginalink naar het klembord. Er worden geen lokale bestanden bewaard: media leven alleen in een tijdelijke cache tot de upload klaar is.</string>
+    <string name="WebPublishSaved">Publicatie-instellingen opgeslagen</string>
+    <string name="WebPublishSection">Webpublicatie</string>
+    <string name="WebPublishTemplate">Klembordsjabloon (%q = link)</string>
+    <string name="WebPublishToken">Uploadtoken</string>
     <string name="UnifiedPush">UnifiedPush</string>
     <string name="ForkSectionAppearance">Weergave</string>
     <string name="ForkSectionMedia">Foto\'s en video</string>
@@ -880,8 +892,6 @@
     <string name="UseProxyInfo">SOCKS5 proxy-instellingen</string>
     <string name="UseProxyTelegramInfo">MTProto-proxy-instellingen.</string>
     <string name="UseProxyTelegramInfo2">De proxy die je gebruikt kan een gesponsord kanaal weergeven in je chatoverzicht, maar heeft geen inzage in je Telegram-verkeer.</string>
-    <string name="UseProxyForCalls">Gebruik proxy voor oproepen</string>
-    <string name="UseProxyForCallsInfo">Het gebruik van proxyservers kan de kwaliteit van je telefoongesprekken verminderen.</string>
     <string name="ConnectingToProxyEnable">Inschakelen</string>
     <string name="LowDiskSpaceTitle">Let op</string>
     <string name="LowDiskSpaceMessage">Je opslagruimte begint vol te raken. Om ruimte te maken kun je Telegram instellen om alleen recente media te cachen.</string>

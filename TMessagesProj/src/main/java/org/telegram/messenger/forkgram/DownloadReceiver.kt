@@ -5,7 +5,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.os.Build
-import android.util.Log
+import org.telegram.messenger.FileLog
 
 class DownloadReceiver : BroadcastReceiver() {
 
@@ -28,7 +28,7 @@ class DownloadReceiver : BroadcastReceiver() {
         val install = Intent(Intent.ACTION_VIEW)
         val downloadFileUri = dManager.getUriForDownloadedFile(downloadApkId)
         if (downloadFileUri != null) {
-            Log.d("DownloadManager", downloadFileUri.toString())
+            FileLog.d(downloadFileUri.toString())
 
             // Save APK path for cleanup on next launch
             try {
@@ -46,7 +46,7 @@ class DownloadReceiver : BroadcastReceiver() {
                 }
                 cursor.close()
             } catch (e: Exception) {
-                Log.e("DownloadReceiver", "Error saving APK path", e)
+                FileLog.e("Error saving APK path", e)
             }
 
             install.setDataAndType(downloadFileUri, "application/vnd.android.package-archive")
@@ -57,10 +57,10 @@ class DownloadReceiver : BroadcastReceiver() {
             if (install.resolveActivity(context.packageManager) != null) {
                 context.startActivity(install)
             } else {
-                Log.e("installApk","Automatic installation failed, please install manually.")
+                FileLog.e("Automatic installation failed, please install manually.")
             }
         } else {
-            Log.e("DownloadManager", "Download error")
+            FileLog.e("Download error")
         }
     }
 }
