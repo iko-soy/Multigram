@@ -89,10 +89,22 @@ public class ApplicationLoader extends Application {
 
     private static PushListenerController.IPushListenerServiceProvider pushProvider;
     private static ILocationServiceProvider locationServiceProvider;
+    private static IMapsProvider mapsProvider;
 
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+    }
+
+    public static IMapsProvider getMapsProvider() {
+        if (mapsProvider == null) {
+            mapsProvider = applicationLoaderInstance.onCreateMapsProvider();
+        }
+        return mapsProvider;
+    }
+
+    protected IMapsProvider onCreateMapsProvider() {
+        return new OsmdroidMapsProvider();
     }
 
     public static PushListenerController.IPushListenerServiceProvider getPushProvider() {
@@ -225,6 +237,8 @@ public class ApplicationLoader extends Application {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        LiteMode.registerBatteryReceiver();
 
         try {
             PowerManager pm = (PowerManager) ApplicationLoader.applicationContext.getSystemService(Context.POWER_SERVICE);
@@ -403,18 +417,6 @@ public class ApplicationLoader extends Application {
         //if (BuildConfig.DEBUG_PRIVATE_VERSION) {
         //    Choreographer60FpsContent.getInstance().addFrameCallback(debugEverySecondChecks, 1);
         //}
-
-        // SET TFOSS USERAGENT FOR OSM SERVERS
-        PackageInfo pInfo;
-        String VERSIONNAME="";
-        try {
-            pInfo = ApplicationLoader.applicationContext.getPackageManager().getPackageInfo(ApplicationLoader.applicationContext.getPackageName(), 0);
-            VERSIONNAME = pInfo.versionName;
-        } catch (Exception e) {
-            FileLog.e(e);
-        }
-        org.osmdroid.config.Configuration.getInstance().setUserAgentValue("Telegram-FOSS(F-Droid) "+VERSIONNAME);
-        org.osmdroid.config.Configuration.getInstance().setOsmdroidBasePath(new File(getCacheDir(),"osmdroid"));
     }
 
     private final Runnable debugEverySecondChecks = () -> AndroidUtilities.runOnUIThread(() -> {

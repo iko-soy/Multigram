@@ -21,6 +21,7 @@ import org.telegram.tgnet.tl.TL_account;
 import org.telegram.messenger.forkgram.HiddenAccountHelper;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class UserConfig extends BaseController {
@@ -615,6 +616,17 @@ public class UserConfig extends BaseController {
 
     public Long getEmojiStatus() {
         return UserObject.getEmojiStatusDocumentId(currentUser);
+    }
+
+    public static ArrayList<Long> getLoggedInAccountIds() {
+        ArrayList<Long> ids = new ArrayList<>();
+        for (int account = 0; account < UserConfig.MAX_ACCOUNT_COUNT; account++) {
+            UserConfig config = UserConfig.getInstance(account);
+            if (config.isClientActivated()) {
+                ids.add(config.getClientUserId());
+            }
+        }
+        return ids;
     }
 
 

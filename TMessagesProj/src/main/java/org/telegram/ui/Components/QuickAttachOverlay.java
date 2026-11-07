@@ -337,6 +337,8 @@ public class QuickAttachOverlay extends FrameLayout implements NotificationCente
         settingsButton.setAlpha(0.0f);
         settingsButton.setElevation(0);
         settingsHighlighted = false;
+        highlightedIndex = -1;
+        cancelHighlighted = true;
 
         dimView.animate().alpha(1.0f).setDuration(120).start();
 
