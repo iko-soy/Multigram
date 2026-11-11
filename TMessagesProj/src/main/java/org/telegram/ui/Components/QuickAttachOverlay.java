@@ -15,6 +15,7 @@ import android.os.SystemClock;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.HapticFeedbackConstants;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
@@ -61,6 +62,7 @@ public class QuickAttachOverlay extends FrameLayout implements NotificationCente
     private boolean settingsHighlighted = false;
     private boolean dismissing = false;
     private boolean presenting = false;
+    private boolean tapMode = false;
     private boolean newestFirst = false;
 
     private final int itemSide;
@@ -655,8 +657,54 @@ public class QuickAttachOverlay extends FrameLayout implements NotificationCente
         } else if (settingsHighlighted) {
             dismissToSettings();
         } else {
+            tapMode = true;
+            cancelHighlighted = false;
+            cancelButton.animate()
+                    .scaleX(1.0f)
+                    .scaleY(1.0f)
+                    .setDuration(150)
+                    .start();
+        }
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (!tapMode) {
+            return super.dispatchTouchEvent(event);
+        }
+        int action = event.getActionMasked();
+        if (action == MotionEvent.ACTION_CANCEL) {
+            tapMode = false;
+            cancelTracking();
+            return true;
+        }
+        if (action != MotionEvent.ACTION_UP) {
+            return true;
+        }
+        float x = event.getX();
+        float y = event.getY();
+        tapMode = false;
+        CardItem hit = null;
+        for (CardItem card : cardItems) {
+            if (x >= card.destX - hitSlop && x <= card.destX + itemSide + hitSlop &&
+                y >= card.destY - hitSlop * 2 && y <= card.destY + itemSide + hitSlop) {
+                hit = card;
+                break;
+            }
+        }
+        if (hit != null) {
+            highlightedIndex = cardItems.indexOf(hit);
+            dismissWithSelection(hit);
+            return true;
+        }
+        boolean overSettings = x >= settingsDestX - hitSlop && x <= settingsDestX + settingsSide + hitSlop &&
+                y >= settingsDestY - hitSlop * 2 && y <= settingsDestY + settingsSide + hitSlop;
+        if (overSettings) {
+            dismissToSettings();
+        } else {
             dismissCancel();
         }
+        return true;
     }
 
     public void cancelTracking() {

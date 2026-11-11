@@ -13,6 +13,7 @@ import org.telegram.tgnet.TLRPC
 import org.telegram.ui.ActionBar.ActionBarMenu
 import org.telegram.ui.ActionBar.ActionBarMenuItem
 import org.telegram.ui.ActionBar.BaseFragment
+import org.telegram.ui.ActionBar.SimpleActionBarMenu
 import org.telegram.ui.ActionBar.Theme
 import org.telegram.ui.Components.AvatarDrawable
 import org.telegram.ui.Components.BackupImageView
@@ -35,19 +36,41 @@ object AccountSelector {
         id: Int,
         onSelected: Utilities.Callback<Int>
     ): ActionBarMenuItem? {
-        val currentAccount = fragment.currentAccount
-        if (menu == null || !hasAccountsToSwitch(currentAccount)) {
+        if (menu == null || !hasAccountsToSwitch(fragment.currentAccount)) {
             return null
         }
+        return addToMenu(fragment, id, onSelected) { icon, width -> menu.addItemWithWidth(id, icon, width) }
+    }
 
-        val item = menu.addItemWithWidth(id, 0, AndroidUtilities.dp(56f))
+    @JvmStatic
+    fun addToMenu(
+        fragment: BaseFragment,
+        menu: SimpleActionBarMenu?,
+        id: Int,
+        onSelected: Utilities.Callback<Int>
+    ): ActionBarMenuItem? {
+        if (menu == null || !hasAccountsToSwitch(fragment.currentAccount)) {
+            return null
+        }
+        return addToMenu(fragment, id, onSelected) { icon, width -> menu.addItemWithWidth(id, icon, width) }
+    }
+
+    private fun addToMenu(
+        fragment: BaseFragment,
+        id: Int,
+        onSelected: Utilities.Callback<Int>,
+        addItemWithWidth: (icon: Int, width: Int) -> ActionBarMenuItem
+    ): ActionBarMenuItem {
+        val currentAccount = fragment.currentAccount
+
+        val item = addItemWithWidth(0, AndroidUtilities.dp(56f))
 
         val user: TLRPC.User? = UserConfig.getInstance(currentAccount).currentUser
         val avatarDrawable = AvatarDrawable()
         avatarDrawable.setTextSize(AndroidUtilities.dp(12f))
         avatarDrawable.setInfo(currentAccount, user)
 
-        val imageView = BackupImageView(menu.context)
+        val imageView = BackupImageView(item.context)
         imageView.setRoundRadius(AndroidUtilities.dp(18f))
         imageView.imageReceiver.setCurrentAccount(currentAccount)
         val thumb: Drawable = user?.photo?.strippedBitmap ?: avatarDrawable

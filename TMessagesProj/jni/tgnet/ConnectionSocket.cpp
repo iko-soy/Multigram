@@ -34,7 +34,13 @@
 #include "BuffersStorage.h"
 #include "Connection.h"
 #include "TLSHello.h"
+#include "H2Transport.h"
 #include <random>
+#include <chrono>
+#include <mutex>
+#include <thread>
+#include <vector>
+#include <poll.h>
 
 #ifndef EPOLLRDHUP
 #define EPOLLRDHUP 0x2000
@@ -114,6 +120,324 @@ static void webSocketAppendFrameHeader(std::string &out, uint8_t opcode, uint64_
     out.append((const char *) mask, 4);
 }
 
+namespace {
+
+struct WarmWebSocket {
+    int fd = -1;
+    SSL *ssl = nullptr;
+    BIO *readBio = nullptr;
+    BIO *writeBio = nullptr;
+    std::string host;
+    std::string path;
+    std::string leftover;
+    int64_t created = 0;
+};
+
+const int32_t WS_POOL_MAX_ENTRIES = 4;
+const int64_t WS_POOL_MAX_AGE_MS = 120000;
+const int64_t WS_POOL_HANDSHAKE_TIMEOUT_MS = 8000;
+const size_t WS_POOL_MAX_RESPONSE_HEADER = 16384;
+
+std::mutex wsPoolMutex;
+std::vector<WarmWebSocket> wsPool;
+int64_t wsPoolGeneration = 0;
+int32_t wsPoolInFlight = 0;
+
+int64_t wsPoolNow() {
+    return std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()).count();
+}
+
+void wsPoolClose(WarmWebSocket &entry) {
+    if (entry.ssl != nullptr) {
+        SSL_free(entry.ssl);
+        entry.ssl = nullptr;
+        entry.readBio = nullptr;
+        entry.writeBio = nullptr;
+    }
+    if (entry.fd >= 0) {
+        close(entry.fd);
+        entry.fd = -1;
+    }
+}
+
+bool wsPoolWait(int fd, short events, int64_t deadline) {
+    int64_t remaining = deadline - wsPoolNow();
+    if (remaining <= 0) {
+        return false;
+    }
+    struct pollfd p;
+    p.fd = fd;
+    p.events = events;
+    p.revents = 0;
+    if (poll(&p, 1, (int) remaining) <= 0) {
+        return false;
+    }
+    return (p.revents & (POLLERR | POLLHUP | POLLNVAL)) == 0;
+}
+
+bool wsPoolFlush(BIO *writeBio, int fd, int64_t deadline) {
+    char buffer[16384];
+    while (BIO_ctrl_pending(writeBio) > 0) {
+        int read = BIO_read(writeBio, buffer, sizeof(buffer));
+        if (read <= 0) {
+            break;
+        }
+        int offset = 0;
+        while (offset < read) {
+            ssize_t sent = send(fd, buffer + offset, read - offset, 0);
+            if (sent > 0) {
+                offset += (int) sent;
+            } else if (sent == 0) {
+                return false;
+            } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
+                if (!wsPoolWait(fd, POLLOUT, deadline)) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+bool wsPoolPumpRead(BIO *readBio, int fd, int64_t deadline) {
+    char buffer[16384];
+    while (true) {
+        ssize_t read = recv(fd, buffer, sizeof(buffer), 0);
+        if (read > 0) {
+            BIO_write(readBio, buffer, (int) read);
+            return true;
+        }
+        if (read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            if (!wsPoolWait(fd, POLLIN, deadline)) {
+                return false;
+            }
+            continue;
+        }
+        return false;
+    }
+}
+
+bool wsPoolSslHandshake(SSL *ssl, BIO *readBio, BIO *writeBio, int fd, int64_t deadline) {
+    while (true) {
+        ERR_clear_error();
+        int result = SSL_do_handshake(ssl);
+        if (result == 1) {
+            return true;
+        }
+        int error = SSL_get_error(ssl, result);
+        if (error == SSL_ERROR_WANT_READ) {
+            if (!wsPoolFlush(writeBio, fd, deadline) || !wsPoolPumpRead(readBio, fd, deadline)) {
+                return false;
+            }
+        } else if (error == SSL_ERROR_WANT_WRITE) {
+            if (!wsPoolFlush(writeBio, fd, deadline) || !wsPoolWait(fd, POLLOUT, deadline)) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+}
+
+bool wsPoolSslWrite(SSL *ssl, BIO *readBio, BIO *writeBio, int fd, const std::string &data, int64_t deadline) {
+    size_t offset = 0;
+    while (offset < data.size()) {
+        ERR_clear_error();
+        int written = SSL_write(ssl, data.data() + offset, (int) (data.size() - offset));
+        if (written > 0) {
+            offset += (size_t) written;
+            if (!wsPoolFlush(writeBio, fd, deadline)) {
+                return false;
+            }
+            continue;
+        }
+        int error = SSL_get_error(ssl, written);
+        if (error == SSL_ERROR_WANT_WRITE) {
+            if (!wsPoolFlush(writeBio, fd, deadline) || !wsPoolWait(fd, POLLOUT, deadline)) {
+                return false;
+            }
+        } else if (error == SSL_ERROR_WANT_READ) {
+            if (!wsPoolFlush(writeBio, fd, deadline) || !wsPoolPumpRead(readBio, fd, deadline)) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    return wsPoolFlush(writeBio, fd, deadline);
+}
+
+bool wsPoolReadUpgrade(SSL *ssl, BIO *readBio, BIO *writeBio, int fd, std::string &response, int64_t deadline) {
+    char buffer[4096];
+    while (response.find("\r\n\r\n") == std::string::npos) {
+        if (response.size() > WS_POOL_MAX_RESPONSE_HEADER) {
+            return false;
+        }
+        ERR_clear_error();
+        int read = SSL_read(ssl, buffer, sizeof(buffer));
+        if (read > 0) {
+            response.append(buffer, read);
+            continue;
+        }
+        int error = SSL_get_error(ssl, read);
+        if (error == SSL_ERROR_WANT_READ) {
+            if (!wsPoolFlush(writeBio, fd, deadline) || !wsPoolPumpRead(readBio, fd, deadline)) {
+                return false;
+            }
+        } else if (error == SSL_ERROR_WANT_WRITE) {
+            if (!wsPoolFlush(writeBio, fd, deadline) || !wsPoolWait(fd, POLLOUT, deadline)) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool wsPoolConnect(const std::string &host, const std::string &path, WarmWebSocket &entry) {
+    int64_t deadline = wsPoolNow() + WS_POOL_HANDSHAKE_TIMEOUT_MS;
+    struct addrinfo hints;
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_UNSPEC;
+    hints.ai_socktype = SOCK_STREAM;
+    struct addrinfo *result = nullptr;
+    if (getaddrinfo(host.c_str(), "443", &hints, &result) != 0 || result == nullptr) {
+        return false;
+    }
+    int fd = -1;
+    for (struct addrinfo *it = result; it != nullptr; it = it->ai_next) {
+        fd = socket(it->ai_family, it->ai_socktype, it->ai_protocol);
+        if (fd < 0) {
+            continue;
+        }
+        int flags = fcntl(fd, F_GETFL, 0);
+        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+        int yes = 1;
+        setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &yes, sizeof(yes));
+        if (connect(fd, it->ai_addr, it->ai_addrlen) == 0) {
+            break;
+        }
+        if (errno == EINPROGRESS && wsPoolWait(fd, POLLOUT, deadline)) {
+            int error = 0;
+            socklen_t length = sizeof(error);
+            if (getsockopt(fd, SOL_SOCKET, SO_ERROR, &error, &length) == 0 && error == 0) {
+                break;
+            }
+        }
+        close(fd);
+        fd = -1;
+    }
+    freeaddrinfo(result);
+    if (fd < 0) {
+        return false;
+    }
+
+    SSL *ssl = SSL_new(getWebSocketSslCtx());
+    BIO *readBio = BIO_new(BIO_s_mem());
+    BIO *writeBio = BIO_new(BIO_s_mem());
+    if (ssl == nullptr || readBio == nullptr || writeBio == nullptr) {
+        if (ssl != nullptr) {
+            SSL_free(ssl);
+        }
+        if (readBio != nullptr) {
+            BIO_free(readBio);
+        }
+        if (writeBio != nullptr) {
+            BIO_free(writeBio);
+        }
+        close(fd);
+        return false;
+    }
+    SSL_set_bio(ssl, readBio, writeBio);
+    SSL_set_tlsext_host_name(ssl, host.c_str());
+    SSL_set_connect_state(ssl);
+
+    uint8_t keyBytes[16];
+    RAND_bytes(keyBytes, sizeof(keyBytes));
+    std::string request = "GET " + path + " HTTP/1.1\r\nHost: " + host +
+            "\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nOrigin: https://web.telegram.org\r\nSec-WebSocket-Key: " +
+            webSocketBase64(keyBytes, sizeof(keyBytes)) +
+            "\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Protocol: binary\r\n\r\n";
+
+    std::string response;
+    bool ready = wsPoolSslHandshake(ssl, readBio, writeBio, fd, deadline) &&
+            wsPoolSslWrite(ssl, readBio, writeBio, fd, request, deadline) &&
+            wsPoolReadUpgrade(ssl, readBio, writeBio, fd, response, deadline);
+    if (ready) {
+        size_t headerEnd = response.find("\r\n\r\n");
+        ready = headerEnd != std::string::npos && response.compare(0, 9, "HTTP/1.1 ") == 0 &&
+                response.compare(9, 3, "101") == 0;
+        if (ready) {
+            entry.fd = fd;
+            entry.ssl = ssl;
+            entry.readBio = readBio;
+            entry.writeBio = writeBio;
+            entry.host = host;
+            entry.path = path;
+            entry.leftover = response.substr(headerEnd + 4);
+            entry.created = wsPoolNow();
+            return true;
+        }
+    }
+    SSL_free(ssl);
+    close(fd);
+    return false;
+}
+
+}
+
+void ConnectionSocket::webSocketPoolWarm(const std::string &host, const std::string &path) {
+    if (host.empty() || path.empty()) {
+        return;
+    }
+    int64_t generation;
+    {
+        std::lock_guard<std::mutex> lock(wsPoolMutex);
+        if (wsPoolInFlight + (int32_t) wsPool.size() >= WS_POOL_MAX_ENTRIES) {
+            return;
+        }
+        for (WarmWebSocket &entry : wsPool) {
+            if (entry.host == host && entry.path == path) {
+                return;
+            }
+        }
+        wsPoolInFlight++;
+        generation = wsPoolGeneration;
+    }
+    std::thread([host, path, generation] {
+        WarmWebSocket entry;
+        bool ready = wsPoolConnect(host, path, entry);
+        std::lock_guard<std::mutex> lock(wsPoolMutex);
+        wsPoolInFlight--;
+        if (!ready) {
+            if (LOGS_ENABLED) DEBUG_D("WSS preconnect failed %s%s", host.c_str(), path.c_str());
+            return;
+        }
+        if (generation != wsPoolGeneration || (int32_t) wsPool.size() >= WS_POOL_MAX_ENTRIES) {
+            wsPoolClose(entry);
+            return;
+        }
+        if (LOGS_ENABLED) DEBUG_D("WSS preconnect ready %s%s", host.c_str(), path.c_str());
+        wsPool.push_back(std::move(entry));
+    }).detach();
+}
+
+void ConnectionSocket::webSocketPoolReset() {
+    std::vector<WarmWebSocket> closeList;
+    {
+        std::lock_guard<std::mutex> lock(wsPoolMutex);
+        wsPoolGeneration++;
+        closeList.swap(wsPool);
+    }
+    for (WarmWebSocket &entry : closeList) {
+        wsPoolClose(entry);
+    }
+}
+
 ConnectionSocket::ConnectionSocket(int32_t instance) {
     instanceNum = instance;
     outgoingByteStream = new ByteStream();
@@ -122,6 +446,10 @@ ConnectionSocket::ConnectionSocket(int32_t instance) {
 }
 
 ConnectionSocket::~ConnectionSocket() {
+    if (h2Ref != nullptr) {
+        H2Transport::detach(h2Ref);
+        h2Ref.reset();
+    }
     webSocketFreeSsl();
     if (outgoingByteStream != nullptr) {
         delete outgoingByteStream;
@@ -154,7 +482,24 @@ void ConnectionSocket::openConnection(std::string address, uint16_t port, std::s
     memset(&socketAddress, 0, sizeof(sockaddr_in));
     memset(&socketAddress6, 0, sizeof(sockaddr_in6));
 
+    if (h2) {
+        proxyAuthState = 0;
+        h2Connected = false;
+        lastEventTime = ConnectionsManager::getInstance(instanceNum).getCurrentTimeMonotonicMillis();
+        if (h2Ref != nullptr) {
+            H2Transport::detach(h2Ref);
+            h2Ref.reset();
+        }
+        h2Ref = H2Transport::createRef(this, instanceNum, ++h2Generation, h2Host, h2Path);
+        if (LOGS_ENABLED) DEBUG_D("connection(%p) connecting via h2 %s%s", this, h2Host.c_str(), h2Path.c_str());
+        H2Transport::attach(h2Ref);
+        return;
+    }
+
     if (webSocket) {
+        if (webSocketTryAdopt()) {
+            return;
+        }
         proxyAuthState = 0;
         socketAddress.sin_family = AF_INET;
         socketAddress.sin_port = htons(port);
@@ -375,6 +720,11 @@ int32_t ConnectionSocket::checkSocketError(int32_t *error) {
 
 void ConnectionSocket::closeSocket(int32_t reason, int32_t error) {
     socketGeneration++;
+    if (h2Ref != nullptr) {
+        H2Transport::detach(h2Ref);
+        h2Ref.reset();
+    }
+    h2Connected = false;
     lastEventTime = ConnectionsManager::getInstance(instanceNum).getCurrentTimeMonotonicMillis();
     ConnectionsManager::getInstance(instanceNum).detachConnection(this);
     if (socketFd >= 0) {
@@ -824,6 +1174,9 @@ void ConnectionSocket::writeBuffer(NativeByteBuffer *buffer) {
 }
 
 void ConnectionSocket::adjustWriteOp() {
+    if (h2) {
+        return;
+    }
     if (!waitingForHostResolve.empty()) {
         adjustWriteOpAfterResolve = true;
         return;
@@ -854,6 +1207,10 @@ time_t ConnectionSocket::getTimeout() {
 }
 
 bool ConnectionSocket::checkTimeout(int64_t now) {
+    if (h2) {
+        // The endpoint thread owns setup, request and reconnect timeouts.
+        return false;
+    }
     if (webSocket && webSocketState != WebSocketStateReady && (now - lastEventTime) > 6000) {
         if (LOGS_ENABLED) DEBUG_D("connection(%p) WSS handshake timeout", this);
         closeSocket(2, 0);
@@ -880,7 +1237,7 @@ void ConnectionSocket::resetLastEventTime() {
 }
 
 bool ConnectionSocket::isDisconnected() {
-    return socketFd < 0 && waitingForHostResolve.empty();
+    return socketFd < 0 && waitingForHostResolve.empty() && h2Ref == nullptr;
 }
 
 void ConnectionSocket::dropConnection() {
@@ -895,10 +1252,60 @@ void ConnectionSocket::setOverrideProxy(std::string address, uint16_t port, std:
     overrideProxySecret = secret;
 }
 
-void ConnectionSocket::setWebSocket(bool enabled, std::string host, std::string path) {
+void ConnectionSocket::setWebSocket(bool enabled, std::string host, std::string path, std::string sni) {
     webSocket = enabled;
     webSocketHost = std::move(host);
     webSocketPath = std::move(path);
+    webSocketSni = std::move(sni);
+}
+
+void ConnectionSocket::setH2(bool enabled, std::string host, std::string path) {
+    h2 = enabled;
+    h2Host = std::move(host);
+    h2Path = std::move(path);
+    if (!enabled) {
+        h2Connected = false;
+    }
+}
+
+void ConnectionSocket::queueH2Message(const uint8_t *data, size_t length) {
+    if (h2Ref == nullptr || data == nullptr || length == 0) {
+        return;
+    }
+    H2Transport::submit(h2Ref, h2Generation, data, length);
+}
+
+bool ConnectionSocket::isH2Registered(uint32_t generation) const {
+    return h2 && h2Generation == generation;
+}
+
+void ConnectionSocket::onH2EndpointConnected() {
+    if (!h2 || h2Connected) {
+        return;
+    }
+    h2Connected = true;
+    lastEventTime = ConnectionsManager::getInstance(instanceNum).getCurrentTimeMonotonicMillis();
+    if (LOGS_ENABLED) DEBUG_D("connection(%p) h2 ready host=%s%s", this, h2Host.c_str(), h2Path.c_str());
+    if (!onConnectedSent) {
+        onConnected();
+        onConnectedSent = true;
+    }
+}
+
+void ConnectionSocket::onH2EndpointFailure() {
+    if (!h2) {
+        return;
+    }
+    if (LOGS_ENABLED) DEBUG_D("connection(%p) h2 endpoint failure", this);
+    closeSocket(1, 0);
+}
+
+void ConnectionSocket::onH2Response(const std::string &body) {
+    if (!h2 || !h2Connected || body.empty()) {
+        return;
+    }
+    lastEventTime = ConnectionsManager::getInstance(instanceNum).getCurrentTimeMonotonicMillis();
+    onH2Packet((const uint8_t *) body.data(), body.size());
 }
 
 void ConnectionSocket::queueWebSocketMessage(const uint8_t *data, size_t length, const uint8_t *data2, size_t length2, const uint8_t *data3, size_t length3) {
@@ -928,7 +1335,7 @@ bool ConnectionSocket::webSocketInitSsl() {
         return false;
     }
     SSL_set_bio(ssl, sslReadBio, sslWriteBio);
-    SSL_set_tlsext_host_name(ssl, webSocketHost.c_str());
+    SSL_set_tlsext_host_name(ssl, (webSocketSni.empty() ? webSocketHost : webSocketSni).c_str());
     SSL_set_connect_state(ssl);
     return true;
 }
@@ -1290,6 +1697,83 @@ void ConnectionSocket::webSocketBecameReady() {
         onConnected();
         onConnectedSent = true;
     }
+}
+
+bool ConnectionSocket::webSocketTryAdopt() {
+    if (!webSocketSni.empty()) {
+        return false;
+    }
+    WarmWebSocket entry;
+    bool found = false;
+    {
+        std::lock_guard<std::mutex> lock(wsPoolMutex);
+        int64_t now = wsPoolNow();
+        std::vector<WarmWebSocket> dropped;
+        for (auto it = wsPool.begin(); it != wsPool.end();) {
+            bool stale = now - it->created > WS_POOL_MAX_AGE_MS;
+            bool dead = false;
+            if (!stale) {
+                char probe;
+                ssize_t peek = recv(it->fd, &probe, 1, MSG_PEEK | MSG_DONTWAIT);
+                dead = peek == 0;
+            }
+            if (stale || dead) {
+                dropped.push_back(*it);
+                it = wsPool.erase(it);
+                continue;
+            }
+            if (!found && it->host == webSocketHost && it->path == webSocketPath) {
+                entry = *it;
+                found = true;
+                it = wsPool.erase(it);
+                continue;
+            }
+            ++it;
+        }
+        for (WarmWebSocket &dead : dropped) {
+            wsPoolClose(dead);
+        }
+    }
+    if (!found) {
+        return false;
+    }
+    socketFd = entry.fd;
+    ssl = entry.ssl;
+    sslReadBio = entry.readBio;
+    sslWriteBio = entry.writeBio;
+    wsInBuffer = entry.leftover;
+    webSocketState = WebSocketStateReady;
+    tlsPendingWrite.clear();
+    tlsPendingSent = 0;
+    lastEventTime = ConnectionsManager::getInstance(instanceNum).getCurrentTimeMonotonicMillis();
+    eventMask.events = EPOLLIN | EPOLLRDHUP | EPOLLERR | EPOLLET;
+    eventMask.data.ptr = eventObject;
+    if (epoll_ctl(ConnectionsManager::getInstance(instanceNum).epolFd, EPOLL_CTL_ADD, socketFd, &eventMask) != 0) {
+        if (LOGS_ENABLED) DEBUG_E("connection(%p) WSS pool epoll add failed", this);
+        webSocketFreeSsl();
+        close(socketFd);
+        socketFd = -1;
+        return false;
+    }
+    if (LOGS_ENABLED) DEBUG_D("connection(%p) WSS pool hit %s%s", this, webSocketHost.c_str(), webSocketPath.c_str());
+    // Adoption happens synchronously inside Connection::connect(), which is
+    // called from Connection::sendData() while processRequestQueue() iterates
+    // its request list. Reporting onConnected() here would recurse back into
+    // processRequestQueue() and invalidate the outer iterator, so the ready
+    // transition and the pooled plaintext are deferred to the manager queue.
+    int32_t generation = socketGeneration;
+    std::string leftover;
+    leftover.swap(wsInBuffer);
+    ConnectionsManager::getInstance(instanceNum).scheduleTask([this, generation, leftover] {
+        if (socketGeneration != generation || !webSocket || onConnectedSent || socketFd < 0) {
+            return;
+        }
+        webSocketBecameReady();
+        if (socketGeneration == generation && !leftover.empty()) {
+            webSocketConsumePlain(reinterpret_cast<uint8_t *>(const_cast<char *>(leftover.data())), leftover.size());
+        }
+    });
+    return true;
 }
 
 void ConnectionSocket::onHostNameResolved(std::string host, std::string ip, bool ipv6) {

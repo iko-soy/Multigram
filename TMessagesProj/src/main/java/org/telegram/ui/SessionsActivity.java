@@ -228,7 +228,7 @@ public class SessionsActivity extends BaseFragment implements NotificationCenter
             simpleActionBar.setBackButtonImage(R.drawable.ic_ab_close);
         }
         if (currentType == TYPE_DEVICES) {
-            AccountSelector.addToMenu(this, actionBar.createMenu(), accountSelectorId, this::switchAccount);
+            AccountSelector.addToMenu(this, simpleActionBar.createMenu(), accountSelectorId, this::switchAccount);
         }
 
         listAdapter = new ListAdapter(context);

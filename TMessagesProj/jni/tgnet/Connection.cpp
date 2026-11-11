@@ -17,8 +17,13 @@
 #include "FileLog.h"
 #include "Timer.h"
 #include "Datacenter.h"
+#include "H2Transport.h"
 #include "NativeByteBuffer.h"
 #include "ByteArray.h"
+#include <atomic>
+
+static const char *WEB_SOCKET_FRONTING_IPS[] = {"149.154.167.220", "149.154.167.99"};
+static std::atomic<uint32_t> webSocketFrontingRotation{0};
 
 thread_local static uint32_t lastConnectionToken = 1;
 
@@ -68,8 +73,10 @@ void Connection::suspendConnection(bool idle) {
     wasConnected = false;
 }
 
-void Connection::onReceivedData(NativeByteBuffer *buffer) {
-    AES_ctr128_encrypt(buffer->bytes(), buffer->bytes(), buffer->limit(), &decryptKey, decryptIv, decryptCount, &decryptNum);
+void Connection::onReceivedData(NativeByteBuffer *buffer, bool plain) {
+    if (!plain) {
+        AES_ctr128_encrypt(buffer->bytes(), buffer->bytes(), buffer->limit(), &decryptKey, decryptIv, decryptCount, &decryptNum);
+    }
     
     failedConnectionCount = 0;
 
@@ -374,18 +381,52 @@ void Connection::connect() {
     if (useWebSocket) {
         secret = "";
         currentWebSocketDomain = ConnectionsManager::getInstance(currentDatacenter->instanceNum).getWebSocketDomainForDc(webDatacenterId, isMediaConnection);
+        bool fronting = ConnectionsManager::isWebSocketFrontingDomain(currentWebSocketDomain);
         bool directWebEndpoint = currentWebSocketDomain.empty();
-        currentWebSocketDash1 = isMediaConnection && directWebEndpoint && ConnectionsManager::getInstance(currentDatacenter->instanceNum).webSocketMediaDirectDash1Available(webDatacenterId);
-        std::string webBaseDomain = directWebEndpoint ? "web.telegram.org" : currentWebSocketDomain;
+        currentWebSocketDash1 = isMediaConnection && (directWebEndpoint || fronting) && ConnectionsManager::getInstance(currentDatacenter->instanceNum).webSocketMediaDirectDash1Available(webDatacenterId);
+        std::string webBaseDomain = (directWebEndpoint || fronting) ? "web.telegram.org" : currentWebSocketDomain;
         std::string webHost = std::string("kws") + to_string_int32((int32_t) webDatacenterId) + (currentWebSocketDash1 ? "-1" : "") + "." + webBaseDomain;
         std::string webPath = ConnectionsManager::getInstance(currentDatacenter->instanceNum).testBackend ? "/apiws_test" : "/apiws";
-        setWebSocket(true, webHost, webPath);
-        if (LOGS_ENABLED) DEBUG_D("connection(%p, account%u, dc%u, type %d) connecting via websocket %s%s", this, currentDatacenter->instanceNum, currentDatacenter->getDatacenterId(), connectionType, webHost.c_str(), webPath.c_str());
-        openConnection(webHost, 443, "", false, ConnectionsManager::getInstance(currentDatacenter->instanceNum).currentNetworkType);
+        currentWebSocketHost = webHost;
+        currentWebSocketPath = webPath;
+        currentWebSocketFronted = fronting;
+        std::string apiPath = "/api";
+        h2Connection = isMediaConnection && !directWebEndpoint && !fronting &&
+                !ConnectionsManager::getInstance(currentDatacenter->instanceNum).testBackend &&
+                H2Transport::available(currentDatacenter->instanceNum, webHost, apiPath);
+        if (h2Connection) {
+            currentWebSocketDash1 = false;
+            currentWebSocketPath = apiPath;
+            webSocketConnectStart = ConnectionsManager::getInstance(currentDatacenter->instanceNum).getCurrentTimeMonotonicMillis();
+            setWebSocket(false, "", "");
+            setH2(true, webHost, apiPath);
+            if (LOGS_ENABLED) DEBUG_D("connection(%p, account%u, dc%u, type %d) connecting via h2 %s%s", this, currentDatacenter->instanceNum, currentDatacenter->getDatacenterId(), connectionType, webHost.c_str(), apiPath.c_str());
+            openConnection(webHost, 443, "", false, ConnectionsManager::getInstance(currentDatacenter->instanceNum).currentNetworkType);
+        } else {
+            std::string connectAddress;
+            std::string sni;
+            if (fronting) {
+                uint32_t index = webSocketFrontingRotation.fetch_add(1);
+                connectAddress = WEB_SOCKET_FRONTING_IPS[index % (sizeof(WEB_SOCKET_FRONTING_IPS) / sizeof(WEB_SOCKET_FRONTING_IPS[0]))];
+                sni = "sprinthost.ru";
+            } else {
+                connectAddress = webHost;
+            }
+            webSocketConnectStart = ConnectionsManager::getInstance(currentDatacenter->instanceNum).getCurrentTimeMonotonicMillis();
+            setWebSocket(true, webHost, webPath, sni);
+            setH2(false, "", "");
+            if (LOGS_ENABLED) DEBUG_D("connection(%p, account%u, dc%u, type %d) connecting via websocket %s%s%s%s", this, currentDatacenter->instanceNum, currentDatacenter->getDatacenterId(), connectionType, connectAddress.c_str(), webHost == connectAddress ? "" : " ", webHost == connectAddress ? "" : webHost.c_str(), webPath.c_str());
+            openConnection(connectAddress, 443, "", false, ConnectionsManager::getInstance(currentDatacenter->instanceNum).currentNetworkType);
+        }
     } else {
         currentWebSocketDomain = "";
+        currentWebSocketHost = "";
+        currentWebSocketPath = "";
         currentWebSocketDash1 = false;
+        currentWebSocketFronted = false;
+        h2Connection = false;
         setWebSocket(false, "", "");
+        setH2(false, "", "");
         openConnection(hostAddress, hostPort, secret, ipv6 != 0, ConnectionsManager::getInstance(currentDatacenter->instanceNum).currentNetworkType);
     }
     if (connectionType == ConnectionTypeProxy) {
@@ -462,6 +503,13 @@ void Connection::sendData(NativeByteBuffer *buff, bool reportAck, bool encrypted
     if (isDisconnected()) {
         buff->reuse();
         if (LOGS_ENABLED) DEBUG_D("connection(%p, account%u, dc%u, type %d) disconnected, don't send data", this, currentDatacenter->instanceNum, currentDatacenter->getDatacenterId(), connectionType);
+        return;
+    }
+
+    if (h2Connection) {
+        currentProtocolType = ProtocolTypeEF;
+        queueH2Message(buff->bytes(), buff->limit());
+        buff->reuse();
         return;
     }
 
@@ -709,6 +757,7 @@ void Connection::onDisconnectedInternal(int32_t reason, int32_t error) {
         }
     }
     generation++;
+    h2Connection = false;
     firstPacketSent = false;
     if (restOfTheData != nullptr) {
         restOfTheData->reuse();
@@ -769,6 +818,27 @@ void Connection::onDisconnectedInternal(int32_t reason, int32_t error) {
     usefullData = false;
 }
 
+void Connection::onH2Packet(const uint8_t *data, size_t length) {
+    if (length == 0 || length > 2 * 1024 * 1024 || length % 4 != 0) {
+        if (LOGS_ENABLED) DEBUG_E("connection(%p) h2 invalid packet size %zu", this, length);
+        reconnect();
+        return;
+    }
+    uint32_t words = (uint32_t) (length / 4);
+    uint32_t headerLength = words < 0x7f ? 1 : 4;
+    NativeByteBuffer *buffer = BuffersStorage::getInstance().getFreeBuffer(headerLength + (uint32_t) length);
+    if (words < 0x7f) {
+        buffer->writeByte((uint8_t) words);
+    } else {
+        uint32_t packed = (words << 8) + 0x7f;
+        buffer->writeInt32(packed);
+    }
+    buffer->writeBytes((uint8_t *) data, (uint32_t) length);
+    buffer->rewind();
+    onReceivedData(buffer, true);
+    buffer->reuse();
+}
+
 void Connection::onDisconnected(int32_t reason, int32_t error) {
     if (connectionInProcess) {
         ConnectionsManager::getInstance(currentDatacenter->instanceNum).scheduleTask([&, reason, error] {
@@ -784,6 +854,13 @@ void Connection::onConnected() {
     connectionToken = lastConnectionToken++;
     wasConnected = true;
     if (LOGS_ENABLED) DEBUG_D("connection(%p, account%u, dc%u, type %d) connected to %s:%hu", this, currentDatacenter->instanceNum, currentDatacenter->getDatacenterId(), connectionType, hostAddress.c_str(), hostPort);
+    if (wsConnectionActive) {
+        const char *route = currentWebSocketFronted ? "fronting" : (currentWebSocketDomain.empty() ? "direct" : "domain");
+        if (LOGS_ENABLED) DEBUG_D("connection(%p, account%u, dc%u, type %d) %s ready route=%s host=%s setup=%lldms", this, currentDatacenter->instanceNum, currentDatacenter->getDatacenterId(), connectionType, h2Connection ? "h2" : "websocket", route, currentWebSocketHost.c_str(), (long long) (ConnectionsManager::getInstance(currentDatacenter->instanceNum).getCurrentTimeMonotonicMillis() - webSocketConnectStart));
+        if (!h2Connection) {
+            ConnectionsManager::getInstance(currentDatacenter->instanceNum).scheduleWebSocketPreconnect(currentWebSocketHost, currentWebSocketPath);
+        }
+    }
     ConnectionsManager::getInstance(currentDatacenter->instanceNum).onConnectionConnected(this);
 }
 

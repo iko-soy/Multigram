@@ -63,6 +63,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.TimeZone;
 import java.util.concurrent.BlockingQueue;
@@ -1049,14 +1050,17 @@ public class ConnectionsManager extends BaseController {
         "https://cdn.jsdelivr.net/gh/Flowseal/tg-ws-proxy@main/.github/cfproxy-domains.txt",
         "https://raw.githack.com/Flowseal/tg-ws-proxy/main/.github/cfproxy-domains.txt"
     };
-    private static final long WEBSOCKET_DOMAINS_TTL = 12L * 60L * 60L * 1000L;
+    private static final long WEBSOCKET_DOMAINS_TTL = 60L * 60L * 1000L;
     private static final long WEBSOCKET_DOMAINS_RETRY = 30L * 60L * 1000L;
     private static final int WEBSOCKET_DOMAINS_MAX_SIZE = 64 * 1024;
+    private static final int WEBSOCKET_DOMAINS_MAX_POOL = 64;
+    private static final int WEBSOCKET_DOMAINS_MIN_VALID = 3;
     private static final long WEBSOCKET_DOMAINS_DEADLINE = 20L * 1000L;
     private static final String[] WEBSOCKET_FALLBACK_DOMAINS = {
         "virkgj.com", "vmmzovy.com", "mkuosckvso.com", "zaewayzmplad.com", "twdmbzcm.com",
         "awzwsldi.com", "clngqrflngqin.com", "tjacxbqtj.com", "bxaxtxmrw.com", "dmohrsgmohcrwb.com",
-        "vwbmtmoi.com", "khgrre.com", "ulihssf.com", "tmhqsdqmfpmk.com", "xwuwoqbm.com"
+        "vwbmtmoi.com", "khgrre.com", "ulihssf.com", "tmhqsdqmfpmk.com", "xwuwoqbm.com",
+        "orgcnunpj.com", "zhkuldz.com", "zypoljnslxa.com", "efabnxaowuzs.com", "zaftuzsftqdq.com"
     };
     private static volatile boolean webSocketDomainsRefreshing = false;
 
@@ -1111,12 +1115,9 @@ public class ConnectionsManager extends BaseController {
         if (s == null) {
             return "";
         }
-        s = s.trim().toLowerCase();
-        if (s.endsWith(".co.uk")) {
-            return s;
-        }
+        s = s.trim().toLowerCase(Locale.US);
         if (!s.endsWith(".com")) {
-            return "";
+            return s;
         }
         String p = s.substring(0, s.length() - 4);
         int letters = 0;
@@ -1139,20 +1140,46 @@ public class ConnectionsManager extends BaseController {
         return sb.append(".co.uk").toString();
     }
 
+    private static boolean isValidRelayDomain(String value) {
+        if (TextUtils.isEmpty(value) || value.length() > 253) {
+            return false;
+        }
+        String[] labels = value.split("\\.", -1);
+        if (labels.length < 2) {
+            return false;
+        }
+        for (String label : labels) {
+            if (label.isEmpty() || label.length() > 63 || label.startsWith("-") || label.endsWith("-")) {
+                return false;
+            }
+            for (int i = 0; i < label.length(); i++) {
+                char c = label.charAt(i);
+                if (!(c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '-')) {
+                    return false;
+                }
+            }
+        }
+        String tld = labels[labels.length - 1];
+        if (tld.length() < 2 || !tld.matches(".*[a-z].*")) {
+            return false;
+        }
+        return true;
+    }
+
     private static String buildWebSocketPool() {
         java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>();
         String cached = MessagesController.getGlobalMainSettings().getString("webSocketDomainsCache", "");
         if (!TextUtils.isEmpty(cached)) {
             for (String enc : cached.split("\n")) {
                 String d = decodeCfDomain(enc);
-                if (!TextUtils.isEmpty(d)) {
+                if (isValidRelayDomain(d)) {
                     set.add(d);
                 }
             }
         }
         for (String enc : WEBSOCKET_FALLBACK_DOMAINS) {
             String d = decodeCfDomain(enc);
-            if (!TextUtils.isEmpty(d)) {
+            if (isValidRelayDomain(d)) {
                 set.add(d);
             }
         }
@@ -1193,7 +1220,7 @@ public class ConnectionsManager extends BaseController {
                 if (System.currentTimeMillis() > deadline) {
                     break;
                 }
-                String body = fetchWebSocketDomains(url);
+                String body = fetchWebSocketDomains(url + (url.contains("?") ? "&" : "?") + "cb=" + System.nanoTime());
                 if (body == null) {
                     continue;
                 }
@@ -1205,9 +1232,11 @@ public class ConnectionsManager extends BaseController {
             }
             webSocketDomainsRefreshing = false;
             if (valid == null) {
+                FileLog.d("websocket domain refresh failed");
                 MessagesController.getGlobalMainSettings().edit().putLong("webSocketDomainsFailTime", System.currentTimeMillis()).commit();
                 return;
             }
+            FileLog.d("websocket domain pool updated: " + (valid.split("\n").length) + " domains");
             SharedPreferences.Editor editor = MessagesController.getGlobalMainSettings().edit();
             editor.putString("webSocketDomainsCache", valid);
             editor.putLong("webSocketDomainsCacheTime", System.currentTimeMillis());
@@ -1376,17 +1405,24 @@ public class ConnectionsManager extends BaseController {
 
     private static String parseWebSocketDomains(String body) {
         StringBuilder valid = new StringBuilder();
+        int count = 0;
         for (String line : body.split("\\s+")) {
             line = line.trim();
-            if (line.isEmpty() || TextUtils.isEmpty(decodeCfDomain(line))) {
+            if (line.isEmpty() || line.startsWith("#")) {
+                continue;
+            }
+            if (!isValidRelayDomain(decodeCfDomain(line))) {
                 continue;
             }
             if (valid.length() > 0) {
                 valid.append("\n");
             }
             valid.append(line);
+            if (++count >= WEBSOCKET_DOMAINS_MAX_POOL) {
+                break;
+            }
         }
-        return valid.length() == 0 ? null : valid.toString();
+        return count < WEBSOCKET_DOMAINS_MIN_VALID ? null : valid.toString();
     }
 
     public static native void native_switchBackend(int currentAccount, boolean restart);

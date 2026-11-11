@@ -11,6 +11,7 @@
 
 #include <sys/epoll.h>
 #include <netinet/in.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -19,6 +20,7 @@ class ConnectionsManager;
 class ByteStream;
 class EventObject;
 class ByteArray;
+class H2ClientRef;
 
 struct ssl_st;
 struct bio_st;
@@ -44,9 +46,18 @@ public:
     bool isDisconnected();
     void dropConnection();
     void setOverrideProxy(std::string address, uint16_t port, std::string username, std::string password, std::string secret);
-    void setWebSocket(bool enabled, std::string host, std::string path);
+    void setWebSocket(bool enabled, std::string host, std::string path, std::string sni = "");
     void queueWebSocketMessage(const uint8_t *data, size_t length, const uint8_t *data2 = nullptr, size_t length2 = 0, const uint8_t *data3 = nullptr, size_t length3 = 0);
+    void setH2(bool enabled, std::string host, std::string path);
+    void queueH2Message(const uint8_t *data, size_t length);
+    void onH2EndpointConnected();
+    void onH2EndpointFailure();
+    void onH2Response(const std::string &body);
+    bool isH2Registered(uint32_t generation) const;
     void onHostNameResolved(std::string host, std::string ip, bool ipv6);
+
+    static void webSocketPoolWarm(const std::string &host, const std::string &path);
+    static void webSocketPoolReset();
 
 protected:
     int32_t instanceNum;
@@ -54,7 +65,8 @@ protected:
     bool checkTimeout(int64_t now);
     void resetLastEventTime();
     bool hasTlsHashMismatch();
-    virtual void onReceivedData(NativeByteBuffer *buffer) = 0;
+    virtual void onReceivedData(NativeByteBuffer *buffer, bool plain = false) = 0;
+    virtual void onH2Packet(const uint8_t *data, size_t length) = 0;
     virtual void onDisconnected(int32_t reason, int32_t error) = 0;
     virtual void onConnected() = 0;
     virtual bool hasPendingRequests() = 0;
@@ -98,6 +110,7 @@ private:
     bool webSocket = false;
     std::string webSocketHost;
     std::string webSocketPath;
+    std::string webSocketSni;
     int8_t webSocketState = WebSocketStateNone;
     struct ssl_st *ssl = nullptr;
     struct bio_st *sslReadBio = nullptr;
@@ -116,6 +129,13 @@ private:
     std::string wsControlPayload;
     int32_t socketGeneration = 0;
 
+    bool h2 = false;
+    bool h2Connected = false;
+    std::string h2Host;
+    std::string h2Path;
+    uint32_t h2Generation = 0;
+    std::shared_ptr<H2ClientRef> h2Ref;
+
     bool webSocketInitSsl();
     void webSocketFreeSsl();
     int32_t webSocketDriveHandshake();
@@ -130,6 +150,7 @@ private:
     int32_t webSocketSendOutgoing();
     int32_t webSocketFlushCiphertext();
     void webSocketBecameReady();
+    bool webSocketTryAdopt();
 
     int32_t checkSocketError(int32_t *error);
     void closeSocket(int32_t reason, int32_t error);

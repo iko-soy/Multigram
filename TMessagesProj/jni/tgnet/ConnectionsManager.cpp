@@ -20,6 +20,7 @@
 #include <string>
 #include <cinttypes>
 #include "ConnectionsManager.h"
+#include "H2Transport.h"
 #include "DownloadRequestBudget.h"
 #include "FileLog.h"
 #include "EventObject.h"
@@ -126,6 +127,7 @@ ConnectionsManager::ConnectionsManager(int32_t instance) {
 }
 
 ConnectionsManager::~ConnectionsManager() {
+    H2Transport::resetInstance(instanceNum);
     if (epolFd != 0) {
         close(epolFd);
         epolFd = 0;
@@ -3828,9 +3830,21 @@ void ConnectionsManager::setWebSocketConfig(bool value, std::string userDomain, 
         webSocketUserDomain = userDomain;
         webSocketDomainPool = pool;
         resetWebSocketHealth();
+        if (endpointChanged) {
+            H2Transport::resetInstance(instanceNum);
+            ConnectionSocket::webSocketPoolReset();
+        }
         if (LOGS_ENABLED) DEBUG_D("websocket transport %s, %d pool domains, user domain '%s'", value ? "enabled" : "disabled", (int) pool.size(), userDomain.c_str());
         if (!endpointChanged) {
             return;
+        }
+        if (value && currentDatacenterId >= 1 && currentDatacenterId <= 5) {
+            std::string path = testBackend ? "/apiws_test" : "/apiws";
+            std::string base = "kws" + std::to_string(currentDatacenterId);
+            ConnectionSocket::webSocketPoolWarm(base + ".web.telegram.org", path);
+            if (webSocketMediaDirectDash1Available(currentDatacenterId)) {
+                ConnectionSocket::webSocketPoolWarm(base + "-1.web.telegram.org", path);
+            }
         }
         for (auto & datacenter : datacenters) {
             datacenter.second->suspendConnections(true);
@@ -3851,6 +3865,23 @@ static int64_t webSocketEscalatedCooldown(int32_t strikes) {
     return cooldown > 300000 ? 300000 : cooldown;
 }
 
+static const std::string WEBSOCKET_FRONTING_DOMAIN = "\x01front";
+
+bool ConnectionsManager::isWebSocketFrontingDomain(const std::string &domain) {
+    return domain == WEBSOCKET_FRONTING_DOMAIN;
+}
+
+void ConnectionsManager::scheduleWebSocketPreconnect(const std::string &host, const std::string &path) {
+    if (host.empty() || path.empty()) {
+        return;
+    }
+    scheduleTask([&, host, path] {
+        if (useWebSocket) {
+            ConnectionSocket::webSocketPoolWarm(host, path);
+        }
+    });
+}
+
 bool ConnectionsManager::webSocketMediaDirectDash1Available(uint32_t datacenterId) {
     if (!webSocketUserDomain.empty()) {
         return false;
@@ -3868,6 +3899,10 @@ std::string ConnectionsManager::getWebSocketDomainForDc(uint32_t datacenterId, b
     auto directCooldown = webSocketDirectCooldownUntil.find(slot);
     if (directCooldown == webSocketDirectCooldownUntil.end() || directCooldown->second <= now) {
         return "";
+    }
+    auto frontingCooldown = webSocketFrontingCooldownUntil.find(slot);
+    if (frontingCooldown == webSocketFrontingCooldownUntil.end() || frontingCooldown->second <= now) {
+        return WEBSOCKET_FRONTING_DOMAIN;
     }
     if (webSocketDomainPool.empty()) {
         return "";
@@ -3901,6 +3936,31 @@ std::string ConnectionsManager::getWebSocketDomainForDc(uint32_t datacenterId, b
 
 void ConnectionsManager::markWebSocketDomainResult(uint32_t datacenterId, bool isMedia, std::string domain, bool dash1, bool success) {
     uint32_t slot = datacenterId * 2 + (isMedia ? 1 : 0);
+    if (isWebSocketFrontingDomain(domain)) {
+        if (success) {
+            webSocketFrontingCooldownUntil.erase(slot);
+            webSocketFrontingStrikes.erase(slot);
+            webSocketConsecutiveFailures = 0;
+            webSocketSuppressedUntil = 0;
+            return;
+        }
+        if (dash1) {
+            int32_t strikes = ++webSocketDirectDash1Strikes[datacenterId];
+            int64_t cooldown = webSocketEscalatedCooldown(strikes);
+            webSocketDirectDash1Cooldown[datacenterId] = getCurrentTimeMonotonicMillis() + cooldown;
+            if (LOGS_ENABLED) DEBUG_D("websocket dc%u media-1 fronting cooldown %lld ms (strike %d)", datacenterId, (long long) cooldown, strikes);
+            return;
+        }
+        int32_t strikes = ++webSocketFrontingStrikes[slot];
+        int64_t cooldown = webSocketEscalatedCooldown(strikes);
+        webSocketFrontingCooldownUntil[slot] = getCurrentTimeMonotonicMillis() + cooldown;
+        if (LOGS_ENABLED) DEBUG_D("websocket dc%u%s fronting cooldown %lld ms (strike %d)", datacenterId, isMedia ? " media" : "", (long long) cooldown, strikes);
+        if (++webSocketConsecutiveFailures >= 6) {
+            webSocketSuppressedUntil = getCurrentTimeMonotonicMillis() + 60000;
+            if (LOGS_ENABLED) DEBUG_D("websocket suppressed, falling back to tcp for 60s (%d consecutive failures)", webSocketConsecutiveFailures);
+        }
+        return;
+    }
     if (success) {
         webSocketConsecutiveFailures = 0;
         webSocketSuppressedUntil = 0;
@@ -3962,8 +4022,21 @@ void ConnectionsManager::resetWebSocketHealth() {
     webSocketDirectStrikes.clear();
     webSocketDirectDash1Cooldown.clear();
     webSocketDirectDash1Strikes.clear();
+    webSocketFrontingCooldownUntil.clear();
+    webSocketFrontingStrikes.clear();
     webSocketConsecutiveFailures = 0;
     webSocketSuppressedUntil = 0;
+}
+
+void ConnectionsManager::reportNetworkTraffic(int32_t sent, int32_t received) {
+    if (delegate != nullptr) {
+        if (sent > 0) {
+            delegate->onBytesSent(sent, currentNetworkType, instanceNum);
+        }
+        if (received > 0) {
+            delegate->onBytesReceived(received, currentNetworkType, instanceNum);
+        }
+    }
 }
 
 bool ConnectionsManager::isWebSocketSuppressed() {
