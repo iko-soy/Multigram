@@ -401,7 +401,7 @@ abiByArch = {
 abis = [abiByArch[arch] for arch in arches]
 
 stage('prebuild', """
-    git submodule init && git submodule update
+    git submodule update --init --recursive
     git checkout -- prebuild
     export ANDROID_NDK_HOME={ndk}
     export ABIS="{abisStr}"
