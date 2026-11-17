@@ -28,7 +28,9 @@ import java.util.concurrent.Executors
 object VoiceTimecodes {
 
     private const val CONNECT_TIMEOUT_MS = 60000
-    private const val READ_TIMEOUT_MS = 120000
+    private const val MIN_READ_TIMEOUT_MS = 120000
+    private const val MAX_STT_READ_TIMEOUT_MS = 30 * 60 * 1000
+    private const val MAX_LLM_READ_TIMEOUT_MS = 10 * 60 * 1000
 
     private val executor = Executors.newCachedThreadPool()
 
@@ -155,8 +157,12 @@ object VoiceTimecodes {
         val llmModel = VoiceTimecodesConfig.llmModel()
         val promptTpl = VoiceTimecodesConfig.promptTemplate()
 
-        FileLog.d("VoiceTimecodes: transcribing msg $messageId via $sttUrl...")
-        val segments = transcribeAudio(audioFile, sttUrl, sttToken)
+        val rawDuration = getDuration(message)
+        val durationSec = if (rawDuration > 0.0) rawDuration else audioFile.length() / 4096.0
+        val sttTimeoutMs = sttReadTimeoutMs(durationSec)
+        val llmTimeoutMs = llmReadTimeoutMs(durationSec)
+        FileLog.d("VoiceTimecodes: transcribing msg $messageId (duration=${durationSec.toInt()}s, readTimeout=${sttTimeoutMs}ms) via $sttUrl...")
+        val segments = transcribeAudio(audioFile, sttUrl, sttToken, sttTimeoutMs)
         if (segments.isEmpty()) {
             FileLog.w("VoiceTimecodes: no segments from STT for msg $messageId")
             return false
@@ -168,9 +174,9 @@ object VoiceTimecodes {
             return false
         }
 
-        FileLog.d("VoiceTimecodes: calling LLM for msg $messageId ($llmModel)...")
+        FileLog.d("VoiceTimecodes: calling LLM for msg $messageId ($llmModel, readTimeout=${llmTimeoutMs}ms)...")
         val prompt = promptTpl.replace("{transcript}", transcript)
-        val rawTimecodes = requestLlm(llmUrl, llmToken, llmModel, prompt)
+        val rawTimecodes = requestLlm(llmUrl, llmToken, llmModel, prompt, llmTimeoutMs)
         if (rawTimecodes.isNullOrBlank()) {
             FileLog.w("VoiceTimecodes: LLM returned empty timecodes for msg $messageId")
             return false
@@ -206,13 +212,13 @@ object VoiceTimecodes {
         return true
     }
 
-    private fun transcribeAudio(audioFile: File, sttUrl: String, token: String): List<Segment> {
+    private fun transcribeAudio(audioFile: File, sttUrl: String, token: String, readTimeoutMs: Int): List<Segment> {
         val boundary = "----ForkgramVtc" + UUID.randomUUID().toString().replace("-", "")
         var conn: HttpURLConnection? = null
         try {
             conn = URL(sttUrl).openConnection() as HttpURLConnection
             conn.connectTimeout = CONNECT_TIMEOUT_MS
-            conn.readTimeout = READ_TIMEOUT_MS
+            conn.readTimeout = readTimeoutMs
             conn.requestMethod = "POST"
             conn.doOutput = true
             conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=$boundary")
@@ -220,14 +226,19 @@ object VoiceTimecodes {
                 conn.setRequestProperty("Authorization", "Bearer $token")
             }
 
-            conn.outputStream.use { out ->
-                out.write("--$boundary\r\n".toByteArray(StandardCharsets.UTF_8))
-                out.write("Content-Disposition: form-data; name=\"response_format\"\r\n\r\n".toByteArray(StandardCharsets.UTF_8))
-                out.write("verbose_json\r\n".toByteArray(StandardCharsets.UTF_8))
+            val preamble = (
+                "--$boundary\r\n" +
+                "Content-Disposition: form-data; name=\"response_format\"\r\n\r\n" +
+                "verbose_json\r\n" +
+                "--$boundary\r\n" +
+                "Content-Disposition: form-data; name=\"file\"; filename=\"audio.ogg\"\r\n" +
+                "Content-Type: audio/ogg\r\n\r\n"
+            ).toByteArray(StandardCharsets.UTF_8)
+            val epilogue = "\r\n--$boundary--\r\n".toByteArray(StandardCharsets.UTF_8)
+            conn.setFixedLengthStreamingMode(preamble.size.toLong() + audioFile.length() + epilogue.size.toLong())
 
-                out.write("--$boundary\r\n".toByteArray(StandardCharsets.UTF_8))
-                out.write("Content-Disposition: form-data; name=\"file\"; filename=\"audio.ogg\"\r\n".toByteArray(StandardCharsets.UTF_8))
-                out.write("Content-Type: audio/ogg\r\n\r\n".toByteArray(StandardCharsets.UTF_8))
+            conn.outputStream.use { out ->
+                out.write(preamble)
 
                 FileInputStream(audioFile).use { input ->
                     val buf = ByteArray(64 * 1024)
@@ -237,7 +248,7 @@ object VoiceTimecodes {
                         out.write(buf, 0, n)
                     }
                 }
-                out.write("\r\n--$boundary--\r\n".toByteArray(StandardCharsets.UTF_8))
+                out.write(epilogue)
                 out.flush()
             }
 
@@ -271,12 +282,12 @@ object VoiceTimecodes {
         }
     }
 
-    private fun requestLlm(llmUrl: String, token: String, model: String, prompt: String): String? {
+    private fun requestLlm(llmUrl: String, token: String, model: String, prompt: String, readTimeoutMs: Int): String? {
         var conn: HttpURLConnection? = null
         try {
             conn = URL(llmUrl).openConnection() as HttpURLConnection
             conn.connectTimeout = CONNECT_TIMEOUT_MS
-            conn.readTimeout = READ_TIMEOUT_MS
+            conn.readTimeout = readTimeoutMs
             conn.requestMethod = "POST"
             conn.doOutput = true
             conn.setRequestProperty("Content-Type", "application/json; charset=utf-8")
@@ -542,6 +553,16 @@ object VoiceTimecodes {
             }
         }
         return 0.0
+    }
+
+    private fun sttReadTimeoutMs(durationSec: Double): Int {
+        val computed = 60_000L + (durationSec.coerceAtLeast(0.0) * 500.0).toLong()
+        return computed.coerceIn(MIN_READ_TIMEOUT_MS.toLong(), MAX_STT_READ_TIMEOUT_MS.toLong()).toInt()
+    }
+
+    private fun llmReadTimeoutMs(durationSec: Double): Int {
+        val computed = MIN_READ_TIMEOUT_MS.toLong() + (durationSec.coerceAtLeast(0.0) * 100.0).toLong()
+        return computed.coerceIn(MIN_READ_TIMEOUT_MS.toLong(), MAX_LLM_READ_TIMEOUT_MS.toLong()).toInt()
     }
 
     private fun readStream(conn: HttpURLConnection, code: Int): String {
