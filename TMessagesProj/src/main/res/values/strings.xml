@@ -31,7 +31,12 @@
     <string name="MentionByNameInfo">Autocomplete inserts the person name instead of the username.</string>
     <string name="HideSendAsInfo">Hide the send-as avatar button in the message field.</string>
     <string name="DisableLinkPreviewByDefaultInfo">Send messages containing links without a preview attached.</string>
+    <string name="ExternalShareSilentByDefault">Share without sound by default</string>
+    <string name="ExternalShareSilentByDefaultInfo">Send content shared from other apps without a notification sound by default.</string>
+    <string name="ExternalShareSendWithSound">Send with sound</string>
     <string name="DisableSlideToNextChannelInfo">Do not slide to the next channel when scrolling past the end.</string>
+    <string name="HideChannelMuteButton">Hide channel mute button</string>
+    <string name="HideChannelMuteButtonInfo">Hide the Mute and Unmute button at the bottom of subscribed channels. You can still change notifications from the channel menu.</string>
     <string name="FormatWithSecondsInfo">Show seconds in message timestamps and other times.</string>
     <string name="HideAiEditorInfo">Hide the AI rewrite button in message and caption fields.</string>
     <string name="FormattingMenuInfo">Hold and drag an option to reorder it. Unchecked options are hidden from the text selection menu.</string>
@@ -40,6 +45,10 @@
     <string name="HideSavedMessagesTagsInfo">Hide the tag filter bar in Saved Messages.</string>
     <string name="DisableLockedAnimatedEmojiInfo">Hide locked premium emoji packs. Affects non-Premium accounts only.</string>
     <string name="FullRecentStickersInfo">Show all recent stickers instead of the last 20.</string>
+    <string name="ConfirmGifStickerSend">Confirm before sending GIFs and stickers</string>
+    <string name="ConfirmGifStickerSendInfo">Ask for confirmation when you tap a GIF or sticker in the chat picker.</string>
+    <string name="ConfirmSendGif">Send GIF?</string>
+    <string name="ConfirmSendSticker">Send sticker?</string>
     <string name="DisableFlipPhotosInfo">Do not switch to the next photo when the screen edges are tapped.</string>
     <string name="RearVideoMessagesInfo">Start recording video messages with the rear camera.</string>
     <string name="DisablePlayVisibleVideoOnVolumeInfo">Do not unmute the visible video when volume keys are pressed.</string>
@@ -4047,6 +4056,7 @@
     <string name="DeleteFromDevice">Delete from device</string>
     <string name="DeleteFromDeviceMessage">This file will be permanently deleted from your device.</string>
     <string name="DeleteFromDeviceDone">File deleted from device</string>
+    <string name="DeleteFromDeviceFailed">Couldn’t delete the file from this device.</string>
     <string name="AddACaption">Add Caption</string>
     <string name="Start">Start</string>
     <string name="Forward">Forward</string>

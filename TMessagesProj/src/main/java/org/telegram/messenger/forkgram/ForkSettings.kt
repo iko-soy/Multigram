@@ -166,8 +166,10 @@ object ForkSettings {
         BoolOption("mentionByName", ForkSettingsActivity.ID_MENTION_BY_NAME, false),
         BoolOption("hideSendAs", ForkSettingsActivity.ID_HIDE_SEND_AS, false),
         BoolOption("disableLinkPreviewByDefault", ForkSettingsActivity.ID_DISABLE_LINK_PREVIEW_BY_DEFAULT, false),
+        BoolOption("externalShareSilentByDefault", ForkSettingsActivity.ID_EXTERNAL_SHARE_SILENT_BY_DEFAULT, false),
         BoolOption("addItemToDeleteAllUnpinnedMessages", ForkSettingsActivity.ID_DELETE_ALL_UNPINNED, false),
         BoolOption("disableSlideToNextChannel", ForkSettingsActivity.ID_DISABLE_SLIDE_TO_NEXT_CHANNEL, false),
+        BoolOption("hideChannelMuteButton", ForkSettingsActivity.ID_HIDE_CHANNEL_MUTE_BUTTON, false),
         BoolOption("formatWithSeconds", ForkSettingsActivity.ID_FORMAT_WITH_SECONDS, false),
         BoolOption("hideAiEditor", ForkSettingsActivity.ID_HIDE_AI_EDITOR, false),
 
@@ -177,6 +179,7 @@ object ForkSettings {
         BoolOption("disableLockedAnimatedEmoji", ForkSettingsActivity.ID_DISABLE_LOCKED_ANIMATED_EMOJI, false),
 
         BoolOption("fullRecentStickers", ForkSettingsActivity.ID_FULL_RECENT_STICKERS, true),
+        BoolOption("confirmGifStickerSend", ForkSettingsActivity.ID_CONFIRM_GIF_STICKER_SEND, false),
         BoolOption("showArchivedStickers", ForkSettingsActivity.ID_SHOW_ARCHIVED_STICKERS, false),
         FloatOption("stickerSize", ForkSettingsActivity.ID_STICKER_SIZE, ChatMessageCell.MAX_STICKER_SIZE),
 

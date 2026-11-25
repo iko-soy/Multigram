@@ -690,6 +690,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
     private ArrayList<Long> selectedDialogs = new ArrayList<>();
     public boolean notify = true;
+    private final boolean externalShareSilentByDefault;
     public int scheduleDate;
     public int scheduleRepeatPeriod;
     public boolean forceDocument;
@@ -2849,6 +2850,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
 
     public DialogsActivity(Bundle args) {
         super(args);
+        externalShareSilentByDefault = args != null && args.getBoolean("externalShareSilentByDefault");
+        notify = !externalShareSilentByDefault;
 
         iBlur3SourceColor = glassEngine.createThemedColorSource(() -> getThemedColor(Theme.key_windowBackgroundWhite));
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -3613,7 +3616,14 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     UserConfig.getInstance(currentAccount).setMainTabsHiddenFork(mainTabsHidden);
                     checkUi_mainTabsVisible();
                     if (mainTabsHidden && getParentActivity() != null) {
-                        Toast.makeText(getParentActivity(), LocaleController.getString("MainTabsHiddenHint", R.string.MainTabsHiddenHint), Toast.LENGTH_LONG).show();
+                        SharedPreferences preferences = MessagesController.getGlobalMainSettings();
+                        if (!preferences.getBoolean("mainTabsHiddenHintAcknowledged", false)) {
+                            BulletinFactory.of(DialogsActivity.this).createSimpleBulletin(
+                                    R.raw.filter_reorder, getString(R.string.MainTabsHiddenHint), getString(R.string.GotIt),
+                                    Bulletin.DURATION_PROLONG,
+                                    () -> preferences.edit().putBoolean("mainTabsHiddenHintAcknowledged", true).apply()
+                            ).show();
+                        }
                     }
                     return true;
                 });
@@ -11897,7 +11907,7 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                 }
                 final boolean useExternalOptions = !notify || scheduleDate != 0 || forceDocument;
                 if (useExternalOptions && delegate != null && !selectedDialogs.isEmpty()) {
-                    DialogsActivity.this.notify = notify;
+                    DialogsActivity.this.notify = !externalShareSilentByDefault && notify;
                     DialogsActivity.this.scheduleDate = scheduleDate;
                     DialogsActivity.this.forceDocument = forceDocument;
                     final ArrayList<MessagesStorage.TopicKey> topicKeys = new ArrayList<>();
@@ -12272,6 +12282,23 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         return true;
     }
 
+    public boolean isExternalShareSilentByDefault() {
+        return externalShareSilentByDefault;
+    }
+
+    private void sendShareWithNotification(boolean notify) {
+        this.notify = notify;
+        forceDocument = false;
+        if (delegate == null || selectedDialogs.isEmpty()) {
+            return;
+        }
+        final ArrayList<MessagesStorage.TopicKey> topicKeys = new ArrayList<>();
+        for (int i = 0; i < selectedDialogs.size(); i++) {
+            topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
+        }
+        delegate.didSelectDialogs(this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
+    }
+
     private boolean onSendLongClick(View view) {
         if (getParentActivity() == null) return false;
 
@@ -12313,17 +12340,8 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
                     topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
                 delegate.didSelectDialogs(DialogsActivity.this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
             })
-            .add(R.drawable.input_notify_off, getString(R.string.SendWithoutSound), () -> {
-                this.notify = false;
-                this.forceDocument = false;
-                if (delegate == null || selectedDialogs.isEmpty()) {
-                    return;
-                }
-                final ArrayList<MessagesStorage.TopicKey> topicKeys = new ArrayList<>();
-                for (int i = 0; i < selectedDialogs.size(); i++)
-                    topicKeys.add(MessagesStorage.TopicKey.of(selectedDialogs.get(i), 0));
-                delegate.didSelectDialogs(DialogsActivity.this, topicKeys, commentView.getFieldText(), false, notify, scheduleDate, scheduleRepeatPeriod, null);
-            })
+            .addIf(externalShareSilentByDefault, R.drawable.input_notify_on, getString(R.string.ExternalShareSendWithSound), () -> sendShareWithNotification(true))
+            .add(R.drawable.input_notify_off, getString(R.string.SendWithoutSound), () -> sendShareWithNotification(false))
             .addIf(canSchedule, R.drawable.msg_calendar2, LocaleController.getString(onlyMyselfFinal ? R.string.SetReminder : R.string.ScheduleMessage), () -> {
                 AlertsCreator.createScheduleDatePickerDialog(getParentActivity(), onlyMyselfFinal ? getUserConfig().getClientUserId() : -1, new AlertsCreator.ScheduleDatePickerDelegate() {
                     @Override

@@ -150,7 +150,6 @@ import org.telegram.messenger.voip.VoIPPendingCall;
 import org.telegram.messenger.voip.VoIPPreNotificationService;
 import org.telegram.messenger.voip.VoIPService;
 import org.telegram.messenger.forkgram.AppUpdater;
-import org.telegram.messenger.forkgram.DeleteAfterSend;
 import org.telegram.messenger.forkgram.ForkSettings;
 import org.telegram.messenger.forkgram.GoTo;
 import org.telegram.messenger.forkgram.HiddenAccountHelper;
@@ -294,6 +293,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
     private String videoPath;
     private String voicePath;
     private CharSequence sendingText;
+    private boolean externalShareSilentByDefault;
     private ArrayList<SendMessagesHelper.SendingMediaInfo> photoPathsArray;
     private ArrayList<String> documentsPathsArray;
     private ArrayList<Uri> documentsUrisArray;
@@ -1669,6 +1669,9 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
         boolean forceNotInternalForApps = intent.getBooleanExtra(EXTRA_FORCE_NOT_INTERNAL_APPS, false);
         boolean forceRequest = intent.getBooleanExtra(EXTRA_FORCE_REQUEST, false);
 
+        externalShareSilentByDefault = !restore &&
+            (Intent.ACTION_SEND.equals(intent.getAction()) || Intent.ACTION_SEND_MULTIPLE.equals(intent.getAction())) &&
+            MessagesController.getGlobalMainSettings().getBoolean("externalShareSilentByDefault", false);
         photoPathsArray = null;
         videoPath = null;
         voicePath = null;
@@ -3592,6 +3595,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
     private void openDialogsToSend(boolean animated) {
         Bundle args = new Bundle();
+        args.putBoolean("externalShareSilentByDefault", externalShareSilentByDefault);
         args.putBoolean("onlySelect", true);
         args.putBoolean("canSelectTopics", true);
         args.putInt("dialogsType", DialogsActivity.DIALOGS_TYPE_FORWARD);
@@ -6495,7 +6499,8 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
 
             }
         } else {
-            boolean notify = dialogsFragment == null || dialogsFragment.notify || _notify;
+            final boolean silenceDefault = dialogsFragment == null ? externalShareSilentByDefault : dialogsFragment.isExternalShareSilentByDefault();
+            final boolean notify = silenceDefault ? dialogsFragment != null && dialogsFragment.notify && _notify : dialogsFragment == null || dialogsFragment.notify || _notify;
             int scheduleDate = _scheduleDate != 0 ? _scheduleDate : dialogsFragment == null ? 0 : dialogsFragment.scheduleDate;
             final boolean forceDocument = dialogsFragment != null && dialogsFragment.forceDocument;
             final ChatActivity fragment;
@@ -6578,7 +6583,7 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                             }
                         }
 
-                        SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(user, did, replyToMsg, replyToMsg, null, null, notify2, scheduleDate2 != 0 ? scheduleDate2 : scheduleDate, scheduleRepeatPeriod);
+                        SendMessagesHelper.SendMessageParams params = SendMessagesHelper.SendMessageParams.of(user, did, replyToMsg, replyToMsg, null, null, notify2 && (!silenceDefault || notify), scheduleDate2 != 0 ? scheduleDate2 : scheduleDate, scheduleRepeatPeriod);
                         if (TextUtils.isEmpty(finalMessage)) {
                             params.effect_id = effectId;
                         }
@@ -6637,11 +6642,11 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
                         getActionBarLayout().presentFragment(fragment, dialogsFragment != null, withoutAnimation, true, false);
                         presentedFragmentWithRemoveLast = dialogsFragment != null;
                         if (videoPath != null && topicId == 0 && !hasSharedMediaEntries) {
-                            fragment.openVideoEditor(videoPath, sendingText);
+                            fragment.openVideoEditor(videoPath, sendingText, !silenceDefault || notify);
                             videoEditorOpened = true;
                             sendingText = null;
                         } else if (photoPathsArray != null && photoPathsArray.size() > 0 && topicId == 0 && !hasSharedMediaEntries) {
-                            photosEditorOpened = fragment.openPhotosEditor(photoPathsArray, message == null || message.length() == 0 ? sendingText : message);
+                            photosEditorOpened = fragment.openPhotosEditor(photoPathsArray, message == null || message.length() == 0 ? sendingText : message, !silenceDefault || notify);
                             if (photosEditorOpened) {
                                 sendingText = null;
                             }
@@ -6911,8 +6916,6 @@ public class LaunchActivity extends BasePermissionsActivity implements INavigati
             }
         } else if (requestCode == ChatAttachAlertPhotoLayout.REQUEST_CODE_DELETE_FROM_DEVICE) {
             ChatAttachAlertPhotoLayout.onDeleteFromDeviceActivityResult(resultCode);
-        } else if (requestCode == DeleteAfterSend.REQUEST_CODE) {
-            DeleteAfterSend.onActivityResult(resultCode);
         } else {
             ThemeEditorView editorView = ThemeEditorView.getInstance();
             if (editorView != null) {

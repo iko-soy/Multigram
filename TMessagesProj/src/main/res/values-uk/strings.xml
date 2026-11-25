@@ -13,6 +13,7 @@
     <string name="ForkSettingsLockUnlockInfo">Введіть код, щоб відкрити налаштування клієнта Fork.</string>
     <string name="DeleteFromDevice">Видалити з пристрою</string>
     <string name="DeleteFromDeviceDone">Файл видалено з пристрою</string>
+    <string name="DeleteFromDeviceFailed">Не вдалося видалити файл із пристрою.</string>
     <string name="DeleteFromDeviceMessage">Цей файл буде назавжди видалено з вашого пристрою.</string>
     <string name="SendAsRoundVideo">Надіслати як відеоповідомлення</string>
     <string name="ExportSettings">Експортувати налаштування</string>
@@ -132,7 +133,12 @@
     <string name="MentionByNameInfo">Автодоповнення вставляє ім\'я людини замість імені користувача.</string>
     <string name="HideSendAsInfo">Приховувати кнопку вибору відправника в полі повідомлення.</string>
     <string name="DisableLinkPreviewByDefaultInfo">Надсилати повідомлення з посиланнями без прев\'ю.</string>
+    <string name="ExternalShareSilentByDefault">Ділитися без звуку за замовчуванням</string>
+    <string name="ExternalShareSilentByDefaultInfo">За замовчуванням надсилає вміст з інших застосунків без звуку сповіщення.</string>
+    <string name="ExternalShareSendWithSound">Надіслати зі звуком</string>
     <string name="DisableSlideToNextChannelInfo">Не переходити до наступного каналу під час прокручування за кінець чату.</string>
+    <string name="HideChannelMuteButton">Приховати кнопку звуку в каналах</string>
+    <string name="HideChannelMuteButtonInfo">Приховує кнопку ввімкнення й вимкнення сповіщень унизу каналів, на які ви підписані. Сповіщення можна змінити в меню каналу.</string>
     <string name="FormatWithSecondsInfo">Показувати секунди в часі повідомлень та інших позначках часу.</string>
     <string name="HideAiEditorInfo">Приховувати кнопку ШІ-редактора в полях повідомлення та підпису.</string>
     <string name="FormattingMenuInfo">Утримуйте й перетягніть пункт, щоб змінити порядок. Пункти без позначки приховані з меню виділення тексту.</string>
@@ -141,6 +147,10 @@
     <string name="HideSavedMessagesTagsInfo">Приховувати панель фільтра за тегами в «Збереженому».</string>
     <string name="DisableLockedAnimatedEmojiInfo">Приховувати заблоковані преміум-набори емодзі. Лише для акаунтів без Premium.</string>
     <string name="FullRecentStickersInfo">Показувати всі нещодавні стікери замість останніх 20.</string>
+    <string name="ConfirmGifStickerSend">Підтверджувати надсилання GIF і наліпок</string>
+    <string name="ConfirmGifStickerSendInfo">Запитує підтвердження під час натискання на GIF або наліпку на панелі чату.</string>
+    <string name="ConfirmSendGif">Надіслати GIF?</string>
+    <string name="ConfirmSendSticker">Надіслати наліпку?</string>
     <string name="DisableFlipPhotosInfo">Не перемикати фото під час натискання на краї екрана.</string>
     <string name="RearVideoMessagesInfo">Починати запис відеоповідомлень з основної камери.</string>
     <string name="DisablePlayVisibleVideoOnVolumeInfo">Не вмикати звук видимого відео під час натискання клавіш гучності.</string>

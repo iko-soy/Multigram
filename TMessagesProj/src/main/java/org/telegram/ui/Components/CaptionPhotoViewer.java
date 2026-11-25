@@ -236,6 +236,16 @@ public class CaptionPhotoViewer extends CaptionContainerView {
         }
     }
 
+    private final int[] composeScreenLocation = new int[2];
+
+    public double getComposeTopOnScreen() {
+        if (!isShown() || getAlpha() <= 0 || bounds.isEmpty()) {
+            return Double.NaN;
+        }
+        getLocationOnScreen(composeScreenLocation);
+        return composeScreenLocation[1] + (factoryForMentions != null ? Math.round(bounds.top) : bounds.top);
+    }
+
     @Override
     protected void dispatchDraw(Canvas canvas) {
         super.dispatchDraw(canvas);

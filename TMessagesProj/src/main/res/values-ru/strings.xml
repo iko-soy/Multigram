@@ -119,7 +119,12 @@
     <string name="MentionByNameInfo">Автодополнение вставляет имя человека вместо имени пользователя.</string>
     <string name="HideSendAsInfo">Скрывать кнопку выбора отправителя в поле сообщения.</string>
     <string name="DisableLinkPreviewByDefaultInfo">Отправлять сообщения со ссылками без превью.</string>
+    <string name="ExternalShareSilentByDefault">Делиться без звука по умолчанию</string>
+    <string name="ExternalShareSilentByDefaultInfo">Отправляет материалы из меню «Поделиться» в других приложениях без звука уведомления по умолчанию.</string>
+    <string name="ExternalShareSendWithSound">Отправить со звуком</string>
     <string name="DisableSlideToNextChannelInfo">Не переходить к следующему каналу при прокрутке за конец чата.</string>
+    <string name="HideChannelMuteButton">Скрыть кнопку звука в каналах</string>
+    <string name="HideChannelMuteButtonInfo">Скрывает кнопку включения и отключения уведомлений внизу каналов, на которые вы подписаны. Управлять уведомлениями по-прежнему можно из меню канала.</string>
     <string name="FormatWithSecondsInfo">Показывать секунды во времени сообщений и других отметках времени.</string>
     <string name="HideAiEditorInfo">Скрывать кнопку ИИ-редактора в полях сообщения и подписи.</string>
     <string name="FormattingMenuInfo">Удерживайте и перетащите пункт, чтобы изменить порядок. Пункты без галочки скрыты из меню выделения текста.</string>
@@ -128,6 +133,10 @@
     <string name="HideSavedMessagesTagsInfo">Скрывать панель фильтра по тегам в «Избранном».</string>
     <string name="DisableLockedAnimatedEmojiInfo">Скрывать заблокированные премиум-наборы эмодзи. Только для аккаунтов без Premium.</string>
     <string name="FullRecentStickersInfo">Показывать все недавние стикеры вместо последних 20.</string>
+    <string name="ConfirmGifStickerSend">Подтверждать отправку GIF и стикеров</string>
+    <string name="ConfirmGifStickerSendInfo">Запрашивает подтверждение при нажатии на GIF или стикер в панели чата.</string>
+    <string name="ConfirmSendGif">Отправить GIF?</string>
+    <string name="ConfirmSendSticker">Отправить стикер?</string>
     <string name="DisableFlipPhotosInfo">Не переключать фото при нажатии на края экрана.</string>
     <string name="RearVideoMessagesInfo">Начинать запись видеосообщений с основной камеры.</string>
     <string name="DisablePlayVisibleVideoOnVolumeInfo">Не включать звук видимого видео при нажатии клавиш громкости.</string>
@@ -158,6 +167,7 @@
     <string name="DeleteFromDevice">Удалить с устройства</string>
     <string name="DeleteFromDeviceMessage">Этот файл будет безвозвратно удалён с вашего устройства.</string>
     <string name="DeleteFromDeviceDone">Файл удалён с устройства</string>
+    <string name="DeleteFromDeviceFailed">Не удалось удалить файл с устройства.</string>
     <string name="ShowBottomTabs">Показать нижние табы</string>
     <string name="HideBottomTabs">Спрятать нижние табы</string>
     <string name="formatterDay24HSec">HH:mm:ss</string>

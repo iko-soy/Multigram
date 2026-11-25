@@ -35,8 +35,8 @@ object VoiceTimecodes {
     private val executor = Executors.newCachedThreadPool()
 
     @JvmStatic
-    fun onMessageSent(account: Int, message: TLRPC.Message?) {
-        if (message == null) return
+    fun onMessageSent(account: Int, message: TLRPC.Message?, scheduled: Boolean) {
+        if (scheduled || message == null) return
         if (!message.out && !message.post) return
         if (!MessageObject.isVoiceMessage(message)) return
         if (!VoiceTimecodesConfig.isConfigured()) return

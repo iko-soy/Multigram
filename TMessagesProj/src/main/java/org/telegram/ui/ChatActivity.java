@@ -526,6 +526,8 @@ public class ChatActivity extends BaseFragment implements
 
     private boolean ignoreItemAnimation;
     private ChatActivityChannelButtonsLayout bottomChannelButtonsLayout;
+    private boolean hideEmptyChannelButtonBar;
+    private boolean hideChannelMuteCenter;
     private ChatActivityActionsButtonsLayout actionsButtonsLayout;
 
     @Nullable
@@ -5448,7 +5450,7 @@ public class ChatActivity extends BaseFragment implements
                         if (Math.abs(dx) >= AndroidUtilities.dp(50)) {
                             if (!wasTrackingVibrate) {
                                 try {
-                                    performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP, HapticFeedbackConstants.FLAG_IGNORE_GLOBAL_SETTING);
+                                    performHapticFeedback(HapticFeedbackConstants.KEYBOARD_TAP);
                                 } catch (Exception ignore) {}
                                 wasTrackingVibrate = true;
                             }
@@ -8803,7 +8805,7 @@ public class ChatActivity extends BaseFragment implements
             @Override
             public void setVisibility(int visibility) {
                 super.setVisibility(visibility);
-                bottomViewsVisibilityController.setViewVisible(BOTTOM_OVERLAY_CHAT_CONTAINER, visibility == VISIBLE, getMeasuredWidth() > 0);
+                bottomViewsVisibilityController.setViewVisible(BOTTOM_OVERLAY_CHAT_CONTAINER, visibility == VISIBLE && !hideEmptyChannelButtonBar, getMeasuredWidth() > 0);
             }
         };
         bottomChannelButtonsLayout.setVisibility(View.INVISIBLE);
@@ -21470,6 +21472,10 @@ public class ChatActivity extends BaseFragment implements
     }
 
     public void openVideoEditor(String videoPath, CharSequence caption) {
+        openVideoEditor(videoPath, caption, true);
+    }
+
+    public void openVideoEditor(String videoPath, CharSequence caption, boolean notifyByDefault) {
         if (getParentActivity() != null) {
             final Bitmap thumb = SendMessagesHelper.createVideoThumbnail(videoPath, MediaStore.Video.Thumbnails.MINI_KIND);
             PhotoViewer.getInstance().setParentActivity(this, themeDelegate);
@@ -21488,7 +21494,7 @@ public class ChatActivity extends BaseFragment implements
 
                 @Override
                 public void sendButtonPressed(int index, VideoEditedInfo videoEditedInfo, boolean notify, int scheduleDate, int scheduleRepeatPeriod, boolean forceDocument) {
-                    sendMedia((MediaController.PhotoEntry) cameraPhoto.get(0), videoEditedInfo, notify, scheduleDate, 0, forceDocument, 0);
+                    sendMedia((MediaController.PhotoEntry) cameraPhoto.get(0), videoEditedInfo, notifyByDefault && notify, scheduleDate, 0, forceDocument, 0);
                 }
 
                 @Override
@@ -21503,7 +21509,7 @@ public class ChatActivity extends BaseFragment implements
             }, this);
         } else {
             fillEditingMediaWithCaption(caption, null);
-            SendMessagesHelper.prepareSendingVideo(getAccountInstance(), videoPath, null, null, null, dialog_id, replyingMessageObject, getThreadMessage(), null, replyingQuote, null, 0, editingMessageObject, true, 0, 0, false, false, null, getMessageChatSendParams(), 0, 0, getSendMonoForumPeerId(), getSendMessageSuggestionParams());
+            SendMessagesHelper.prepareSendingVideo(getAccountInstance(), videoPath, null, null, null, dialog_id, replyingMessageObject, getThreadMessage(), null, replyingQuote, null, 0, editingMessageObject, notifyByDefault, 0, 0, false, false, null, getMessageChatSendParams(), 0, 0, getSendMonoForumPeerId(), getSendMessageSuggestionParams());
             afterMessageSend();
         }
     }
@@ -21551,7 +21557,7 @@ public class ChatActivity extends BaseFragment implements
         return entries;
     }
 
-    public boolean openPhotosEditor(ArrayList<SendMessagesHelper.SendingMediaInfo> photoPathes, CharSequence caption) {
+    public boolean openPhotosEditor(ArrayList<SendMessagesHelper.SendingMediaInfo> photoPathes, CharSequence caption, boolean notifyByDefault) {
         final ArrayList<MediaController.PhotoEntry> entries = createEntriesFromMedia(photoPathes,isSecretChat(), caption);
         if (entries.isEmpty()) {
             return false;
@@ -21573,7 +21579,7 @@ public class ChatActivity extends BaseFragment implements
                             entries.remove(i);
                         }
                     }
-                    sendPhotosGroup(entries, notify, scheduleDate, forceDocument);
+                    sendPhotosGroup(entries, notifyByDefault && notify, scheduleDate, forceDocument);
                 }
 
                 @Override
@@ -29569,6 +29575,9 @@ public class ChatActivity extends BaseFragment implements
         boolean showSuggestButton = false;
         boolean showSearchButton = chatMode == MODE_DEFAULT && ChatObject.isChannelOrGiga(currentChat);
         boolean showGigaGroupButton = false;
+        boolean hideChannelMuteButton = false;
+        final boolean wasEmptyChannelButtonBarHidden = hideEmptyChannelButtonBar;
+        hideEmptyChannelButtonBar = false;
         if (chatMode == MODE_DEFAULT && getMessagesController().isFrozen() && !AccountFrozenAlert.isSpamBot(currentAccount, currentUser)) {
             if (bottomOverlayStartButton != null) {
                 bottomOverlayStartButton.setVisibility(View.INVISIBLE);
@@ -29695,6 +29704,8 @@ public class ChatActivity extends BaseFragment implements
                     bottomOverlayChatText.setTextInfo(LocaleController.getString(R.string.ForumReplyToMessagesInTopic));
                     bottomOverlayChatText.setEnabled(false);
                 } else if (!isThreadChat()) {
+                    hideChannelMuteButton = chatMode == MODE_DEFAULT && ChatObject.isChannelAndNotMegaGroup(currentChat) && !ChatObject.isNotInChat(currentChat) &&
+                        MessagesController.getGlobalMainSettings().getBoolean("hideChannelMuteButton", false);
                     if (!getMessagesController().isDialogMuted(dialog_id, getTopicId())) {
                         bottomOverlayChatText.setText(LocaleController.getString(R.string.ChannelMuteNoCaps), false);
                         bottomOverlayChatText.setEnabled(true);
@@ -29777,6 +29788,10 @@ public class ChatActivity extends BaseFragment implements
                 bottomOverlayChatText.setText(LocaleController.getString(R.string.DeleteThisChat));
             }
         }
+        final boolean wasChannelMuteCenterHidden = hideChannelMuteCenter;
+        hideChannelMuteCenter = hideChannelMuteButton;
+        bottomChannelButtonsLayout.getContainer().setVisibility(hideChannelMuteButton ? View.GONE : View.VISIBLE);
+        hideEmptyChannelButtonBar = hideChannelMuteButton && !showGiftButton && !showSuggestButton;
         if (MessagesController.getGlobalMainSettings().getBoolean("hideBottomButton", false)) {
             bottomOverlayChatText.setText("");
         }
@@ -29945,11 +29960,14 @@ public class ChatActivity extends BaseFragment implements
 
         bottomChannelButtonsLayout.setCenterAccentBackground(accentTextButton, animated);
         bottomChannelButtonsLayout.updateWrappingVisible(animated);
-        bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_SEARCH, showSearchButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
+        bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_SEARCH, !hideChannelMuteButton && showSearchButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_DIRECT, showSuggestButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_GIFT, showGiftButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
         bottomChannelButtonsLayout.showButton(ChatActivityChannelButtonsLayout.BUTTON_GIGA_GROUP_INFO, showGigaGroupButton && bottomChannelButtonsLayout.getVisibility() == View.VISIBLE, animated);
 
+        if (wasChannelMuteCenterHidden != hideChannelMuteCenter || wasEmptyChannelButtonBarHidden != hideEmptyChannelButtonBar) {
+            onBottomItemsVisibilityChanged();
+        }
         checkRaiseSensors();
     }
 
@@ -48211,7 +48229,7 @@ public class ChatActivity extends BaseFragment implements
         }
 
         if (!isInsideContainer && !isInPreviewMode()) {
-            return lerp(Math.max(lerp(defaultIslandHeight, enterViewIslandHeight, enterViewFactor) * visibility, dp(44)), -dp(7), pollAddVisibility);
+            return lerp(Math.max(lerp(defaultIslandHeight, enterViewIslandHeight, enterViewFactor) * visibility, hideEmptyChannelButtonBar ? 0 : dp(44)), -dp(7), pollAddVisibility);
         } else {
             return lerp(defaultIslandHeight, enterViewIslandHeight, enterViewFactor) * visibility;
         }
@@ -48531,7 +48549,8 @@ public class ChatActivity extends BaseFragment implements
             bottomOverlay.setTranslationY(dp(54) * hideFactor);
         }
         if (chatInputViewsContainer != null) {
-            chatInputViewsContainer.setInputBubbleAlpha((int) (255 * (1f - hideFactor)));
+            final float muteCenterFactor = hideChannelMuteCenter ? bottomViewsVisibilityController.getVisibility(BOTTOM_OVERLAY_CHAT_CONTAINER) : 0f;
+            chatInputViewsContainer.setInputBubbleAlpha((int) (255 * (1f - hideFactor) * (1f - muteCenterFactor)));
             chatInputViewsContainer.setInputBubbleTranslationY(dp(54) * hideFactor);
         }
 

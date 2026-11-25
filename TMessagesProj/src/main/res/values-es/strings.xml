@@ -13,6 +13,7 @@
     <string name="ForkSettingsLockUnlockInfo">Pon el código para abrir las Configuraciones del cliente Fork.</string>
     <string name="DeleteFromDevice">Eliminar del dispositivo</string>
     <string name="DeleteFromDeviceDone">Archivo eliminado del dispositivo</string>
+    <string name="DeleteFromDeviceFailed">No se pudo eliminar el archivo de este dispositivo.</string>
     <string name="DeleteFromDeviceMessage">Este archivo se eliminará permanentemente de tu dispositivo.</string>
     <string name="SendAsRoundVideo">Enviar como videomensaje</string>
     <string name="ExportSettings">Exportar ajustes</string>
@@ -132,7 +133,12 @@
     <string name="MentionByNameInfo">El autocompletado inserta el nombre de la persona en lugar del nombre de usuario.</string>
     <string name="HideSendAsInfo">Ocultar el botón de enviar como en el campo de mensaje.</string>
     <string name="DisableLinkPreviewByDefaultInfo">Enviar mensajes con enlaces sin vista previa.</string>
+    <string name="ExternalShareSilentByDefault">Compartir sin sonido por defecto</string>
+    <string name="ExternalShareSilentByDefaultInfo">Envía por defecto sin sonido de notificación el contenido compartido desde otras aplicaciones.</string>
+    <string name="ExternalShareSendWithSound">Enviar con sonido</string>
     <string name="DisableSlideToNextChannelInfo">No pasar al siguiente canal al desplazarse más allá del final.</string>
+    <string name="HideChannelMuteButton">Ocultar el botón de silenciar en canales</string>
+    <string name="HideChannelMuteButtonInfo">Oculta el botón para silenciar o activar el sonido al pie de los canales a los que te has unido. Puedes cambiar las notificaciones desde el menú del canal.</string>
     <string name="FormatWithSecondsInfo">Mostrar los segundos en la hora de los mensajes y otras horas.</string>
     <string name="HideAiEditorInfo">Ocultar el botón de reescritura con IA en los campos de mensaje y descripción.</string>
     <string name="FormattingMenuInfo">Mantén pulsada una opción y arrástrala para reordenarla. Las opciones sin marcar se ocultan del menú de selección de texto.</string>
@@ -141,6 +147,10 @@
     <string name="HideSavedMessagesTagsInfo">Ocultar la barra de filtros por etiquetas en Mensajes guardados.</string>
     <string name="DisableLockedAnimatedEmojiInfo">Ocultar los paquetes de emojis premium bloqueados. Solo afecta a cuentas sin Premium.</string>
     <string name="FullRecentStickersInfo">Mostrar todos los stickers recientes en lugar de los últimos 20.</string>
+    <string name="ConfirmGifStickerSend">Confirmar el envío de GIF y stickers</string>
+    <string name="ConfirmGifStickerSendInfo">Pide confirmación al tocar un GIF o un sticker en el selector del chat.</string>
+    <string name="ConfirmSendGif">¿Enviar GIF?</string>
+    <string name="ConfirmSendSticker">¿Enviar sticker?</string>
     <string name="DisableFlipPhotosInfo">No pasar a la siguiente foto al tocar los bordes de la pantalla.</string>
     <string name="RearVideoMessagesInfo">Grabar los mensajes de vídeo con la cámara trasera.</string>
     <string name="DisablePlayVisibleVideoOnVolumeInfo">No activar el sonido del vídeo visible al pulsar las teclas de volumen.</string>

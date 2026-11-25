@@ -15140,8 +15140,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     new SearchResult(1019, getString(R.string.MentionByName), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_MENTION_BY_NAME))),
                     new SearchResult(1020, getString(R.string.HideSendAs), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_HIDE_SEND_AS))),
                     new SearchResult(1021, getString(R.string.DisableLinkPreviewByDefault), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_DISABLE_LINK_PREVIEW_BY_DEFAULT))),
+                    new SearchResult(1063, getString(R.string.ExternalShareSilentByDefault), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_EXTERNAL_SHARE_SILENT_BY_DEFAULT))),
                     new SearchResult(1022, getString(R.string.AddDeleteAllUnpinnedMessages), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_DELETE_ALL_UNPINNED))),
                     new SearchResult(1023, getString(R.string.DisableSlideToNextChannel), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_DISABLE_SLIDE_TO_NEXT_CHANNEL))),
+                    new SearchResult(1062, getString(R.string.HideChannelMuteButton), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_HIDE_CHANNEL_MUTE_BUTTON))),
                     new SearchResult(1024, getString(R.string.FormatWithSeconds), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_FORMAT_WITH_SECONDS))),
                     new SearchResult(1025, getString(R.string.HideAiEditor), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_HIDE_AI_EDITOR))),
                     new SearchResult(1026, getString(R.string.DisableQuickReaction), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_DISABLE_QUICK_REACTION))),
@@ -15149,6 +15151,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     new SearchResult(1028, getString(R.string.HideSavedMessagesTags), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_HIDE_SAVED_MESSAGES_TAGS))),
                     new SearchResult(1029, getString(R.string.DisableLockedAnimatedEmoji), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_DISABLE_LOCKED_ANIMATED_EMOJI))),
                     new SearchResult(1030, getString(R.string.FullRecentStickers), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_FULL_RECENT_STICKERS))),
+                    new SearchResult(1061, getString(R.string.ConfirmGifStickerSend), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_CONFIRM_GIF_STICKER_SEND))),
                     new SearchResult(1031, getString(R.string.ShowArchivedStickers), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_SHOW_ARCHIVED_STICKERS))),
                     new SearchResult(1032, getString(R.string.StickerSize), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_STICKER_SIZE))),
                     new SearchResult(1033, getString(R.string.InAppCamera), getString(R.string.ForkSettingsTitle), R.drawable.menu_fork, () -> f.presentFragment(new ForkSettingsActivity().highlight(ForkSettingsActivity.ID_INAPP_CAMERA))),
@@ -16070,6 +16073,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             put(++pointer, unofficialSecurityRiskDividerRow, sparseIntArray);
             put(++pointer, linkedCommunityRow, sparseIntArray);
             put(++pointer, linkedCommunityDividerRow, sparseIntArray);
+            put(++pointer, idRow, sparseIntArray);
         }
 
         private void put(int id, int position, SparseIntArray sparseIntArray) {

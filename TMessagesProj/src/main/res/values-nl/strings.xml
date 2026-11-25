@@ -13,6 +13,7 @@
     <string name="ForkSettingsLockUnlockInfo">Voer de code in om de instellingen van de Fork-client te openen.</string>
     <string name="DeleteFromDevice">Van apparaat verwijderen</string>
     <string name="DeleteFromDeviceDone">Bestand van apparaat verwijderd</string>
+    <string name="DeleteFromDeviceFailed">Het bestand kon niet van dit apparaat worden verwijderd.</string>
     <string name="DeleteFromDeviceMessage">Dit bestand wordt definitief van je apparaat verwijderd.</string>
     <string name="SendAsRoundVideo">Als rond videobericht versturen</string>
     <string name="ExportSettings">Instellingen exporteren</string>
@@ -132,7 +133,12 @@
     <string name="MentionByNameInfo">Automatisch aanvullen voegt de naam van de persoon in in plaats van de gebruikersnaam.</string>
     <string name="HideSendAsInfo">De knop Verzenden als in het berichtveld verbergen.</string>
     <string name="DisableLinkPreviewByDefaultInfo">Berichten met links versturen zonder voorbeeldweergave.</string>
+    <string name="ExternalShareSilentByDefault">Standaard zonder geluid delen</string>
+    <string name="ExternalShareSilentByDefaultInfo">Verstuur inhoud die vanuit andere apps wordt gedeeld standaard zonder meldingsgeluid.</string>
+    <string name="ExternalShareSendWithSound">Versturen met geluid</string>
     <string name="DisableSlideToNextChannelInfo">Niet naar het volgende kanaal gaan bij doorscrollen voorbij het einde.</string>
+    <string name="HideChannelMuteButton">Dempen-knop in kanalen verbergen</string>
+    <string name="HideChannelMuteButtonInfo">Verbergt de knop om meldingen onderaan gevolgde kanalen te dempen of weer in te schakelen. Je kunt meldingen nog steeds aanpassen via het kanaalmenu.</string>
     <string name="FormatWithSecondsInfo">Seconden tonen in berichttijden en andere tijden.</string>
     <string name="HideAiEditorInfo">De AI-herschrijfknop in bericht- en bijschriftvelden verbergen.</string>
     <string name="FormattingMenuInfo">Houd een optie ingedrukt en sleep deze om de volgorde te wijzigen. Niet-aangevinkte opties worden verborgen in het tekstselectiemenu.</string>
@@ -141,6 +147,10 @@
     <string name="HideSavedMessagesTagsInfo">De tagfilterbalk in Opgeslagen berichten verbergen.</string>
     <string name="DisableLockedAnimatedEmojiInfo">Vergrendelde premium-emojipakketten verbergen. Alleen voor accounts zonder Premium.</string>
     <string name="FullRecentStickersInfo">Alle recente stickers tonen in plaats van de laatste 20.</string>
+    <string name="ConfirmGifStickerSend">Bevestig het versturen van gifjes en stickers</string>
+    <string name="ConfirmGifStickerSendInfo">Vraagt om bevestiging als je in de chatkiezer op een gifje of sticker tikt.</string>
+    <string name="ConfirmSendGif">Gifje versturen?</string>
+    <string name="ConfirmSendSticker">Sticker versturen?</string>
     <string name="DisableFlipPhotosInfo">Niet naar de volgende foto gaan bij tikken op de schermranden.</string>
     <string name="RearVideoMessagesInfo">Videoberichten opnemen met de camera aan de achterkant.</string>
     <string name="DisablePlayVisibleVideoOnVolumeInfo">De demping van de zichtbare video niet opheffen met de volumetoetsen.</string>

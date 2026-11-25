@@ -180,6 +180,7 @@ public class Bulletin {
     public int lastBottomOffset;
     private Delegate currentDelegate;
     private Layout.Transition layoutTransition;
+    private boolean useLayoutExitTransition;
     public boolean hideAfterBottomSheet = true;
 
     private Bulletin() {
@@ -420,8 +421,13 @@ public class Bulletin {
         }
     }
 
+    public Bulletin useLayoutExitTransition() {
+        useLayoutExitTransition = true;
+        return this;
+    }
+
     public void hide() {
-        hide(isTransitionsEnabled(), 0);
+        hide(isTransitionsEnabled(), useLayoutExitTransition ? -1 : 0);
     }
 
     public void hide(long duration) {
@@ -1238,13 +1244,17 @@ public class Bulletin {
             dispatchDrawImpl(canvas, true, alpha);
         }
 
+        protected boolean clipTransitionToDelegate() {
+            return true;
+        }
+
         protected void dispatchDrawImpl(Canvas canvas, boolean fromBlurRender, int alpha) {
             if (bulletin == null || alpha == 0) {
                 return;
             }
 
             background.setBounds(getPaddingLeft(), getPaddingTop(), getMeasuredWidth() - getPaddingRight(), getMeasuredBackgroundHeight() - getPaddingBottom());
-            if (isTransitionRunning() && delegate != null) {
+            if (isTransitionRunning() && delegate != null && clipTransitionToDelegate()) {
                 final float top = delegate.getTopOffset(bulletin.tag) - getY();
                 final float bottom = ((View) getParent()).getMeasuredHeight() - delegate.getClipBottomOffset(bulletin.tag) - getY();
                 final boolean clip = !fromBlurRender && delegate.clipWithGradient(bulletin.tag);

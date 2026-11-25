@@ -43,7 +43,12 @@
     <string name="MentionByNameInfo">تکمیل خودکار به‌جای نام کاربری، نام شخص را درج می‌کند.</string>
     <string name="HideSendAsInfo">دکمهٔ نمایهٔ «ارسال به‌عنوان» در کادر پیام پنهان شود.</string>
     <string name="DisableLinkPreviewByDefaultInfo">پیام‌های دارای پیوند بدون پیش‌نمایش ارسال شوند.</string>
+    <string name="ExternalShareSilentByDefault">هم‌رسانی بی‌صدا به‌صورت پیش‌فرض</string>
+    <string name="ExternalShareSilentByDefaultInfo">محتوای هم‌رسانی‌شده از برنامه‌های دیگر به‌صورت پیش‌فرض بدون صدای اعلان فرستاده شود.</string>
+    <string name="ExternalShareSendWithSound">ارسال با صدا</string>
     <string name="DisableSlideToNextChannelInfo">هنگام پیمایش تا انتهای کانال، به کانال بعدی لغزانده نشود.</string>
+    <string name="HideChannelMuteButton">پنهان کردن دکمه بی‌صدا کردن کانال</string>
+    <string name="HideChannelMuteButtonInfo">دکمه قطع و وصل صدا را در پایین کانال‌هایی که عضو آن‌ها هستید پنهان کنید. تنظیمات اعلان همچنان در منوی کانال در دسترس است.</string>
     <string name="FormatWithSecondsInfo">ثانیه‌ها در زمان پیام‌ها و دیگر زمان‌ها نمایش داده شوند.</string>
     <string name="HideAiEditorInfo">دکمهٔ بازنویسی هوش مصنوعی در کادر پیام و شرح پنهان شود.</string>
     <string name="FormattingMenuInfo">برای جابه‌جایی، گزینه را نگه دارید و بکشید. گزینه‌های تیک‌نخورده از منوی انتخاب متن پنهان می‌شوند.</string>
@@ -52,6 +57,10 @@
     <string name="HideSavedMessagesTagsInfo">نوار فیلتر برچسب‌ها در پیام‌های ذخیره‌شده پنهان شود.</string>
     <string name="DisableLockedAnimatedEmojiInfo">بسته‌های ایموجی قفل‌شدهٔ پریمیوم پنهان شوند. فقط روی حساب‌های بدون پریمیوم اثر دارد.</string>
     <string name="FullRecentStickersInfo">به‌جای ۲۰ استیکر آخر، همهٔ استیکرهای اخیر نمایش داده شوند.</string>
+    <string name="ConfirmGifStickerSend">تأیید پیش از ارسال گیف و برچسب</string>
+    <string name="ConfirmGifStickerSendInfo">با زدن روی گیف یا برچسب در انتخابگر گفتگو، تأیید خواسته شود.</string>
+    <string name="ConfirmSendGif">گیف ارسال شود؟</string>
+    <string name="ConfirmSendSticker">برچسب ارسال شود؟</string>
     <string name="DisableFlipPhotosInfo">با ضربه روی لبه‌های صفحه، به عکس بعدی رفته نشود.</string>
     <string name="RearVideoMessagesInfo">ضبط پیام‌های ویدیویی با دوربین پشتی آغاز شود.</string>
     <string name="DisablePlayVisibleVideoOnVolumeInfo">با فشردن کلیدهای صدا، ویدیوی در حال نمایش از حالت بی‌صدا خارج نشود.</string>
@@ -269,6 +278,7 @@
     <string name="DeleteFromDevice">حذف از دستگاه</string>
     <string name="DeleteFromDeviceMessage">این فایل برای همیشه از دستگاه شما حذف می‌شود.</string>
     <string name="DeleteFromDeviceDone">فایل از دستگاه حذف شد</string>
+    <string name="DeleteFromDeviceFailed">حذف فایل از این دستگاه ممکن نبود.</string>
     <string name="QRLoginTitle">ورود با کد QR</string>
     <string name="QRLoginSubtitle">تلگرام را روی دستگاه دیگری باز کنید و این کد QR را اسکن کنید تا به حساب خود وارد شوید.</string>
     <string name="QRLoginStep1">تلگرام را روی گوشی خود باز کنید</string>

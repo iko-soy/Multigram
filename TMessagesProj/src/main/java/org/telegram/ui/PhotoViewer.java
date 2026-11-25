@@ -193,6 +193,7 @@ import org.telegram.messenger.browser.Browser;
 import org.telegram.messenger.camera.Size;
 import org.telegram.messenger.forkgram.ForkOfflineTranscribe;
 import org.telegram.messenger.forkgram.ForkVideoSubtitles;
+import org.telegram.messenger.forkgram.PhotoBinBulletin;
 import org.telegram.messenger.forkgram.PhotoCollage;
 import org.telegram.messenger.forkgram.SubtitleSegment;
 //import org.telegram.messenger.chromecast.ChromecastController;
@@ -3471,14 +3472,6 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
                 public int getTopOffset(int tag) {
                     final int topMargin = (isStatusBarVisible() ? AndroidUtilities.statusBarHeight : 0) + ActionBar.getCurrentActionBarHeight();
                     return topMargin + (int) (topCaptionEdit.getAlpha() * topCaptionEdit.getEditTextHeight());
-                }
-
-                @Override
-                public int getClipBottomOffset(int tag) {
-                    if (tag == BULLETIN_TAG_DELETE_FILE && editing && captionEdit != null && captionEdit.getVisibility() == VISIBLE && (placeProvider == null || !placeProvider.isCaptionAbove())) {
-                        return Math.min(getBottomOffset(tag), captionEdit.getEditTextHeight() + dp(12));
-                    }
-                    return getBottomOffset(tag);
                 }
             });
         }
@@ -8623,13 +8616,11 @@ public class PhotoViewer implements NotificationCenter.NotificationCenterDelegat
         entry.deleteAfterSend = !entry.deleteAfterSend;
         updateDeleteAfterSendButton();
         if (entry.deleteAfterSend) {
-            final Bulletin.LottieLayout layout = new Bulletin.LottieLayout(activityContext, resourcesProvider);
-            layout.setAnimation(R.raw.ic_delete, 36, 36);
-            layout.textView.setText(getString(R.string.DeleteFromDeviceMessage));
-            layout.textView.setSingleLine(false);
-            layout.textView.setMaxLines(2);
-            layout.imageView.setTranslationY(dp(1));
-            Bulletin.make(containerView, layout, Bulletin.DURATION_LONG).setTag(BULLETIN_TAG_DELETE_FILE).show();
+            PhotoBinBulletin.show(containerView, resourcesProvider, BULLETIN_TAG_DELETE_FILE, () -> {
+                final CaptionPhotoViewer compose = placeProvider != null && placeProvider.isCaptionAbove() && topCaptionEdit.isShown()
+                    ? topCaptionEdit : captionEdit;
+                return compose == null ? Double.NaN : compose.getComposeTopOnScreen();
+            });
         }
     }
 

@@ -111,8 +111,10 @@ public class ForkSettingsActivity extends BaseFragment {
     public static final int ID_MENTION_BY_NAME = 31;
     public static final int ID_HIDE_SEND_AS = 32;
     public static final int ID_DISABLE_LINK_PREVIEW_BY_DEFAULT = 33;
+    public static final int ID_EXTERNAL_SHARE_SILENT_BY_DEFAULT = 106;
     public static final int ID_DELETE_ALL_UNPINNED = 34;
     public static final int ID_DISABLE_SLIDE_TO_NEXT_CHANNEL = 35;
+    public static final int ID_HIDE_CHANNEL_MUTE_BUTTON = 105;
     public static final int ID_FORMAT_WITH_SECONDS = 36;
     public static final int ID_HIDE_AI_EDITOR = 37;
     public static final int ID_FORMATTING_MENU = 38;
@@ -123,6 +125,7 @@ public class ForkSettingsActivity extends BaseFragment {
     public static final int ID_HIDE_SAVED_MESSAGES_TAGS = 42;
     public static final int ID_DISABLE_LOCKED_ANIMATED_EMOJI = 43;
     public static final int ID_FULL_RECENT_STICKERS = 44;
+    public static final int ID_CONFIRM_GIF_STICKER_SEND = 104;
     public static final int ID_SHOW_ARCHIVED_STICKERS = 45;
     public static final int ID_STICKER_SIZE = 46;
 
@@ -642,10 +645,14 @@ public class ForkSettingsActivity extends BaseFragment {
             .setChecked(pref("hideSendAs", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_DISABLE_LINK_PREVIEW_BY_DEFAULT, LocaleController.getString(R.string.DisableLinkPreviewByDefault), LocaleController.getString(R.string.DisableLinkPreviewByDefaultInfo))
             .setChecked(pref("disableLinkPreviewByDefault", false)).setMultiline(true));
+        items.add(UItem.asButtonCheck(ID_EXTERNAL_SHARE_SILENT_BY_DEFAULT, LocaleController.getString(R.string.ExternalShareSilentByDefault), LocaleController.getString(R.string.ExternalShareSilentByDefaultInfo))
+            .setChecked(pref("externalShareSilentByDefault", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_DELETE_ALL_UNPINNED, LocaleController.getString(R.string.AddDeleteAllUnpinnedMessages), LocaleController.getString(R.string.AddDeleteAllUnpinnedMessagesInfo))
             .setChecked(pref("addItemToDeleteAllUnpinnedMessages", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_DISABLE_SLIDE_TO_NEXT_CHANNEL, LocaleController.getString(R.string.DisableSlideToNextChannel), LocaleController.getString(R.string.DisableSlideToNextChannelInfo))
             .setChecked(pref("disableSlideToNextChannel", false)).setMultiline(true));
+        items.add(UItem.asButtonCheck(ID_HIDE_CHANNEL_MUTE_BUTTON, LocaleController.getString(R.string.HideChannelMuteButton), LocaleController.getString(R.string.HideChannelMuteButtonInfo))
+            .setChecked(pref("hideChannelMuteButton", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_FORMAT_WITH_SECONDS, LocaleController.getString(R.string.FormatWithSeconds), LocaleController.getString(R.string.FormatWithSecondsInfo))
             .setChecked(pref("formatWithSeconds", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_HIDE_AI_EDITOR, LocaleController.getString(R.string.HideAiEditor), LocaleController.getString(R.string.HideAiEditorInfo))
@@ -668,6 +675,8 @@ public class ForkSettingsActivity extends BaseFragment {
         items.add(UItem.asHeader(LocaleController.getString(R.string.StickersName)));
         items.add(UItem.asButtonCheck(ID_FULL_RECENT_STICKERS, LocaleController.getString(R.string.FullRecentStickers), LocaleController.getString(R.string.FullRecentStickersInfo))
             .setChecked(pref("fullRecentStickers", true)).setMultiline(true));
+        items.add(UItem.asButtonCheck(ID_CONFIRM_GIF_STICKER_SEND, LocaleController.getString(R.string.ConfirmGifStickerSend), LocaleController.getString(R.string.ConfirmGifStickerSendInfo))
+            .setChecked(pref("confirmGifStickerSend", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_SHOW_ARCHIVED_STICKERS, LocaleController.getString(R.string.ShowArchivedStickers), LocaleController.getString(R.string.ShowArchivedStickersInfo))
             .setChecked(pref("showArchivedStickers", false)).setMultiline(true));
         items.add(UItem.asShadow(null));
@@ -857,10 +866,14 @@ public class ForkSettingsActivity extends BaseFragment {
             toggle("hideSendAs", item, view);
         } else if (id == ID_DISABLE_LINK_PREVIEW_BY_DEFAULT) {
             toggle("disableLinkPreviewByDefault", item, view);
+        } else if (id == ID_EXTERNAL_SHARE_SILENT_BY_DEFAULT) {
+            toggle("externalShareSilentByDefault", item, view);
         } else if (id == ID_DELETE_ALL_UNPINNED) {
             toggle("addItemToDeleteAllUnpinnedMessages", item, view);
         } else if (id == ID_DISABLE_SLIDE_TO_NEXT_CHANNEL) {
             toggle("disableSlideToNextChannel", item, view);
+        } else if (id == ID_HIDE_CHANNEL_MUTE_BUTTON) {
+            toggle("hideChannelMuteButton", item, view);
         } else if (id == ID_FORMAT_WITH_SECONDS) {
             toggle("formatWithSeconds", item, view);
         } else if (id == ID_HIDE_AI_EDITOR) {
@@ -880,6 +893,8 @@ public class ForkSettingsActivity extends BaseFragment {
             toggle("disableLockedAnimatedEmoji", item, view);
         } else if (id == ID_FULL_RECENT_STICKERS) {
             toggle("fullRecentStickers", item, view);
+        } else if (id == ID_CONFIRM_GIF_STICKER_SEND) {
+            toggle("confirmGifStickerSend", item, view);
         } else if (id == ID_SHOW_ARCHIVED_STICKERS) {
             ForkSettings.applyEffect(currentAccount, "showArchivedStickers", toggle("showArchivedStickers", item, view));
 

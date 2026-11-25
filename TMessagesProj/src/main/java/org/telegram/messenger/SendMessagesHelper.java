@@ -55,6 +55,7 @@ import org.json.JSONObject;
 import org.telegram.messenger.audioinfo.AudioInfo;
 import org.telegram.messenger.forkgram.DeleteAfterSend;
 import org.telegram.messenger.forkgram.MediaSpoiler;
+import org.telegram.messenger.forkgram.VoiceTimecodes;
 import org.telegram.messenger.support.SparseLongArray;
 import org.telegram.messenger.utils.EphemeralMessagesHelper;
 import org.telegram.messenger.utils.tlutils.AmountUtils;
@@ -940,6 +941,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
             if (type == 4) {
                 for (int a = 0; a < messageObjects.size(); a++) {
                     MessageObject obj = messageObjects.get(a);
+                    DeleteAfterSend.disarm(obj.messageOwner.params);
                     getMessagesStorage().markMessageAsSendError(obj.messageOwner, obj.scheduled ? 1 : 0);
                     obj.messageOwner.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
                     obj.messageOwner.errorAllowedPriceStars = 0;
@@ -950,6 +952,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                 }
                 delayedMessages.remove( "group_" + groupId);
             } else {
+                DeleteAfterSend.disarm(obj.messageOwner.params);
                 getMessagesStorage().markMessageAsSendError(obj.messageOwner, obj.scheduled ? 1 : 0);
                 obj.messageOwner.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
                 obj.messageOwner.errorAllowedPriceStars = 0;
@@ -2025,6 +2028,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                 TLRPC.TL_messageService failed = new TLRPC.TL_messageService();
                 failed.id = oldId;
                 failed.dialog_id = dialogId;
+                DeleteAfterSend.disarm(object.messageOwner.params);
                 getMessagesStorage().markMessageAsSendError(failed, 0);
                 object.messageOwner.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
                 object.forceUpdate = true;
@@ -2061,12 +2065,14 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
             getMessagesStorage().putMessages(messages, true, false, false, 0, 0, 0);
             AndroidUtilities.runOnUIThread(() -> {
                 final int visibleId = object.getId();
+                DeleteAfterSend.onMessageSent(object.messageOwner.params, false);
                 object.messageOwner = sentMessage;
                 object.forceUpdate = true;
                 getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer,
                         visibleId, sentMessage.id, sentMessage, dialogId, 0L, 0, false);
                 getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer2,
                         visibleId, sentMessage.id, sentMessage, dialogId, 0L, 0, false);
+                VoiceTimecodes.onMessageSent(currentAccount, sentMessage, false);
                 processSentMessage(oldId);
                 removeFromSendingMessages(oldId, false);
             });
@@ -2966,6 +2972,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                                         getMediaDataController().increasePeerRaiting(peer);
                                                         getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer, oldId, message.id, message, peer, 0L, existFlags, scheduleDate != 0);
                                                         getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer2, oldId, message.id, message, peer, 0L, existFlags, scheduleDate != 0);
+                                                        VoiceTimecodes.onMessageSent(currentAccount, message, scheduleDate != 0);
                                                         processSentMessage(oldId);
                                                         removeFromSendingMessages(oldId, scheduleDate != 0);
                                                     });
@@ -6635,6 +6642,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
             }
         } catch (Exception e) {
             FileLog.e(e);
+            DeleteAfterSend.disarm(newMsg.params);
             getMessagesStorage().markMessageAsSendError(newMsg, scheduleDate != 0 ? 1 : 0);
             if (newMsgObj != null) {
                 newMsgObj.messageOwner.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
@@ -7877,6 +7885,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                         if (!hasEmptyFile) {
                             for (int i = 0; i < msgObjs.size(); i++) {
                                 TLRPC.Message newMsgObj = msgObjs.get(i).messageOwner;
+                                DeleteAfterSend.disarm(newMsgObj.params);
                                 getMessagesStorage().markMessageAsSendError(newMsgObj, scheduled ? 1 : 0);
                                 newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
                                 newMsgObj.errorAllowedPriceStars = 0;
@@ -8044,7 +8053,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SENT;
                             newMsgObj.errorAllowedPriceStars = 0;
                             newMsgObj.errorNewPriceStars = 0;
-                            DeleteAfterSend.onMessageSent(originalPath);
+                            DeleteAfterSend.onMessageSent(newMsgObj.params, scheduled || currentSchedule);
                             getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, grouped_id, existFlags, currentSchedule);
                             getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer2, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, grouped_id, existFlags, currentSchedule);
                             getMessagesStorage().getStorageQueue().postRunnable(() -> {
@@ -8075,6 +8084,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                     getMediaDataController().increasePeerRaiting(newMsgObj.dialog_id);
                                     getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, grouped_id, existFlags, finalCurrentSchedule);
                                     getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer2, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, grouped_id, existFlags, finalCurrentSchedule);
+                                    VoiceTimecodes.onMessageSent(currentAccount, newMsgObj, finalCurrentSchedule);
                                     processSentMessage(oldId);
                                     removeFromSendingMessages(oldId, scheduled);
                                 });
@@ -8090,6 +8100,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                     for (int i = 0; i < msgObjs.size(); i++) {
                         MessageObject msgObj = msgObjs.get(i);
                         TLRPC.Message newMsgObj = msgObj.messageOwner;
+                        DeleteAfterSend.disarm(newMsgObj.params);
                         getMessagesStorage().markMessageAsSendError(newMsgObj, scheduled ? 1 : 0);
                         newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
                         if (!scheduled && error != null && error.text != null && error.text.startsWith("ALLOW_PAYMENT_REQUIRED_")) {
@@ -8576,7 +8587,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SENT;
                             newMsgObj.errorNewPriceStars = 0;
                             newMsgObj.errorAllowedPriceStars = 0;
-                            DeleteAfterSend.onMessageSent(originalPath);
+                            DeleteAfterSend.onMessageSent(newMsgObj.params, scheduled || currentSchedule);
                             if (scheduled != currentSchedule) {
                                 final boolean finalCurrentSchedule = currentSchedule;
                                 ArrayList<Integer> messageIds = new ArrayList<>();
@@ -8619,6 +8630,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                         getMediaDataController().increasePeerRaiting(newMsgObj.dialog_id);
                                         getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, 0L, existFlags, scheduled);
                                         getNotificationCenter().postNotificationName(NotificationCenter.messageReceivedByServer2, oldId, newMsgObj.id, newMsgObj, newMsgObj.dialog_id, 0L, existFlags, scheduled);
+                                        VoiceTimecodes.onMessageSent(currentAccount, newMsgObj, scheduled);
                                         processSentMessage(oldId);
                                         removeFromSendingMessages(oldId, scheduled);
                                     });
@@ -8630,6 +8642,7 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                         isSentError = true;
                     }
                     if (isSentError) {
+                        DeleteAfterSend.disarm(newMsgObj.params);
                         getMessagesStorage().markMessageAsSendError(newMsgObj, scheduled ? 1 : 0);
                         newMsgObj.send_state = MessageObject.MESSAGE_SEND_STATE_SEND_ERROR;
                         if (error != null && error.text != null && error.text.startsWith("ALLOW_PAYMENT_REQUIRED_")) {
@@ -11591,8 +11604,8 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                             final TLRPC.PhotoSize coverFinal = cover;
                             if (originalPath != null) {
                                 params.put("originalPath", originalPath);
-                                if (info.deleteAfterSend && !isEncrypted) {
-                                    DeleteAfterSend.arm(originalPath, info.deleteSourcePath, info.sourceImageId, info.isVideo);
+                                if (info.deleteAfterSend && !info.isVideo && !isEncrypted && scheduleDate == 0) {
+                                    DeleteAfterSend.arm(params, info.deleteSourcePath, info.sourceImageId);
                                 }
                             }
                             if (info.isLivePhoto && !TextUtils.isEmpty(info.coverPath)) {
@@ -11812,8 +11825,8 @@ public class SendMessagesHelper extends BaseController implements NotificationCe
                                 }
                                 if (originalPath != null) {
                                     params.put("originalPath", originalPath);
-                                    if (info.deleteAfterSend && !isEncrypted) {
-                                        DeleteAfterSend.arm(originalPath, info.deleteSourcePath, info.sourceImageId, info.isVideo);
+                                    if (info.deleteAfterSend && !info.isVideo && !isEncrypted && scheduleDate == 0) {
+                                        DeleteAfterSend.arm(params, info.deleteSourcePath, info.sourceImageId);
                                     }
                                 }
                                 if (parentFinal != null) {
