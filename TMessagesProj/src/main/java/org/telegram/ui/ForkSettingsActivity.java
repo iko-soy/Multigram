@@ -46,6 +46,7 @@ import org.telegram.messenger.forkgram.ForkSettings;
 import org.telegram.messenger.forkgram.ForkSettingsLock;
 import org.telegram.messenger.forkgram.HiddenAccountHelper;
 import org.telegram.messenger.forkgram.LinkReplacements;
+import org.telegram.messenger.forkgram.UrlTracking;
 import org.telegram.messenger.forkgram.QuickAttachConfig;
 import org.telegram.messenger.forkgram.SettingsBackup;
 import org.telegram.messenger.forkgram.WebPublishConfig;
@@ -341,7 +342,7 @@ public class ForkSettingsActivity extends BaseFragment {
 
     private String getLinkReplacementsText() {
         if (!LinkReplacements.isEnabled()) {
-            return LocaleController.getString(R.string.PasswordOff);
+            return LocaleController.getString(UrlTracking.isPasteShareEnabled() || UrlTracking.isOpenEnabled() ? R.string.NotificationsOn : R.string.PasswordOff);
         }
         return Integer.toString(LinkReplacements.enabledCount());
     }
@@ -658,7 +659,7 @@ public class ForkSettingsActivity extends BaseFragment {
         items.add(UItem.asButtonCheck(ID_HIDE_AI_EDITOR, LocaleController.getString(R.string.HideAiEditor), LocaleController.getString(R.string.HideAiEditorInfo))
             .setChecked(pref("hideAiEditor", false)).setMultiline(true));
         items.add(UItem.asSettingsCell(ID_FORMATTING_MENU, LocaleController.getString(R.string.FormattingMenu), null));
-        items.add(UItem.asSettingsCell(ID_LINK_REPLACEMENTS, LocaleController.getString(R.string.ReplaceLinksOnPaste), getLinkReplacementsText()));
+        items.add(UItem.asSettingsCell(ID_LINK_REPLACEMENTS, LocaleController.getString(R.string.LinkCleanup), getLinkReplacementsText()));
         items.add(UItem.asShadow(null));
 
         items.add(UItem.asHeader(LocaleController.getString(R.string.Reactions)));

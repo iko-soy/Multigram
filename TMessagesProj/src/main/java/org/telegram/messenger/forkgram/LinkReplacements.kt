@@ -163,13 +163,28 @@ object LinkReplacements {
     }
 
     @JvmStatic
+    fun replaceSharedText(text: CharSequence): CharSequence {
+        if (text.isEmpty() || text.length > MAX_INPUT_LENGTH || (!isEnabled() && !UrlTracking.isPasteShareEnabled())) {
+            return text
+        }
+        val replaced = SpannableStringBuilder(text)
+        return if (transformPasted(replaced)) replaced.toString() else text
+    }
+
+    private fun transformPasted(text: SpannableStringBuilder): Boolean {
+        val cleaned = UrlTracking.cleanPasted(text)
+        val replaced = isEnabled() && apply(text)
+        return cleaned || replaced
+    }
+
+    @JvmStatic
     fun pasteWithReplacements(editText: EditText, pasted: CharSequence?): Boolean {
-        if (!isEnabled() || pasted.isNullOrEmpty()) {
+        if (pasted.isNullOrEmpty() || pasted.length > MAX_INPUT_LENGTH || (!isEnabled() && !UrlTracking.isPasteShareEnabled())) {
             return false
         }
         val editable = editText.text ?: return false
         val replaced = SpannableStringBuilder(pasted)
-        if (!apply(replaced)) {
+        if (!transformPasted(replaced)) {
             return false
         }
         val original = SpannableStringBuilder(pasted)

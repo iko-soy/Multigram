@@ -18,6 +18,7 @@ import org.telegram.messenger.LocaleController
 import org.telegram.messenger.MessagesController
 import org.telegram.messenger.R
 import org.telegram.messenger.forkgram.LinkReplacements
+import org.telegram.messenger.forkgram.UrlTracking
 import org.telegram.ui.ActionBar.ActionBar.ActionBarMenuOnItemClick
 import org.telegram.ui.ActionBar.AlertDialog
 import org.telegram.ui.ActionBar.BaseFragment
@@ -43,7 +44,7 @@ class LinkReplacementsActivity : BaseFragment() {
     override fun createView(context: Context): View {
         actionBar.setBackButtonImage(R.drawable.ic_ab_back)
         actionBar.setAllowOverlayTitle(true)
-        actionBar.setTitle(LocaleController.getString(R.string.ReplaceLinksOnPaste))
+        actionBar.setTitle(LocaleController.getString(R.string.LinkCleanup))
         if (AndroidUtilities.isTablet()) {
             actionBar.setOccupyStatusBar(false)
         }
@@ -86,7 +87,15 @@ class LinkReplacementsActivity : BaseFragment() {
                 LocaleController.getString(R.string.ReplaceLinksOnPasteInfo)
             ).setChecked(LinkReplacements.isEnabled()).setMultiline(true)
         )
-        items.add(UItem.asShadow(null))
+        items.add(
+            UItem.asButtonCheck(ID_STRIP_PASTE_SHARE, LocaleController.getString(R.string.StripTrackingOnPasteShare), null)
+                .setChecked(UrlTracking.isPasteShareEnabled()).setMultiline(true)
+        )
+        items.add(
+            UItem.asButtonCheck(ID_STRIP_OPEN, LocaleController.getString(R.string.StripTrackingOnOpen), null)
+                .setChecked(UrlTracking.isOpenEnabled()).setMultiline(true)
+        )
+        items.add(UItem.asShadow(LocaleController.getString(R.string.StripTrackingInfo)))
 
         items.add(UItem.asHeader(LocaleController.getString(R.string.LinkReplacementRules)))
         for (a in rules.indices) {
@@ -119,7 +128,12 @@ class LinkReplacementsActivity : BaseFragment() {
 
     private fun onClick(item: UItem, view: View, position: Int, x: Float, y: Float) {
         if (item.id == ID_ENABLED) {
-            toggleEnabled(item, view)
+            toggleEnabled(item, view, LinkReplacements.ENABLED_KEY)
+            return
+        }
+        if (item.id == ID_STRIP_PASTE_SHARE || item.id == ID_STRIP_OPEN) {
+            val key = if (item.id == ID_STRIP_PASTE_SHARE) UrlTracking.PASTE_SHARE_KEY else UrlTracking.OPEN_KEY
+            toggleEnabled(item, view, key)
             return
         }
         if (item.id == ID_ADD) {
@@ -154,11 +168,11 @@ class LinkReplacementsActivity : BaseFragment() {
         return true
     }
 
-    private fun toggleEnabled(item: UItem, view: View) {
+    private fun toggleEnabled(item: UItem, view: View, key: String) {
         val value = !item.checked
         item.checked = value
         MessagesController.getGlobalMainSettings().edit()
-            .putBoolean(LinkReplacements.ENABLED_KEY, value)
+            .putBoolean(key, value)
             .commit()
         setCellChecked(view, value)
     }
@@ -287,6 +301,8 @@ class LinkReplacementsActivity : BaseFragment() {
         private const val MENU_RESET = 1
         private const val ID_ENABLED = 1
         private const val ID_ADD = 2
+        private const val ID_STRIP_PASTE_SHARE = 3
+        private const val ID_STRIP_OPEN = 4
         private const val RULE_ID_OFFSET = 100
     }
 }

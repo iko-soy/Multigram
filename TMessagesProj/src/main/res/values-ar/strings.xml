@@ -271,7 +271,11 @@
     <string name="EnableLastSeenDots">تفعيل نقاط ملونة لآخر ظهور</string>
     <string name="HideStoriesInArchive">إخفاء القصص في الأرشيف</string>
     <string name="ExtractMediaFromPreview">إرسال الوسائط من معاينة الرابط كمرفق</string>
-    <string name="ReplaceLinksOnPaste">استبدال الروابط عند اللصق</string>
+    <string name="LinkCleanup">تنظيف الروابط</string>
+    <string name="StripTrackingOnPasteShare">إزالة التتبع عند اللصق أو المشاركة</string>
+    <string name="StripTrackingOnOpen">إزالة التتبع عند فتح الروابط</string>
+    <string name="StripTrackingInfo">تُزال معلمات التتبع المعروفة فقط. لا تُوسّع الروابط المختصرة.</string>
+    <string name="ReplaceLinksOnPaste">استبدال الروابط عند اللصق أو المشاركة</string>
     <string name="ReplaceLinksOnPasteInfo">الروابط التي تلصقها في رسالة يتم استبدالها وفق القواعد أدناه. مفيد للخدمات التي لا يستطيع تيليجرام عرض معاينتها.</string>
     <string name="LinkReplacementRules">قواعد الاستبدال</string>
     <string name="LinkReplacementRulesInfo">كل قاعدة تتكون من تعبير نمطي والنص الذي يحل محل التطابق. استخدم \$1 لإدراج مجموعة ملتقطة.</string>

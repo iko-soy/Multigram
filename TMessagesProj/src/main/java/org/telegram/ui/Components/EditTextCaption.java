@@ -49,6 +49,7 @@ import org.telegram.utils.code.highlight.CodeHighlighting;
 import org.telegram.messenger.Emoji;
 import org.telegram.messenger.FileLog;
 import org.telegram.messenger.forkgram.LinkReplacements;
+import org.telegram.messenger.forkgram.UrlTracking;
 import org.telegram.messenger.LocaleController;
 import org.telegram.messenger.MediaDataController;
 import org.telegram.messenger.R;
@@ -353,7 +354,7 @@ public class EditTextCaption extends EditTextBoldCursor implements FloatingToolb
                     }
                 }
                 try {
-                    editable.setSpan(createUrlSpan(url), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+                    editable.setSpan(createUrlSpan(UrlTracking.cleanPastedUrl(url)), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
                 } catch (Exception ignore) {}
                 if (delegate != null) {
                     delegate.onSpansChanged();
