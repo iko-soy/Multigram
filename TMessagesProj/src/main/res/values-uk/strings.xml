@@ -13,7 +13,6 @@
     <string name="ForkSettingsLockUnlockInfo">Введіть код, щоб відкрити налаштування клієнта Fork.</string>
     <string name="DeleteFromDevice">Видалити з пристрою</string>
     <string name="DeleteFromDeviceDone">Файл видалено з пристрою</string>
-    <string name="DeleteFromDeviceFailed">Не вдалося видалити файл із пристрою.</string>
     <string name="DeleteFromDeviceMessage">Цей файл буде назавжди видалено з вашого пристрою.</string>
     <string name="DeleteSelectedPhotosFromDeviceMessage">Фотографій до видалення: %1$d. Ці фотографії буде назавжди видалено з пристрою.</string>
     <string name="SendAsRoundVideo">Надіслати як відеоповідомлення</string>

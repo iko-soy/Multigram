@@ -422,11 +422,6 @@ public class ChatAttachAlertPhotoLayout extends ChatAttachAlert.AttachAlertLayou
         }
 
         @Override
-        public MessageObject getEditingMessageObject() {
-            return parentAlert != null ? parentAlert.getEditingMessageObject() : null;
-        }
-
-        @Override
         public PhotoViewer.PlaceProviderObject getPlaceForPhoto(MessageObject messageObject, TLRPC.FileLocation fileLocation, int index, boolean needPreview, boolean closing) {
             if (closing && parentAlert.avatarWithBulletin != null) {
                 final PhotoViewer.PlaceProviderObject object = parentAlert.avatarWithBulletin.run();

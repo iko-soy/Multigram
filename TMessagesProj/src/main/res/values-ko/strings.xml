@@ -13,7 +13,6 @@
     <string name="ForkSettingsLockUnlockInfo">포크 클라이언트 설정을 열려면 코드를 입력하세요.</string>
     <string name="DeleteFromDevice">기기에서 삭제</string>
     <string name="DeleteFromDeviceDone">파일이 기기에서 삭제되었습니다</string>
-    <string name="DeleteFromDeviceFailed">이 기기에서 파일을 삭제하지 못했습니다.</string>
     <string name="DeleteFromDeviceMessage">이 파일이 기기에서 영구적으로 삭제됩니다.</string>
     <string name="DeleteSelectedPhotosFromDeviceMessage">삭제할 사진: %1$d장. 이 사진은 이 기기에서 영구적으로 삭제됩니다.</string>
     <string name="SendAsRoundVideo">원형 동영상으로 보내기</string>

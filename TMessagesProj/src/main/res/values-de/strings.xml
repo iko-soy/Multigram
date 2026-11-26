@@ -13,7 +13,6 @@
     <string name="ForkSettingsLockUnlockInfo">Gib den Code ein, um die Einstellungen des Fork-Clients zu öffnen.</string>
     <string name="DeleteFromDevice">Vom Gerät löschen</string>
     <string name="DeleteFromDeviceDone">Datei vom Gerät gelöscht</string>
-    <string name="DeleteFromDeviceFailed">Die Datei konnte nicht von diesem Gerät gelöscht werden.</string>
     <string name="DeleteFromDeviceMessage">Diese Datei wird endgültig von deinem Gerät gelöscht.</string>
     <string name="DeleteSelectedPhotosFromDeviceMessage">Zu löschende Fotos: %1$d. Diese Fotos werden endgültig von diesem Gerät gelöscht.</string>
     <string name="SendAsRoundVideo">Als Videonachricht senden</string>

@@ -12810,11 +12810,6 @@ public class ChatActivityEnterView extends FrameLayout implements
                                     info.ttl = entry.ttl;
                                     info.videoEditedInfo = entry.editedInfo;
                                     info.canDeleteAfter = entry.canDeleteAfter;
-                                    if (entry.deleteAfterSend) {
-                                        info.deleteAfterSend = true;
-                                        info.deleteSourcePath = entry.path;
-                                        info.sourceImageId = entry.imageId;
-                                    }
                                     info.updateStickersOrder = SendMessagesHelper.checkUpdateStickersOrder(entry.caption);
                                     info.hasMediaSpoilers = entry.hasSpoiler;
                                     info.stars = entry.starsAmount;

@@ -13,7 +13,6 @@
     <string name="ForkSettingsLockUnlockInfo">Voer de code in om de instellingen van de Fork-client te openen.</string>
     <string name="DeleteFromDevice">Van apparaat verwijderen</string>
     <string name="DeleteFromDeviceDone">Bestand van apparaat verwijderd</string>
-    <string name="DeleteFromDeviceFailed">Het bestand kon niet van dit apparaat worden verwijderd.</string>
     <string name="DeleteFromDeviceMessage">Dit bestand wordt definitief van je apparaat verwijderd.</string>
     <string name="DeleteSelectedPhotosFromDeviceMessage">Te verwijderen foto’s: %1$d. Deze foto’s worden definitief van dit apparaat verwijderd.</string>
     <string name="SendAsRoundVideo">Als rond videobericht versturen</string>
