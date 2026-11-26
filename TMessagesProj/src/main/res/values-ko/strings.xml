@@ -15,6 +15,7 @@
     <string name="DeleteFromDeviceDone">파일이 기기에서 삭제되었습니다</string>
     <string name="DeleteFromDeviceFailed">이 기기에서 파일을 삭제하지 못했습니다.</string>
     <string name="DeleteFromDeviceMessage">이 파일이 기기에서 영구적으로 삭제됩니다.</string>
+    <string name="DeleteSelectedPhotosFromDeviceMessage">삭제할 사진: %1$d장. 이 사진은 이 기기에서 영구적으로 삭제됩니다.</string>
     <string name="SendAsRoundVideo">원형 동영상으로 보내기</string>
     <string name="ExportSettings">설정 내보내기</string>
     <string name="ExportSettingsDone">설정을 내보냈습니다.</string>
@@ -190,7 +191,7 @@
     <string name="AvatarShapeRounded">둥근 모서리</string>
     <string name="AvatarShapeSquare">사각형</string>
     <string name="InAppCamera">앱 내 카메라 활성화</string>
-    <string name="InAppCameraInfo">첨부 파일에서</string>
+    <string name="InAppCameraInfo">첨부 파일에 앱 내 카메라를 사용합니다. 끄면 동영상 메시지로 전환할 수 없습니다.</string>
     <string name="SyncPins">고정된 대화 동기화</string>
     <string name="SyncPinsInfo">동기화 해제를 통해 무제한 대화를 고정할 수 있습니다</string>
     <string name="UnmutedOnTop">음소거 해제된 메시지가 우선입니다</string>
@@ -1462,4 +1463,15 @@
     <string name="QuickAttachNewestFirst">최신 사진을 왼쪽에</string>
     <string name="QuickAttachNewestFirstInfo">끄면 최근 사진이 오래된 것부터 최신 순으로 왼쪽에서 오른쪽으로 정렬됩니다.</string>
     <string name="PhotoSent">사진을 보냈습니다</string>
+    <string name="DisableMessageWidgets">HTML 위젯 사용 안 함</string>
+    <string name="DisableMessageWidgetsInfo">메시지에 포함된 HTML 위젯이 실행되지 않습니다. 캡션은 계속 표시됩니다.</string>
+    <string name="DisabledMessageWidget">지원되지 않는 HTML 위젯</string>
+    <string name="ShowNewMessageButton">새 메시지 버튼 표시</string>
+    <string name="ShowNewMessageButtonInfo">기본 채팅 목록에 메시지 작성 버튼을 표시합니다.</string>
+    <string name="HideGreetingStickers">인사 스티커 숨기기</string>
+    <string name="HideGreetingStickersInfo">비어 있는 개인 채팅에서 추천 스티커를 숨깁니다.</string>
+    <string name="HideContactsTab">연락처 탭 숨기기</string>
+    <string name="HideContactsTabInfo">하단 표시줄에서 연락처를 숨깁니다. 채팅 → 새 메시지에서 연락처를 선택할 수 있습니다. 적용하려면 앱을 다시 시작하세요.</string>
+    <string name="GifPlaybackControls">GIF 재생 제어</string>
+    <string name="GifPlaybackControlsInfo">미디어 뷰어에서 동영상 기반 GIF의 재생 및 탐색 컨트롤을 표시합니다.</string>
 </resources>

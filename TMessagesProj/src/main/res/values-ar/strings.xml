@@ -15,6 +15,7 @@
     <string name="DeleteFromDeviceDone">تم حذف الملف من الجهاز</string>
     <string name="DeleteFromDeviceFailed">تعذّر حذف الملف من هذا الجهاز.</string>
     <string name="DeleteFromDeviceMessage">سيُحذف هذا الملف نهائيًا من جهازك.</string>
+    <string name="DeleteSelectedPhotosFromDeviceMessage">عدد الصور المراد حذفها: %1$d. ستُحذف هذه الصور نهائيًا من هذا الجهاز.</string>
     <string name="SendAsRoundVideo">إرسال كفيديو دائري</string>
     <string name="ExportSettings">تصدير الإعدادات</string>
     <string name="ExportSettingsDone">تم تصدير الإعدادات.</string>
@@ -190,7 +191,7 @@
     <string name="AvatarShapeRounded">مستدير الحواف</string>
     <string name="AvatarShapeSquare">مربع</string>
     <string name="InAppCamera">تفعيل الكاميرا داخل التطبيق</string>
-    <string name="InAppCameraInfo">في المرفقات</string>
+    <string name="InAppCameraInfo">تُستخدم الكاميرا المدمجة للمرفقات. يؤدي إيقافها أيضًا إلى منع التبديل إلى رسائل الفيديو.</string>
     <string name="SyncPins">مزامنة المحادثات المثبتة</string>
     <string name="SyncPinsInfo">إيقاف المزامنة يسمح بتثبيت عدد غير محدود من المحادثات</string>
     <string name="UnmutedOnTop">الرسائل غير الصامتة هي الأساسية</string>
@@ -1574,4 +1575,15 @@
     <string name="QuickAttachNewestFirst">أحدث الصور على اليسار</string>
     <string name="QuickAttachNewestFirstInfo">عند الإيقاف، تُرتَّب الصور الأخيرة من الأقدم إلى الأحدث، من اليسار إلى اليمين.</string>
     <string name="PhotoSent">تم إرسال الصورة</string>
+    <string name="DisableMessageWidgets">تعطيل أدوات HTML المصغّرة</string>
+    <string name="DisableMessageWidgetsInfo">يمنع تشغيل أدوات HTML المصغّرة المضمّنة في الرسائل. تظل تسمياتها التوضيحية مرئية.</string>
+    <string name="DisabledMessageWidget">أداة HTML مصغّرة غير مدعومة</string>
+    <string name="ShowNewMessageButton">إظهار زر رسالة جديدة</string>
+    <string name="ShowNewMessageButtonInfo">إظهار زر كتابة رسالة في قائمة الدردشات الرئيسية.</string>
+    <string name="HideGreetingStickers">إخفاء ملصقات الترحيب</string>
+    <string name="HideGreetingStickersInfo">إخفاء الملصق المقترح في الدردشة الخاصة الفارغة.</string>
+    <string name="HideContactsTab">إخفاء تبويب جهات الاتصال</string>
+    <string name="HideContactsTabInfo">إخفاء جهات الاتصال من الشريط السفلي. يبقى منتقي جهات الاتصال متاحًا عبر الدردشات ← رسالة جديدة. أعد تشغيل التطبيق لتطبيق التغيير.</string>
+    <string name="GifPlaybackControls">عناصر التحكم في تشغيل GIF</string>
+    <string name="GifPlaybackControlsInfo">إظهار عناصر التحكم في التشغيل والتنقل الزمني لصور GIF المستندة إلى فيديو في عارض الوسائط.</string>
 </resources>

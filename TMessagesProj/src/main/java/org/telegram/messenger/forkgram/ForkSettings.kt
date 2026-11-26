@@ -145,6 +145,10 @@ object ForkSettings {
         BoolOption("dropScreenshotCaption", ForkSettingsActivity.ID_DROP_SCREENSHOT_CAPTION, true),
 
         BoolOption("hideInAppHints", ForkSettingsActivity.ID_HIDE_IN_APP_HINTS, false),
+        BoolOption("showNewMessageButton", ForkSettingsActivity.ID_SHOW_NEW_MESSAGE_BUTTON, false),
+        BoolOption("hideGreetingStickers", ForkSettingsActivity.ID_HIDE_GREETING_STICKERS, false),
+        BoolOption("hideContactsTab", ForkSettingsActivity.ID_HIDE_CONTACTS_TAB, false),
+        BoolOption("gifPlaybackControls", ForkSettingsActivity.ID_GIF_PLAYBACK_CONTROLS, false),
         BoolOption("hideBottomButton", ForkSettingsActivity.ID_HIDE_BOTTOM_BUTTON, false),
         StringOption(
             "forkCustomTitle", ForkSettingsActivity.ID_CUSTOM_TITLE, "Fork Client",
@@ -179,6 +183,7 @@ object ForkSettings {
         BoolOption("disableLockedAnimatedEmoji", ForkSettingsActivity.ID_DISABLE_LOCKED_ANIMATED_EMOJI, false),
 
         BoolOption("fullRecentStickers", ForkSettingsActivity.ID_FULL_RECENT_STICKERS, true),
+        BoolOption("disableMessageWidgets", ForkSettingsActivity.ID_DISABLE_MESSAGE_WIDGETS, false),
         BoolOption("confirmGifStickerSend", ForkSettingsActivity.ID_CONFIRM_GIF_STICKER_SEND, false),
         BoolOption("showArchivedStickers", ForkSettingsActivity.ID_SHOW_ARCHIVED_STICKERS, false),
         FloatOption("stickerSize", ForkSettingsActivity.ID_STICKER_SIZE, ChatMessageCell.MAX_STICKER_SIZE),
@@ -411,6 +416,8 @@ object ForkSettings {
                 ApplicationLoader.setSatelliteDataSavingEnabled(value == true)
             "quickRepeatButton" ->
                 QuickRepeat.invalidate()
+            "disableMessageWidgets" ->
+                MessageWidgets.onChanged()
         }
     }
 

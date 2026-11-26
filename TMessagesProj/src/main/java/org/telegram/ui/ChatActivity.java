@@ -1239,6 +1239,8 @@ public class ChatActivity extends BaseFragment implements
     private float pullingDownAnimateProgress;
     private AnimatorSet fragmentTransition;
     private ChatActivity backToPreviousFragment;
+    private boolean lastWidgetPreference = org.telegram.messenger.forkgram.MessageWidgets.disabled();
+
     /** How long the first messages wait for the heights of the widgets they show (WidgetMedia). */
     private static final long WIDGET_HEIGHTS_WAIT_MS = 150;
     private Runnable fragmentTransitionRunnable = new Runnable() {
@@ -31701,6 +31703,11 @@ public class ChatActivity extends BaseFragment implements
     @Override
     public void onResume() {
         super.onResume();
+        updateGreetingStickerVisibility();
+        if (chatAdapter != null && lastWidgetPreference != org.telegram.messenger.forkgram.MessageWidgets.disabled()) {
+            lastWidgetPreference = org.telegram.messenger.forkgram.MessageWidgets.disabled();
+            updateVisibleRows(object -> object != null && WidgetMedia.isWidget(MessageObject.getMedia(object.messageOwner)));
+        }
         checkShowBlur(false);
         activityResumeTime = System.currentTimeMillis();
         if (openImport && getSendMessagesHelper().getImportingHistory(dialog_id) != null) {
@@ -34769,7 +34776,20 @@ public class ChatActivity extends BaseFragment implements
         item.setVisibility(t ? View.VISIBLE : View.GONE);
     }
 
+    private void updateGreetingStickerVisibility() {
+        if (greetingsViewContainer == null) {
+            return;
+        }
+        final boolean ordinaryPrivateChat = chatMode == 0 && !isThreadChat() && currentEncryptedChat == null
+            && currentUser != null && !currentUser.self && !userBlocked
+            && (userInfo == null || (userInfo.business_intro == null && !userInfo.contact_require_premium
+                && userInfo.send_paid_messages_stars <= 0));
+        greetingsViewContainer.setGreetingStickerHidden(ordinaryPrivateChat
+            && MessagesController.getGlobalMainSettings().getBoolean("hideGreetingStickers", false));
+    }
+
     private void updateGreetInfo() {
+        updateGreetingStickerVisibility();
         showGreetInfo(
             getDialogId() != getUserConfig().getClientUserId() &&
             userInfo != null && userInfo.business_intro != null &&

@@ -15,6 +15,7 @@
     <string name="DeleteFromDeviceDone">Archivo eliminado del dispositivo</string>
     <string name="DeleteFromDeviceFailed">No se pudo eliminar el archivo de este dispositivo.</string>
     <string name="DeleteFromDeviceMessage">Este archivo se eliminará permanentemente de tu dispositivo.</string>
+    <string name="DeleteSelectedPhotosFromDeviceMessage">Fotos que se eliminarán: %1$d. Estas fotos se eliminarán permanentemente de este dispositivo.</string>
     <string name="SendAsRoundVideo">Enviar como videomensaje</string>
     <string name="ExportSettings">Exportar ajustes</string>
     <string name="ExportSettingsDone">Ajustes exportados.</string>
@@ -190,7 +191,7 @@
     <string name="AvatarShapeRounded">Redondeada</string>
     <string name="AvatarShapeSquare">Cuadrada</string>
     <string name="InAppCamera">Habilitar cámara en la aplicación</string>
-    <string name="InAppCameraInfo">En adjuntos</string>
+    <string name="InAppCameraInfo">Usa la cámara integrada para los adjuntos. Si la desactivas, tampoco podrás cambiar a mensajes de vídeo.</string>
     <string name="SyncPins">Sincronizar diálogos anclados</string>
     <string name="SyncPinsInfo">Desactivar la sincronización permite anclar una cantidad ilimitada de diálogos</string>
     <string name="UnmutedOnTop">Mensajes no silenciados son primarios</string>
@@ -1646,4 +1647,15 @@
     <string name="QuickAttachNewestFirst">Fotos más recientes a la izquierda</string>
     <string name="QuickAttachNewestFirstInfo">Si está desactivado, las fotos recientes se ordenan de más antigua a más reciente, de izquierda a derecha.</string>
     <string name="PhotoSent">Foto enviada</string>
+    <string name="DisableMessageWidgets">Desactivar los widgets HTML</string>
+    <string name="DisableMessageWidgetsInfo">Impide que se ejecuten los widgets HTML incrustados en los mensajes. Sus descripciones seguirán visibles.</string>
+    <string name="DisabledMessageWidget">Widget HTML incompatible</string>
+    <string name="ShowNewMessageButton">Mostrar el botón de nuevo mensaje</string>
+    <string name="ShowNewMessageButtonInfo">Muestra el botón de redactar en la lista principal de chats.</string>
+    <string name="HideGreetingStickers">Ocultar stickers de saludo</string>
+    <string name="HideGreetingStickersInfo">Oculta la sugerencia de sticker en un chat privado vacío.</string>
+    <string name="HideContactsTab">Ocultar la pestaña Contactos</string>
+    <string name="HideContactsTabInfo">Oculta Contactos en la barra inferior. El selector de contactos sigue disponible en Chats → Nuevo mensaje. Reinicia la aplicación para aplicar el cambio.</string>
+    <string name="GifPlaybackControls">Controles de reproducción de GIF</string>
+    <string name="GifPlaybackControlsInfo">Muestra los controles de reproducción y la barra de progreso para los GIF basados en vídeo en el visor multimedia.</string>
 </resources>

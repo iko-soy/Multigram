@@ -95,7 +95,7 @@
     <string name="ForkSettingsTitle">تنظیمات Fork Client</string>
     <string name="ForkCheckUpdate">بررسی به‌روزرسانی‌ها</string>
     <string name="InAppCamera">فعال کردن دوربین داخلی</string>
-    <string name="InAppCameraInfo">در پیوست‌ها</string>
+    <string name="InAppCameraInfo">از دوربین درون‌برنامه‌ای برای پیوست‌ها استفاده می‌شود. با خاموش کردن آن، تغییر حالت به پیام ویدیویی هم امکان‌پذیر نیست.</string>
     <string name="SquareAvatars">نمایه‌های مربعی</string>
     <string name="AvatarShape">شکل نمایه</string>
     <string name="AvatarShapeRound">دایره‌ای</string>
@@ -281,6 +281,7 @@
     <!--button titles-->
     <string name="DeleteFromDevice">حذف از دستگاه</string>
     <string name="DeleteFromDeviceMessage">این فایل برای همیشه از دستگاه شما حذف می‌شود.</string>
+    <string name="DeleteSelectedPhotosFromDeviceMessage">تعداد عکس‌ها برای حذف: %1$d. این عکس‌ها برای همیشه از این دستگاه حذف می‌شوند.</string>
     <string name="DeleteFromDeviceDone">فایل از دستگاه حذف شد</string>
     <string name="DeleteFromDeviceFailed">حذف فایل از این دستگاه ممکن نبود.</string>
     <string name="QRLoginTitle">ورود با کد QR</string>
@@ -337,4 +338,15 @@
     <string name="QuickAttachNewestFirst">جدیدترین عکس‌ها در سمت چپ</string>
     <string name="QuickAttachNewestFirstInfo">اگر خاموش باشد، عکس‌های اخیر از قدیمی به جدید، از چپ به راست مرتب می‌شوند.</string>
     <string name="PhotoSent">عکس ارسال شد</string>
+    <string name="DisableMessageWidgets">غیرفعال کردن ابزارک‌های HTML</string>
+    <string name="DisableMessageWidgetsInfo">از اجرای ابزارک‌های HTML درون پیام‌ها جلوگیری می‌کند. توضیحات آن‌ها همچنان نمایش داده می‌شود.</string>
+    <string name="DisabledMessageWidget">ابزارک HTML پشتیبانی نمی‌شود</string>
+    <string name="ShowNewMessageButton">نمایش دکمه پیام جدید</string>
+    <string name="ShowNewMessageButtonInfo">دکمهٔ نوشتن پیام را در فهرست اصلی گفتگوها نشان می‌دهد.</string>
+    <string name="HideGreetingStickers">پنهان‌کردن استیکرهای خوشامدگویی</string>
+    <string name="HideGreetingStickersInfo">استیکر پیشنهادی را در گفت‌وگوی خصوصی خالی پنهان می‌کند.</string>
+    <string name="HideContactsTab">پنهان‌کردن زبانهٔ مخاطبان</string>
+    <string name="HideContactsTabInfo">مخاطبان را از نوار پایین پنهان می‌کند. انتخاب مخاطب از گفت‌وگوها ← پیام جدید همچنان در دسترس است. برای اعمال تغییر، برنامه را دوباره راه‌اندازی کنید.</string>
+    <string name="GifPlaybackControls">کنترل پخش گیف</string>
+    <string name="GifPlaybackControlsInfo">کنترل‌های پخش و نوار زمان را برای گیف‌های مبتنی بر ویدیو در نمایشگر رسانه نشان می‌دهد.</string>
 </resources>

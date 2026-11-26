@@ -15,6 +15,7 @@
     <string name="DeleteFromDeviceDone">File eliminato dal dispositivo</string>
     <string name="DeleteFromDeviceFailed">Impossibile eliminare il file da questo dispositivo.</string>
     <string name="DeleteFromDeviceMessage">Questo file sarà eliminato definitivamente dal tuo dispositivo.</string>
+    <string name="DeleteSelectedPhotosFromDeviceMessage">Foto da eliminare: %1$d. Queste foto verranno eliminate definitivamente da questo dispositivo.</string>
     <string name="SendAsRoundVideo">Invia come videomessaggio</string>
     <string name="ExportSettings">Esporta impostazioni</string>
     <string name="ExportSettingsDone">Impostazioni esportate.</string>
@@ -190,7 +191,7 @@
     <string name="AvatarShapeRounded">Arrotondata</string>
     <string name="AvatarShapeSquare">Quadrata</string>
     <string name="InAppCamera">Abilita fotocamera nell\'app</string>
-    <string name="InAppCameraInfo">Negli allegati</string>
+    <string name="InAppCameraInfo">Usa la fotocamera interna per gli allegati. Se la disattivi, non puoi passare ai videomessaggi.</string>
     <string name="SyncPins">Sincronizza dialoghi fissati</string>
     <string name="SyncPinsInfo">Disattivare la sincronizzazione consente di fissare un numero illimitato di dialoghi</string>
     <string name="UnmutedOnTop">I messaggi non silenziati sono primari</string>
@@ -1868,4 +1869,15 @@
     <string name="QuickAttachNewestFirst">Foto più recenti a sinistra</string>
     <string name="QuickAttachNewestFirstInfo">Se disattivato, le foto recenti sono ordinate dalla più vecchia alla più recente, da sinistra a destra.</string>
     <string name="PhotoSent">Foto inviata</string>
+    <string name="DisableMessageWidgets">Disattiva i widget HTML</string>
+    <string name="DisableMessageWidgetsInfo">Impedisce l’esecuzione dei widget HTML incorporati nei messaggi. Le didascalie restano visibili.</string>
+    <string name="DisabledMessageWidget">Widget HTML non supportato</string>
+    <string name="ShowNewMessageButton">Mostra il pulsante Nuovo messaggio</string>
+    <string name="ShowNewMessageButtonInfo">Mostra il pulsante per scrivere un messaggio nella lista principale delle chat.</string>
+    <string name="HideGreetingStickers">Nascondi gli sticker di saluto</string>
+    <string name="HideGreetingStickersInfo">Nasconde lo sticker suggerito in una chat privata vuota.</string>
+    <string name="HideContactsTab">Nascondi la scheda Contatti</string>
+    <string name="HideContactsTabInfo">Nasconde Contatti dalla barra in basso. Puoi ancora scegliere un contatto da Chat → Nuovo messaggio. Riavvia l’app per applicare la modifica.</string>
+    <string name="GifPlaybackControls">Controlli di riproduzione delle GIF</string>
+    <string name="GifPlaybackControlsInfo">Mostra i controlli di riproduzione e la barra di avanzamento per le GIF basate su video nel visualizzatore multimediale.</string>
 </resources>

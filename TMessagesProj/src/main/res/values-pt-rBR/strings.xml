@@ -15,6 +15,7 @@
     <string name="DeleteFromDeviceDone">Arquivo apagado do dispositivo</string>
     <string name="DeleteFromDeviceFailed">Não foi possível apagar o arquivo deste dispositivo.</string>
     <string name="DeleteFromDeviceMessage">Este arquivo será apagado permanentemente do seu dispositivo.</string>
+    <string name="DeleteSelectedPhotosFromDeviceMessage">Fotos a apagar: %1$d. Essas fotos serão apagadas permanentemente deste dispositivo.</string>
     <string name="SendAsRoundVideo">Enviar como vídeo redondo</string>
     <string name="ExportSettings">Exportar configurações</string>
     <string name="ExportSettingsDone">Configurações exportadas.</string>
@@ -190,7 +191,7 @@
     <string name="AvatarShapeRounded">Arredondada</string>
     <string name="AvatarShapeSquare">Quadrada</string>
     <string name="InAppCamera">Ativar câmera no aplicativo</string>
-    <string name="InAppCameraInfo">Nos anexos</string>
+    <string name="InAppCameraInfo">Usa a câmera do app para anexos. Ao desativá-la, não é possível alternar para mensagens de vídeo.</string>
     <string name="SyncPins">Sincronizar conversas fixadas</string>
     <string name="SyncPinsInfo">Desativar sincronização permite fixar um número ilimitado de conversas</string>
     <string name="UnmutedOnTop">Mensagens não silenciadas são primárias</string>
@@ -1592,4 +1593,15 @@
     <string name="QuickAttachNewestFirst">Fotos mais recentes à esquerda</string>
     <string name="QuickAttachNewestFirstInfo">Se desativado, as fotos recentes são ordenadas da mais antiga para a mais recente, da esquerda para a direita.</string>
     <string name="PhotoSent">Foto enviada</string>
+    <string name="DisableMessageWidgets">Desativar widgets HTML</string>
+    <string name="DisableMessageWidgetsInfo">Impede a execução de widgets HTML incorporados nas mensagens. As legendas continuam visíveis.</string>
+    <string name="DisabledMessageWidget">Widget HTML incompatível</string>
+    <string name="ShowNewMessageButton">Mostrar botão Nova mensagem</string>
+    <string name="ShowNewMessageButtonInfo">Mostra o botão de escrever na lista principal de conversas.</string>
+    <string name="HideGreetingStickers">Ocultar figurinhas de saudação</string>
+    <string name="HideGreetingStickersInfo">Oculta a sugestão de figurinha em uma conversa privada vazia.</string>
+    <string name="HideContactsTab">Ocultar aba Contatos</string>
+    <string name="HideContactsTabInfo">Oculta Contatos na barra inferior. O seletor de contatos continua disponível em Conversas → Nova mensagem. Reinicie o app para aplicar.</string>
+    <string name="GifPlaybackControls">Controles de reprodução de GIF</string>
+    <string name="GifPlaybackControlsInfo">Mostra controles de reprodução e a barra de progresso de GIFs baseados em vídeo no visualizador de mídia.</string>
 </resources>

@@ -15,6 +15,7 @@
     <string name="DeleteFromDeviceDone">Bestand van apparaat verwijderd</string>
     <string name="DeleteFromDeviceFailed">Het bestand kon niet van dit apparaat worden verwijderd.</string>
     <string name="DeleteFromDeviceMessage">Dit bestand wordt definitief van je apparaat verwijderd.</string>
+    <string name="DeleteSelectedPhotosFromDeviceMessage">Te verwijderen foto’s: %1$d. Deze foto’s worden definitief van dit apparaat verwijderd.</string>
     <string name="SendAsRoundVideo">Als rond videobericht versturen</string>
     <string name="ExportSettings">Instellingen exporteren</string>
     <string name="ExportSettingsDone">Instellingen geëxporteerd.</string>
@@ -190,7 +191,7 @@
     <string name="AvatarShapeRounded">Afgerond</string>
     <string name="AvatarShapeSquare">Vierkant</string>
     <string name="InAppCamera">In-app camera inschakelen</string>
-    <string name="InAppCameraInfo">In bijlagen</string>
+    <string name="InAppCameraInfo">Gebruik de ingebouwde camera voor bijlagen. Als je deze uitschakelt, kun je niet overschakelen naar videoberichten.</string>
     <string name="SyncPins">Gesynchroniseerde dialogen</string>
     <string name="SyncPinsInfo">Synchronisatie uitschakelen staat toe om een onbeperkt aantal dialogen vast te zetten</string>
     <string name="UnmutedOnTop">Niet-stilte berichten zijn primair</string>
@@ -1415,4 +1416,15 @@
     <string name="QuickAttachNewestFirst">Nieuwste foto\'s links</string>
     <string name="QuickAttachNewestFirstInfo">Staat dit uit, dan staan recente foto\'s van oud naar nieuw, van links naar rechts.</string>
     <string name="PhotoSent">Foto verstuurd</string>
+    <string name="DisableMessageWidgets">HTML-widgets uitschakelen</string>
+    <string name="DisableMessageWidgetsInfo">Voorkomt dat ingesloten HTML-widgets in berichten worden uitgevoerd. De bijschriften blijven zichtbaar.</string>
+    <string name="DisabledMessageWidget">Niet-ondersteunde HTML-widget</string>
+    <string name="ShowNewMessageButton">Knop Nieuw bericht tonen</string>
+    <string name="ShowNewMessageButtonInfo">Toon de knop om een bericht te schrijven in de hoofdchatlijst.</string>
+    <string name="HideGreetingStickers">Begroetingsstickers verbergen</string>
+    <string name="HideGreetingStickersInfo">Verberg de stickersuggestie in een lege privéchat.</string>
+    <string name="HideContactsTab">Tabblad Contacten verbergen</string>
+    <string name="HideContactsTabInfo">Verberg Contacten in de balk onderaan. Via Chats → Nieuw bericht kun je nog steeds een contact kiezen. Herstart de app om de wijziging toe te passen.</string>
+    <string name="GifPlaybackControls">GIF-afspeelbediening</string>
+    <string name="GifPlaybackControlsInfo">Toon afspeelbediening en een voortgangsbalk voor op video gebaseerde GIF’s in de mediaviewer.</string>
 </resources>

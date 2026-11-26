@@ -166,6 +166,7 @@
     <string name="GoToFirstMessage">Перейти к началу</string>
     <string name="DeleteFromDevice">Удалить с устройства</string>
     <string name="DeleteFromDeviceMessage">Этот файл будет безвозвратно удалён с вашего устройства.</string>
+    <string name="DeleteSelectedPhotosFromDeviceMessage">Фотографий к удалению: %1$d. Эти фотографии будут безвозвратно удалены с устройства.</string>
     <string name="DeleteFromDeviceDone">Файл удалён с устройства</string>
     <string name="DeleteFromDeviceFailed">Не удалось удалить файл с устройства.</string>
     <string name="ShowBottomTabs">Показать нижние табы</string>
@@ -182,7 +183,7 @@
     <string name="AvatarShapeRounded">Скруглённая</string>
     <string name="AvatarShapeSquare">Квадратная</string>
     <string name="InAppCamera">Включить камеру в приложении</string>
-    <string name="InAppCameraInfo">Во вложениях</string>
+    <string name="InAppCameraInfo">Использовать встроенную камеру для вложений. Без неё нельзя переключиться на видеосообщения.</string>
     <string name="SyncPins">Синхронизировать закреплённые диалоги</string>
     <string name="SyncPinsInfo">Отключение синхронизации позволяет закрепить неограниченное количество диалогов</string>
     <string name="UnmutedOnTop">Незаглушённые сообщения в приоритете</string>
@@ -598,4 +599,15 @@
     <string name="QuickAttachNewestFirst">Новые фото слева</string>
     <string name="QuickAttachNewestFirstInfo">Если выключено, последние фото идут от старых к новым слева направо.</string>
     <string name="PhotoSent">Фото отправлено</string>
+    <string name="DisableMessageWidgets">Отключить HTML-виджеты</string>
+    <string name="DisableMessageWidgetsInfo">Запретить запуск HTML-виджетов в сообщениях. Подписи останутся видны.</string>
+    <string name="DisabledMessageWidget">HTML-виджет не поддерживается</string>
+    <string name="ShowNewMessageButton">Показывать кнопку «Новое сообщение»</string>
+    <string name="ShowNewMessageButtonInfo">Показывает кнопку создания сообщения в основном списке чатов.</string>
+    <string name="HideGreetingStickers">Скрывать приветственные стикеры</string>
+    <string name="HideGreetingStickersInfo">Скрывает предложенный стикер в пустом личном чате.</string>
+    <string name="HideContactsTab">Скрывать вкладку «Контакты»</string>
+    <string name="HideContactsTabInfo">Скрывает контакты с нижней панели. Выбор контакта доступен через «Чаты» → «Новое сообщение». Чтобы применить изменение, перезапустите приложение.</string>
+    <string name="GifPlaybackControls">Управление воспроизведением GIF</string>
+    <string name="GifPlaybackControlsInfo">Показывает управление воспроизведением и перемоткой видео-GIF в просмотрщике медиа.</string>
 </resources>

@@ -15,6 +15,7 @@
     <string name="DeleteFromDeviceDone">Datei vom Gerät gelöscht</string>
     <string name="DeleteFromDeviceFailed">Die Datei konnte nicht von diesem Gerät gelöscht werden.</string>
     <string name="DeleteFromDeviceMessage">Diese Datei wird endgültig von deinem Gerät gelöscht.</string>
+    <string name="DeleteSelectedPhotosFromDeviceMessage">Zu löschende Fotos: %1$d. Diese Fotos werden endgültig von diesem Gerät gelöscht.</string>
     <string name="SendAsRoundVideo">Als Videonachricht senden</string>
     <string name="ExportSettings">Einstellungen exportieren</string>
     <string name="ExportSettingsDone">Einstellungen exportiert.</string>
@@ -190,7 +191,7 @@
     <string name="AvatarShapeRounded">Abgerundet</string>
     <string name="AvatarShapeSquare">Quadratisch</string>
     <string name="InAppCamera">In-App-Kamera aktivieren</string>
-    <string name="InAppCameraInfo">In Anhängen</string>
+    <string name="InAppCameraInfo">Verwendet die In-App-Kamera für Anhänge. Ist sie deaktiviert, ist der Wechsel zu Videonachrichten nicht möglich.</string>
     <string name="SyncPins">Angeheftete Dialoge synchronisieren</string>
     <string name="SyncPinsInfo">Synchronisierung deaktiviert ermöglicht das Anheften einer unbegrenzten Anzahl von Dialogen</string>
     <string name="UnmutedOnTop">Stummgeschaltete Nachrichten sind primär</string>
@@ -1706,4 +1707,15 @@
     <string name="QuickAttachNewestFirst">Neueste Fotos links</string>
     <string name="QuickAttachNewestFirstInfo">Wenn aus, werden die letzten Fotos von alt zu neu von links nach rechts angeordnet.</string>
     <string name="PhotoSent">Foto gesendet</string>
+    <string name="DisableMessageWidgets">HTML-Widgets deaktivieren</string>
+    <string name="DisableMessageWidgetsInfo">Eingebettete HTML-Widgets in Nachrichten werden nicht ausgeführt. Ihre Beschriftungen bleiben sichtbar.</string>
+    <string name="DisabledMessageWidget">Nicht unterstütztes HTML-Widget</string>
+    <string name="ShowNewMessageButton">Schaltfläche „Neue Nachricht“ anzeigen</string>
+    <string name="ShowNewMessageButtonInfo">Zeigt die Schaltfläche zum Schreiben in der Haupt-Chatliste an.</string>
+    <string name="HideGreetingStickers">Begrüßungssticker ausblenden</string>
+    <string name="HideGreetingStickersInfo">Blendet den Stickervorschlag in einem leeren privaten Chat aus.</string>
+    <string name="HideContactsTab">Kontakte-Tab ausblenden</string>
+    <string name="HideContactsTabInfo">Blendet Kontakte in der unteren Leiste aus. Die Kontaktauswahl bleibt über Chats → Neue Nachricht verfügbar. App neu starten, um die Änderung anzuwenden.</string>
+    <string name="GifPlaybackControls">GIF-Wiedergabesteuerung</string>
+    <string name="GifPlaybackControlsInfo">Zeigt Wiedergabesteuerung und Zeitleiste für videobasierte GIFs in der Medienansicht.</string>
 </resources>

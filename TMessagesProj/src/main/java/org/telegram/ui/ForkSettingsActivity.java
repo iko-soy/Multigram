@@ -127,6 +127,11 @@ public class ForkSettingsActivity extends BaseFragment {
     public static final int ID_DISABLE_LOCKED_ANIMATED_EMOJI = 43;
     public static final int ID_FULL_RECENT_STICKERS = 44;
     public static final int ID_CONFIRM_GIF_STICKER_SEND = 104;
+    public static final int ID_DISABLE_MESSAGE_WIDGETS = 107;
+    public static final int ID_SHOW_NEW_MESSAGE_BUTTON = 108;
+    public static final int ID_HIDE_GREETING_STICKERS = 109;
+    public static final int ID_HIDE_CONTACTS_TAB = 110;
+    public static final int ID_GIF_PLAYBACK_CONTROLS = 111;
     public static final int ID_SHOW_ARCHIVED_STICKERS = 45;
     public static final int ID_STICKER_SIZE = 46;
 
@@ -564,6 +569,8 @@ public class ForkSettingsActivity extends BaseFragment {
         }
         items.add(UItem.asButtonCheck(ID_FORCE_BLOCK_SCREENSHOTS, LocaleController.getString(R.string.ForceBlockScreenshots), LocaleController.getString(R.string.ForceBlockScreenshotsInfo))
             .setChecked(pref("forceBlockScreenshots", false)).setMultiline(true));
+        items.add(UItem.asButtonCheck(ID_DISABLE_MESSAGE_WIDGETS, LocaleController.getString(R.string.DisableMessageWidgets), LocaleController.getString(R.string.DisableMessageWidgetsInfo))
+            .setChecked(pref("disableMessageWidgets", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_SHOW_NOTIFICATION_CONTENT, LocaleController.getString(R.string.ShowNotificationContent), LocaleController.getString(R.string.ShowNotificationContentInfo))
             .setChecked(pref("showNotificationContent", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_DROP_SCREENSHOT_CAPTION, LocaleController.getString(R.string.DropScreenshotCaption), LocaleController.getString(R.string.DropScreenshotCaptionInfo))
@@ -577,6 +584,12 @@ public class ForkSettingsActivity extends BaseFragment {
         items.add(UItem.asHeader(LocaleController.getString(R.string.ForkSectionAppearance)));
         items.add(UItem.asButtonCheck(ID_HIDE_IN_APP_HINTS, LocaleController.getString(R.string.HideInAppHints), LocaleController.getString(R.string.HideInAppHintsInfo))
             .setChecked(pref("hideInAppHints", false)).setMultiline(true));
+        items.add(UItem.asButtonCheck(ID_SHOW_NEW_MESSAGE_BUTTON, LocaleController.getString(R.string.ShowNewMessageButton), LocaleController.getString(R.string.ShowNewMessageButtonInfo))
+            .setChecked(pref("showNewMessageButton", false)).setMultiline(true));
+        items.add(UItem.asButtonCheck(ID_HIDE_GREETING_STICKERS, LocaleController.getString(R.string.HideGreetingStickers), LocaleController.getString(R.string.HideGreetingStickersInfo))
+            .setChecked(pref("hideGreetingStickers", false)).setMultiline(true));
+        items.add(UItem.asButtonCheck(ID_HIDE_CONTACTS_TAB, LocaleController.getString(R.string.HideContactsTab), LocaleController.getString(R.string.HideContactsTabInfo))
+            .setChecked(pref("hideContactsTab", false)).setMultiline(true));
         if (SharedConfig.isUserOwner()) {
             items.add(UItem.asButtonCheck(ID_HIDE_BOTTOM_BUTTON, LocaleController.getString(R.string.HideBottomButton), LocaleController.getString(R.string.HideBottomButtonInfo))
                 .setChecked(pref("hideBottomButton", false)).setMultiline(true));
@@ -700,6 +713,8 @@ public class ForkSettingsActivity extends BaseFragment {
             .setChecked(pref("photoHasSticker", true)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_DISABLE_MOTION_PHOTO, LocaleController.getString(R.string.DisableMotionPhoto), LocaleController.getString(R.string.DisableMotionPhotoInfo))
             .setChecked(pref("disableMotionPhoto", false)).setMultiline(true));
+        items.add(UItem.asButtonCheck(ID_GIF_PLAYBACK_CONTROLS, LocaleController.getString(R.string.GifPlaybackControls), LocaleController.getString(R.string.GifPlaybackControlsInfo))
+            .setChecked(pref("gifPlaybackControls", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_DISABLE_FLIP_PHOTOS, LocaleController.getString(R.string.DisableFlipPhotos), LocaleController.getString(R.string.DisableFlipPhotosInfo))
             .setChecked(pref("disableFlipPhotos", false)).setMultiline(true));
         items.add(UItem.asButtonCheck(ID_REAR_VIDEO_MESSAGES, LocaleController.getString(R.string.RearVideoMessages), LocaleController.getString(R.string.RearVideoMessagesInfo))
@@ -816,6 +831,8 @@ public class ForkSettingsActivity extends BaseFragment {
         } else if (id == ID_FORCE_BLOCK_SCREENSHOTS) {
             toggle("forceBlockScreenshots", item, view);
             ForkSettings.applyEffect(currentAccount, "forceBlockScreenshots", item.checked);
+        } else if (id == ID_DISABLE_MESSAGE_WIDGETS) {
+            ForkSettings.applyEffect(currentAccount, "disableMessageWidgets", toggle("disableMessageWidgets", item, view));
         } else if (id == ID_SHOW_NOTIFICATION_CONTENT) {
             toggle("showNotificationContent", item, view);
         } else if (id == ID_DROP_SCREENSHOT_CAPTION) {
@@ -831,6 +848,14 @@ public class ForkSettingsActivity extends BaseFragment {
 
         } else if (id == ID_HIDE_IN_APP_HINTS) {
             toggle("hideInAppHints", item, view);
+        } else if (id == ID_SHOW_NEW_MESSAGE_BUTTON) {
+            toggle("showNewMessageButton", item, view);
+        } else if (id == ID_HIDE_GREETING_STICKERS) {
+            toggle("hideGreetingStickers", item, view);
+        } else if (id == ID_HIDE_CONTACTS_TAB) {
+            toggle("hideContactsTab", item, view);
+        } else if (id == ID_GIF_PLAYBACK_CONTROLS) {
+            toggle("gifPlaybackControls", item, view);
         } else if (id == ID_HIDE_BOTTOM_BUTTON) {
             toggle("hideBottomButton", item, view);
         } else if (id == ID_CUSTOM_TITLE) {
