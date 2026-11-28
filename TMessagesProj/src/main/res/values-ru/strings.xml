@@ -142,6 +142,7 @@
     <string name="DisablePlayVisibleVideoOnVolumeInfo">Не включать звук видимого видео при нажатии клавиш громкости.</string>
     <string name="DisableRecentFilesAttachmentInfo">Скрывать список недавних файлов в меню вложений.</string>
     <string name="DisableAutoplayNextVoiceInfo">Не переходить к следующему голосовому сообщению после окончания текущего.</string>
+    <string name="SkipOwnVoiceAutoplayInfo">Когда автовоспроизведение переходит к следующему голосовому или видеосообщению, отправленные вами пропускаются. Пересланные сообщения воспроизводятся как обычно.</string>
     <string name="VoiceFileSizeInfo">Показывать размер файла рядом с длительностью голосового сообщения, как в Telegram Desktop.</string>
     <string name="BotSkipShareInfo">Молча отклонять запросы мини-приложений на отправку сообщения.</string>
     <string name="BotSkipFullscreenInfo">Не позволять мини-приложениям переходить в полноэкранный режим.</string>
@@ -254,6 +255,7 @@
     <string name="DisableDefaultInAppBrowser">Открывать ссылки в системном браузере</string>
     <string name="TranslationEngine">Движок перевода</string>
     <string name="DisableAutoplayNextVoice">Отключить автовоспроизведение следующего голосового/видеосообщения</string>
+    <string name="SkipOwnVoiceAutoplay">Пропускать свои голосовые и видеосообщения при автовоспроизведении</string>
     <string name="VoiceFileSize">Размер файла голосовых сообщений</string>
     <string name="AudioPlayerAutoplayNext">Автовоспроизведение следующего</string>
     <string name="SmsOnlyOfficialWarning">Примечание: SMS-подтверждение доступно ТОЛЬКО в официальных мобильных приложениях</string>
@@ -611,4 +613,6 @@
     <string name="GifPlaybackControlsInfo">Показывает управление воспроизведением и перемоткой видео-GIF в просмотрщике медиа.</string>
     <string name="BluetoothCallControls">Управление звонками по Bluetooth</string>
     <string name="BluetoothCallControlsInfo">Экспериментальная функция. Совместимые Bluetooth-устройства смогут показывать, принимать и отклонять входящие голосовые звонки. Данные звонящего не передаются.</string>
+    <string name="PushServiceChannelSettings">Уведомление службы доставки</string>
+    <string name="PushServiceChannelSettingsInfo">Покажите или скройте только это уведомление в настройках Android.</string>
 </resources>
